@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
+using PlayBlazor.CodeGen;
 using PlayBlazor.Discovery;
 using PlayBlazor.Model;
 using PlayBlazor.State;
@@ -15,6 +17,9 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     [Inject]
     private IComponentCatalogProvider Catalog { get; set; } = default!;
+
+    [Inject]
+    private IJSRuntime Js { get; set; } = default!;
 
     [Parameter, EditorRequired]
     public Type Component { get; set; } = default!;
@@ -59,6 +64,11 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     private void ResetAll()
         => _state.ResetAll();
+
+    private string Snippet => RazorSnippetGenerator.Generate(_descriptor, _state);
+
+    private async Task CopySnippet()
+        => await Js.InvokeVoidAsync("navigator.clipboard.writeText", Snippet);
 
     private void RecoverFromError()
     {

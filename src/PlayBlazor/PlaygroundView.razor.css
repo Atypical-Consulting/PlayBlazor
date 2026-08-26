@@ -94,3 +94,37 @@
     color: #777;
     font-size: 0.8125rem;
 }
+
+.pb-code {
+    position: relative;
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #d0d0d0;
+    background: #1e1e2e;
+    color: #e6e6ef;
+    overflow-x: auto;
+}
+
+.pb-code pre {
+    margin: 0;
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.pb-copy {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background: transparent;
+    color: #e6e6ef;
+    cursor: pointer;
+}
+
+.pb-copy:hover {
+    background: #333;
+}

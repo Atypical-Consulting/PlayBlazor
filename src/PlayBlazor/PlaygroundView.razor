@@ -1,4 +1,5 @@
 @namespace PlayBlazor
+@using PlayBlazor.CodeGen
 @using PlayBlazor.Rendering
 @using PlayBlazor.Shell
 
@@ -63,5 +64,9 @@
                 </ul>
             </details>
         }
+    </div>
+    <div class="pb-code">
+        <pre><code>@Snippet</code></pre>
+        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">Copy</button>
     </div>
 </div>
