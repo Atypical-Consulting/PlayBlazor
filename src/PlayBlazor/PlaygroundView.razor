@@ -63,6 +63,7 @@
             {
                 <span class="pb-warning" title="@_descriptor.Warning">&#9888;</span>
             }
+            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">Share</button>
             @if (_state.ModifiedValues.Count > 0)
             {
                 <button type="button" class="pb-reset" @onclick="ResetAll">Reset all</button>

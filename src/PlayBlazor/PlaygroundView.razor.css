@@ -210,8 +210,8 @@
     font-size: 0.8125rem;
 }
 
+.pb-share,
 .pb-reset {
-    margin-left: auto;
     padding: 0.2rem 0.6rem;
     border: 1px solid var(--pb-line);
     border-radius: 6px;
@@ -223,6 +223,11 @@
     transition: border-color 120ms ease, color 120ms ease;
 }
 
+.pb-share {
+    margin-left: auto;
+}
+
+.pb-share:hover,
 .pb-reset:hover {
     border-color: var(--pb-accent);
     color: var(--pb-accent);

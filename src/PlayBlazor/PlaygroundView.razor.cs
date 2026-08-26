@@ -27,6 +27,9 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     [Inject]
     private PlayBlazorOptions Options { get; set; } = default!;
 
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
     [Parameter, EditorRequired]
     public Type Component { get; set; } = default!;
 
@@ -57,7 +60,40 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         {
             _descriptor = Catalog.Describe(Component);
             _state.ResetAll();
+            RestoreFromPermalink();
         }
+    }
+
+    private string PermalinkParameterName => $"pb-{_descriptor.DisplayName}";
+
+    private void RestoreFromPermalink()
+    {
+        var query = new Uri(Navigation.Uri).Query.TrimStart('?');
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var separator = pair.IndexOf('=');
+            if (separator <= 0)
+            {
+                continue;
+            }
+
+            var key = Uri.UnescapeDataString(pair[..separator]);
+            if (key != PermalinkParameterName)
+            {
+                continue;
+            }
+
+            PlaygroundStateSerializer.Decode(
+                Uri.UnescapeDataString(pair[(separator + 1)..]), _descriptor, _state, _environment);
+            return;
+        }
+    }
+
+    private async Task CopyShareLink()
+    {
+        var encoded = PlaygroundStateSerializer.Encode(_descriptor, _state, _environment);
+        var uri = Navigation.GetUriWithQueryParameter(PermalinkParameterName, encoded);
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", uri);
     }
 
     public void Dispose()
