@@ -8,6 +8,10 @@ namespace PlayBlazor.Discovery;
 public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
 {
     private readonly ConcurrentDictionary<Type, ComponentDescriptor> _cache = new();
+    private readonly XmlDocSummaryReader? _xmlDocs;
+
+    public ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null)
+        => _xmlDocs = xmlDocs;
 
     public ComponentDescriptor Describe(Type componentType)
         => _cache.GetOrAdd(componentType, Build);
@@ -90,14 +94,14 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
                 IsNullable: isNullable,
                 DefaultValue: defaultValue,
                 HasDefault: hasDefault,
-                Summary: null));
+                Summary: _xmlDocs?.GetPropertySummary(property)));
         }
 
         return new ComponentDescriptor(
             Type: type,
             DisplayName: StripArity(type.Name),
             Category: type.Namespace ?? string.Empty,
-            Summary: null,
+            Summary: _xmlDocs?.GetTypeSummary(type),
             Parameters: parameters,
             Warning: warning);
     }
