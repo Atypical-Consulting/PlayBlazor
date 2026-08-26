@@ -1,12 +1,28 @@
 @page "/"
-<h1>PlayBlazor — DemoHost</h1>
-<p>Auto-generated playgrounds for real MudBlazor components. No hand-written wiring below.</p>
+<header class="demo-hero">
+    <div class="demo-wordmark"><span class="demo-mark">▶</span> PlayBlazor</div>
+    <p class="demo-tagline">
+        Auto-generated playgrounds for any Blazor component library.
+        Every control on this page comes from reflection over <code>[Parameter]</code> properties —
+        none of it is hand-written.
+    </p>
+</header>
+<main class="demo-main">
+    <section class="demo-section">
+        <h2 class="demo-tag">MudButton</h2>
+        <PlaygroundView Component="typeof(MudButton)" />
+    </section>
 
-<h2>MudButton</h2>
-<PlaygroundView Component="typeof(MudButton)" />
+    <section class="demo-section">
+        <h2 class="demo-tag">MudProgressCircular</h2>
+        <PlaygroundView Component="typeof(MudProgressCircular)" />
+    </section>
 
-<h2>MudProgressCircular</h2>
-<PlaygroundView Component="typeof(MudProgressCircular)" />
-
-<h2>MudAlert</h2>
-<PlaygroundView Component="typeof(MudAlert)" />
+    <section class="demo-section">
+        <h2 class="demo-tag">MudAlert</h2>
+        <PlaygroundView Component="typeof(MudAlert)" />
+    </section>
+</main>
+<footer class="demo-footer">
+    Incubated inside the MudBlazor repository — MudBlazor is the first demo library, not a dependency.
+</footer>

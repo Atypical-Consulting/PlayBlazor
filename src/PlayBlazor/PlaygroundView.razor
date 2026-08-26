@@ -5,6 +5,7 @@
 
 <div class="pb-playground">
     <div class="pb-preview">
+        <span class="pb-stage-chip">&lt;@_descriptor.DisplayName /&gt;</span>
         @if (!_descriptor.CanInstantiate)
         {
             <div class="pb-error">
@@ -37,11 +38,15 @@
             {
                 <span class="pb-warning" title="@_descriptor.Warning">&#9888;</span>
             }
-            <button type="button" class="pb-reset" @onclick="ResetAll">Reset</button>
+            @if (_state.ModifiedValues.Count > 0)
+            {
+                <button type="button" class="pb-reset" @onclick="ResetAll">Reset all</button>
+            }
         </div>
+        <span class="pb-eyebrow">Parameters</span>
         @foreach (var parameter in Controllable)
         {
-            <div class="pb-row" @key="parameter.Name">
+            <div class="pb-row @(_state.IsModified(parameter.Name) ? "pb-row-modified" : null)" @key="parameter.Name">
                 <ControlHost Parameter="parameter"
                              Value="_state.GetValue(parameter)"
                              ValueChanged="value => OnControlChanged(parameter, value)" />
@@ -55,11 +60,14 @@
         @if (Uncontrollable.Any())
         {
             <details class="pb-uncontrolled">
-                <summary>Uncontrolled (@Uncontrollable.Count())</summary>
+                <summary>Not controlled here (@Uncontrollable.Count())</summary>
                 <ul>
                     @foreach (var parameter in Uncontrollable)
                     {
-                        <li @key="parameter.Name" title="@parameter.Summary">@parameter.Name — @parameter.Kind</li>
+                        <li @key="parameter.Name" title="@parameter.Summary">
+                            <span>@parameter.Name</span>
+                            <span class="pb-kind">@parameter.Kind</span>
+                        </li>
                     }
                 </ul>
             </details>

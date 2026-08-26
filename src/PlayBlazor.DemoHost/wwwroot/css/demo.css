@@ -1,0 +1,90 @@
+:root {
+    --demo-accent: #6d4aff;
+    --demo-ink: #1b1b22;
+    --demo-ink-2: #6e6e7a;
+    --demo-bg: #f6f6f9;
+    --demo-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+}
+
+html {
+    background: var(--demo-bg);
+}
+
+body {
+    margin: 0;
+    color: var(--demo-ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.demo-hero {
+    padding: 3.5rem 1.5rem 2.5rem;
+    background: #16161e;
+    color: #f0f0f6;
+}
+
+.demo-wordmark {
+    max-width: 880px;
+    margin: 0 auto;
+    font-family: var(--demo-mono);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.demo-mark {
+    color: var(--demo-accent);
+    margin-right: 0.25rem;
+}
+
+.demo-tagline {
+    max-width: 880px;
+    margin: 0.875rem auto 0;
+    color: #b9b9c9;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.demo-tagline code {
+    font-family: var(--demo-mono);
+    font-size: 0.875em;
+    color: #d6d6e7;
+    background: rgba(214, 214, 231, 0.1);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+}
+
+.demo-main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+.demo-section {
+    margin-bottom: 2.5rem;
+}
+
+.demo-tag {
+    margin: 0 0 0.75rem;
+    font-family: var(--demo-mono);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.demo-tag::before {
+    content: "<";
+    color: var(--demo-accent);
+}
+
+.demo-tag::after {
+    content: ">";
+    color: var(--demo-accent);
+}
+
+.demo-footer {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 1.5rem 2.5rem;
+    color: var(--demo-ink-2);
+    font-size: 0.8125rem;
+}
