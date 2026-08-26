@@ -85,7 +85,7 @@ public class RazorSnippetGeneratorTests
     public void Generate_SkipsNonDrivableAndNullValues()
     {
         var state = new PlaygroundState();
-        state.Set("ChildContent", "ignored");
+        state.Set("OnValueChanged", "ignored");
         state.Set("Label", null);
 
         RazorSnippetGenerator.Generate(_descriptor, state)

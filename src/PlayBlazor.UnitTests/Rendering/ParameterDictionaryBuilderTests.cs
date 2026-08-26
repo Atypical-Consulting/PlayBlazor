@@ -24,7 +24,6 @@ public class ParameterDictionaryBuilderTests
         var state = new PlaygroundState();
         state.Set("Dense", true);
         state.Set("Label", "hello");
-        state.Set("ChildContent", "ignored");   // Slot — must be skipped
         state.Set("OnValueChanged", "ignored"); // Event — must be skipped
         state.Set("Endpoint", "ignored");       // Unsupported — must be skipped
 

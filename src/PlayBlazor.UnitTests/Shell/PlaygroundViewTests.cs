@@ -39,8 +39,8 @@ public class PlaygroundViewTests
     {
         var cut = RenderView(typeof(BasicFixture));
 
-        // Dense, Outlined (bool) + Size (enum) + Label (text) + Count, Ratio, MaxItems (number) = 7
-        cut.FindAll(".pb-control").Count.Should().Be(7);
+        // Dense, Outlined (bool) + Size (enum) + Label (text) + Count, Ratio, MaxItems (number) + ChildContent (text slot) = 8
+        cut.FindAll(".pb-control").Count.Should().Be(8);
     }
 
     [Test]
@@ -71,7 +71,7 @@ public class PlaygroundViewTests
         var cut = RenderView(typeof(BasicFixture));
 
         var uncontrolled = cut.Find(".pb-uncontrolled").TextContent;
-        uncontrolled.Should().Contain("ChildContent").And.Contain("OnValueChanged").And.Contain("Endpoint");
+        uncontrolled.Should().Contain("OnValueChanged").And.Contain("Endpoint").And.NotContain("ChildContent");
     }
 
     [Test]

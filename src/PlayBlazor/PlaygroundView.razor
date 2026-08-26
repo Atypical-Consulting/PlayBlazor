@@ -19,7 +19,7 @@
                 <ChildContent>
                     <DynamicComponent @key="@_state.InstanceKey"
                                       Type="@_descriptor.Type"
-                                      Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state)" />
+                                      Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state, Options)" />
                 </ChildContent>
                 <ErrorContent Context="exception">
                     <div class="pb-error">

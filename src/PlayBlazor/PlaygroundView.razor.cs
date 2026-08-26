@@ -21,16 +21,23 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     [Inject]
     private IJSRuntime Js { get; set; } = default!;
 
+    [Inject]
+    private PlayBlazorOptions Options { get; set; } = default!;
+
     [Parameter, EditorRequired]
     public Type Component { get; set; } = default!;
 
+    private static bool IsTextSlot(ParameterDescriptor parameter)
+        => parameter.Kind == ControlKind.Slot && parameter.Type == typeof(RenderFragment);
+
     private IEnumerable<ParameterDescriptor> Controllable
         => _descriptor.Parameters.Where(static p => p.Kind
-            is ControlKind.Bool or ControlKind.Enum or ControlKind.Text or ControlKind.Number);
+            is ControlKind.Bool or ControlKind.Enum or ControlKind.Text or ControlKind.Number
+            || IsTextSlot(p));
 
     private IEnumerable<ParameterDescriptor> Uncontrollable
-        => _descriptor.Parameters.Where(static p => p.Kind
-            is ControlKind.Slot or ControlKind.Event or ControlKind.Unsupported);
+        => _descriptor.Parameters.Where(static p =>
+            (p.Kind is ControlKind.Slot && !IsTextSlot(p)) || p.Kind is ControlKind.Event or ControlKind.Unsupported);
 
     protected override void OnInitialized()
         => _state.Changed += OnStateChanged;
