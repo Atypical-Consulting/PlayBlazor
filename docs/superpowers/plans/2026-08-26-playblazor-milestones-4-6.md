@@ -211,3 +211,13 @@ public partial class PlaygroundExplorer : ComponentBase
 - Test: full suite + `dotnet build src/PlayBlazor.DemoHost`
 
 **Steps:** write README → full suite green → commit `PlayBlazor: add package README (milestone 6 / v1 complete)`.
+
+---
+
+## Journal d'exécution (2026-08-26)
+
+Tasks 14–20 exécutées le jour même, 105 tests verts, DemoHost servi en `dotnet watch` pendant toute l'implémentation. Écarts :
+1. **Précédence des slots inversée** vs le plan : le texte tapé par l'utilisateur gagne sur le preset hôte (meilleure UX ; le plan disait preset toujours prioritaire).
+2. Deux tests des jalons 1–3 mis à jour car leur postulat (« slot = ignoré ») a changé par design.
+3. `using MudBlazor` oublié dans DemoHost/Program.cs, commité cassé puis amendé aussitôt — leçon : le grep de vérification du build était ambigu, remplacé par un `tail` explicite.
+4. Une passe design (hors plan, demande utilisateur « c'est bien moche ») a précédé le jalon 4 : esthétique « établi d'atelier », accent violet #6D4AFF, mono = voix de l'API, stage à grille de points, commit `7e93e7e7d`.
