@@ -1,0 +1,39 @@
+@namespace PlayBlazor.Shell
+@using System.Globalization
+<label class="pb-control pb-control-number">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <input type="number" value="@FormattedValue" step="@Step" @onchange="OnChanged" />
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private Type NumberType => Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type;
+
+    private string Step
+        => NumberType == typeof(double) || NumberType == typeof(float) || NumberType == typeof(decimal)
+            ? "any"
+            : "1";
+
+    private string FormattedValue
+        => Value is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture) : string.Empty;
+
+    private Task OnChanged(ChangeEventArgs e)
+    {
+        var raw = (string?)e.Value;
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return ValueChanged.InvokeAsync(null);
+        }
+
+        try
+        {
+            return ValueChanged.InvokeAsync(Convert.ChangeType(raw, NumberType, CultureInfo.InvariantCulture));
+        }
+        catch (Exception exception) when (exception is FormatException or OverflowException or InvalidCastException)
+        {
+            return Task.CompletedTask;
+        }
+    }
+}

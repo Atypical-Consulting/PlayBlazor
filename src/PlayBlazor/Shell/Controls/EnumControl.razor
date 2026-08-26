@@ -1,0 +1,19 @@
+@namespace PlayBlazor.Shell
+<label class="pb-control pb-control-enum">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <select value="@(Value?.ToString() ?? string.Empty)" @onchange="OnChanged">
+        @foreach (var name in Enum.GetNames(EnumType))
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private Type EnumType => Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type;
+
+    private Task OnChanged(ChangeEventArgs e) => ValueChanged.InvokeAsync(Enum.Parse(EnumType, (string)e.Value!));
+}

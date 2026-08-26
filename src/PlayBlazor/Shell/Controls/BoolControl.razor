@@ -1,0 +1,12 @@
+@namespace PlayBlazor.Shell
+<label class="pb-control pb-control-bool">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <input type="checkbox" checked="@(Value is true)" @onchange="OnChanged" />
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private Task OnChanged(ChangeEventArgs e) => ValueChanged.InvokeAsync(e.Value is true);
+}

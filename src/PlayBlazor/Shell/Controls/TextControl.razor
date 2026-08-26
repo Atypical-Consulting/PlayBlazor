@@ -1,0 +1,13 @@
+@namespace PlayBlazor.Shell
+<label class="pb-control pb-control-text">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <input type="text" value="@(Value as string)" @onchange="OnChanged" />
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private Task OnChanged(ChangeEventArgs e)
+        => ValueChanged.InvokeAsync((string?)e.Value is { Length: > 0 } text ? text : null);
+}

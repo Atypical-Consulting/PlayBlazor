@@ -1,0 +1,23 @@
+@namespace PlayBlazor.Shell
+@switch (Parameter.Kind)
+{
+    case ControlKind.Bool:
+        <BoolControl Parameter="Parameter" Value="Value" ValueChanged="ValueChanged" />
+        break;
+    case ControlKind.Enum:
+        <EnumControl Parameter="Parameter" Value="Value" ValueChanged="ValueChanged" />
+        break;
+    case ControlKind.Text:
+        <TextControl Parameter="Parameter" Value="Value" ValueChanged="ValueChanged" />
+        break;
+    case ControlKind.Number:
+        <NumberControl Parameter="Parameter" Value="Value" ValueChanged="ValueChanged" />
+        break;
+    default:
+        break;
+}
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+}
