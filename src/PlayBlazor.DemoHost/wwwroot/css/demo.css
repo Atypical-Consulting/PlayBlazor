@@ -87,23 +87,66 @@ body {
     color: var(--demo-accent);
 }
 
-.demo-explorer-link {
-    display: inline-block;
+.demo-cta {
+    display: block;
     max-width: 880px;
-    margin: 1rem auto 0;
-    color: var(--demo-accent);
-    font-size: 0.875rem;
+    margin: 1.25rem auto 0;
+    color: #cdbfff;
+    font-family: var(--demo-mono);
+    font-size: 0.9375rem;
+    font-weight: 600;
     text-decoration: none;
 }
 
-.demo-explorer-link:hover {
-    text-decoration: underline;
+.demo-cta:hover {
+    color: #ffffff;
 }
 
-.demo-hero .demo-explorer-link {
-    display: block;
-    max-width: 880px;
-    margin: 1rem auto 0;
+.demo-covered-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.demo-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.375rem;
+}
+
+.demo-tile {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #e6e6ee;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--demo-ink);
+    font-family: var(--demo-mono);
+    font-size: 0.71875rem;
+    text-decoration: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.demo-tile:hover {
+    border-color: var(--demo-accent);
+    box-shadow: 0 2px 10px -4px rgba(109, 74, 255, 0.35);
+}
+
+.demo-tile svg {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    fill: var(--demo-accent);
+    opacity: 0.8;
+}
+
+.demo-tile span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .demo-explorer {
