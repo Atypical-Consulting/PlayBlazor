@@ -1,0 +1,10 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div>never constructed</div>
+@code {
+    [Parameter] public bool Dense { get; set; }
+
+    public ThrowingCtorFixture()
+    {
+        throw new InvalidOperationException("ctor boom");
+    }
+}

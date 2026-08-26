@@ -1,0 +1,16 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div class="basic-fixture">Dense=@Dense;Outlined=@Outlined;Size=@Size;Label=@Label;Count=@Count;Ratio=@Ratio</div>
+@code {
+    [Parameter] public bool Dense { get; set; }
+    [Parameter] public bool Outlined { get; set; } = true;
+    [Parameter] public FixtureSize Size { get; set; } = FixtureSize.Medium;
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public int Count { get; set; } = 3;
+    [Parameter] public double Ratio { get; set; } = 0.5;
+    [Parameter] public int? MaxItems { get; set; }
+    [Parameter] public EventCallback<string> OnValueChanged { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public Uri? Endpoint { get; set; }
+    [CascadingParameter] public string? Cascaded { get; set; }
+    public string NotAParameter { get; set; } = string.Empty;
+}
