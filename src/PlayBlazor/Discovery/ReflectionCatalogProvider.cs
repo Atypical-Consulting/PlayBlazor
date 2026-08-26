@@ -13,7 +13,37 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
         => _cache.GetOrAdd(componentType, Build);
 
     public IReadOnlyList<ComponentDescriptor> Discover(Assembly assembly)
-        => throw new NotImplementedException(); // Task 4
+        => assembly.GetTypes()
+            .Where(static t => t.IsPublic && !t.IsAbstract && typeof(ComponentBase).IsAssignableFrom(t))
+            .Select(static t => TryCloseGeneric(t))
+            .OfType<Type>()
+            .Select(Describe)
+            .OrderBy(static d => d.DisplayName, StringComparer.Ordinal)
+            .ToArray();
+
+    private static Type? TryCloseGeneric(Type type)
+    {
+        if (!type.IsGenericTypeDefinition)
+        {
+            return type;
+        }
+
+        foreach (var candidate in new[] { typeof(string), typeof(int) })
+        {
+            try
+            {
+                var arguments = new Type[type.GetGenericArguments().Length];
+                Array.Fill(arguments, candidate);
+                return type.MakeGenericType(arguments);
+            }
+            catch (ArgumentException)
+            {
+                // Constraint not satisfied by this candidate — try the next one.
+            }
+        }
+
+        return null;
+    }
 
     private ComponentDescriptor Build(Type type)
     {
