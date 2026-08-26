@@ -48,6 +48,13 @@
                     <ErrorContent Context="exception">
                         <div class="pb-error">
                             <strong>The component threw an exception.</strong>
+                            @if (LooksLikeMissingParent(exception))
+                            {
+                                <p class="pb-error-hint">
+                                    This component most likely requires a specific parent (a grid column needs
+                                    its grid, a toggle item its group) and cannot run standalone yet.
+                                </p>
+                            }
                             <pre>@exception.Message</pre>
                             <button type="button" @onclick="RecoverFromError">Reset</button>
                         </div>

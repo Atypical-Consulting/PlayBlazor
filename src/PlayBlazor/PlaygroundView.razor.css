@@ -158,6 +158,12 @@
     font-size: 0.8125rem;
 }
 
+.pb-error-hint {
+    margin: 0.375rem 0 0;
+    font-size: 0.75rem;
+    color: #7a4a52;
+}
+
 .pb-error pre {
     margin: 0.5rem 0;
     white-space: pre-wrap;

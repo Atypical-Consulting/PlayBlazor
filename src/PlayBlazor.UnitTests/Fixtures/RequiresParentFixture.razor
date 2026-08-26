@@ -1,0 +1,6 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div>never rendered</div>
+@code {
+    protected override void OnParametersSet()
+        => throw new InvalidOperationException("RequiresParentFixture must be used inside a ParentHost.");
+}

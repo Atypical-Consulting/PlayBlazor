@@ -13,7 +13,6 @@ public class ExplorerTests
     public void Setup()
     {
         _context = new BunitContext();
-        _context.Services.AddPlayBlazor();
     }
 
     [TearDown]
@@ -22,9 +21,12 @@ public class ExplorerTests
         _context.Dispose();
     }
 
-    private IRenderedComponent<PlaygroundExplorer> RenderExplorer()
-        => _context.Render<PlaygroundExplorer>(ps => ps
+    private IRenderedComponent<PlaygroundExplorer> RenderExplorer(Action<PlayBlazorOptions>? configure = null)
+    {
+        _context.Services.AddPlayBlazor(configure);
+        return _context.Render<PlaygroundExplorer>(ps => ps
             .Add(e => e.Assemblies, new[] { typeof(BasicFixture).Assembly }));
+    }
 
     [Test]
     public void ListsDiscoveredComponents_AndSelectsFirst()
@@ -46,6 +48,15 @@ public class ExplorerTests
 
         var items = cut.FindAll(".pb-explorer-item").Select(i => i.TextContent.Trim()).ToList();
         items.Should().Contain("BasicFixture").And.NotContain("EventFixture");
+    }
+
+    [Test]
+    public void ExcludedComponents_AreHiddenFromTheList()
+    {
+        var cut = RenderExplorer(options => options.Exclude<EventFixture>());
+
+        cut.FindAll(".pb-explorer-item").Select(i => i.TextContent.Trim())
+            .Should().Contain("BasicFixture").And.NotContain("EventFixture");
     }
 
     [Test]

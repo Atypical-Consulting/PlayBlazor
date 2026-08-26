@@ -8,11 +8,30 @@ public sealed class PlayBlazorOptions
 {
     private readonly Dictionary<(Type Component, string Parameter), RenderFragment> _slotPresets = new();
 
+    private readonly HashSet<Type> _excluded = [];
+
     /// <summary>
     /// Wraps the rendered specimen in the host's theme infrastructure (e.g. a theme provider
     /// honoring <see cref="PlaygroundEnvironment.Dark"/>). Null renders the specimen bare.
     /// </summary>
     public RenderFragment<PlaygroundThemeContext>? ThemeWrapper { get; set; }
+
+    /// <summary>
+    /// Converts Debug.Assert failures into catchable exceptions while a playground is active.
+    /// A failed assert in a component lifecycle would otherwise terminate the process in
+    /// Debug builds. No-op in Release builds, where asserts are compiled out.
+    /// </summary>
+    public bool GuardDebugAsserts { get; set; } = true;
+
+    /// <summary>Hides a component from <see cref="PlaygroundExplorer"/> (providers, internals…).</summary>
+    public PlayBlazorOptions Exclude<TComponent>() where TComponent : IComponent
+    {
+        _excluded.Add(Normalize(typeof(TComponent)));
+        return this;
+    }
+
+    public bool IsExcluded(Type componentType)
+        => _excluded.Contains(Normalize(componentType));
 
     public ComponentOptionsBuilder<TComponent> For<TComponent>() where TComponent : IComponent
         => new(this);

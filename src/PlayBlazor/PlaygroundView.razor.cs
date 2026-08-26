@@ -52,6 +52,25 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     {
         _state.Changed += OnStateChanged;
         _eventLog.Changed += OnStateChanged;
+        if (Options.GuardDebugAsserts)
+        {
+            DebugAssertGuard.Install();
+        }
+    }
+
+    private static bool LooksLikeMissingParent(Exception exception)
+    {
+        if (exception is NullReferenceException)
+        {
+            return true;
+        }
+
+        var message = exception.Message;
+        return message.StartsWith("Debug.Assert failed", StringComparison.Ordinal)
+               || message.Contains("must be used", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("must be placed", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("inside a", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("within a", StringComparison.OrdinalIgnoreCase);
     }
 
     protected override void OnParametersSet()

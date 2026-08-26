@@ -15,6 +15,9 @@ public partial class PlaygroundExplorer : ComponentBase
     [Inject]
     private IComponentCatalogProvider Catalog { get; set; } = default!;
 
+    [Inject]
+    private PlayBlazorOptions Options { get; set; } = default!;
+
     [Parameter, EditorRequired]
     public IReadOnlyList<Assembly> Assemblies { get; set; } = default!;
 
@@ -27,6 +30,7 @@ public partial class PlaygroundExplorer : ComponentBase
     {
         _components = Assemblies
             .SelectMany(assembly => Catalog.Discover(assembly))
+            .Where(c => !Options.IsExcluded(c.Type))
             .OrderBy(static c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
         _selected ??= _components.FirstOrDefault();
