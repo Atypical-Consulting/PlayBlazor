@@ -1,0 +1,67 @@
+@namespace PlayBlazor
+@using PlayBlazor.Rendering
+@using PlayBlazor.Shell
+
+<div class="pb-playground">
+    <div class="pb-preview">
+        @if (!_descriptor.CanInstantiate)
+        {
+            <div class="pb-error">
+                <strong>This component cannot be rendered.</strong>
+                <pre>@_descriptor.Warning</pre>
+            </div>
+        }
+        else
+        {
+            <ErrorBoundary @ref="_errorBoundary">
+                <ChildContent>
+                    <DynamicComponent @key="@_state.InstanceKey"
+                                      Type="@_descriptor.Type"
+                                      Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state)" />
+                </ChildContent>
+                <ErrorContent Context="exception">
+                    <div class="pb-error">
+                        <strong>The component threw an exception.</strong>
+                        <pre>@exception.Message</pre>
+                        <button type="button" @onclick="RecoverFromError">Reset</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+    </div>
+    <div class="pb-panel">
+        <div class="pb-panel-header">
+            <span class="pb-title" title="@_descriptor.Summary">@_descriptor.DisplayName</span>
+            @if (_descriptor.Warning is not null)
+            {
+                <span class="pb-warning" title="@_descriptor.Warning">&#9888;</span>
+            }
+            <button type="button" class="pb-reset" @onclick="ResetAll">Reset</button>
+        </div>
+        @foreach (var parameter in Controllable)
+        {
+            <div class="pb-row" @key="parameter.Name">
+                <ControlHost Parameter="parameter"
+                             Value="_state.GetValue(parameter)"
+                             ValueChanged="value => OnControlChanged(parameter, value)" />
+                @if (_state.IsModified(parameter.Name))
+                {
+                    <button type="button" class="pb-row-reset" title="Restore default"
+                            @onclick="() => _state.Reset(parameter.Name)">&times;</button>
+                }
+            </div>
+        }
+        @if (Uncontrollable.Any())
+        {
+            <details class="pb-uncontrolled">
+                <summary>Uncontrolled (@Uncontrollable.Count())</summary>
+                <ul>
+                    @foreach (var parameter in Uncontrollable)
+                    {
+                        <li @key="parameter.Name" title="@parameter.Summary">@parameter.Name — @parameter.Kind</li>
+                    }
+                </ul>
+            </details>
+        }
+    </div>
+</div>

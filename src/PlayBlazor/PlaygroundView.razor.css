@@ -1,0 +1,96 @@
+.pb-playground {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.875rem;
+}
+
+.pb-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 1.5rem;
+    background: #fafafa;
+}
+
+.pb-error {
+    color: #b00020;
+}
+
+.pb-error pre {
+    white-space: pre-wrap;
+    font-size: 0.75rem;
+}
+
+.pb-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    max-height: 480px;
+    padding: 0.75rem;
+    overflow-y: auto;
+    border-left: 1px solid #d0d0d0;
+}
+
+.pb-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.pb-title {
+    font-weight: 600;
+}
+
+.pb-warning {
+    cursor: help;
+}
+
+.pb-reset {
+    margin-left: auto;
+}
+
+.pb-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pb-row ::deep .pb-control {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.pb-row ::deep .pb-control-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pb-row ::deep input[type="text"],
+.pb-row ::deep input[type="number"],
+.pb-row ::deep select {
+    max-width: 160px;
+}
+
+.pb-row-reset {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #888;
+}
+
+.pb-uncontrolled {
+    margin-top: 0.5rem;
+    color: #777;
+    font-size: 0.8125rem;
+}

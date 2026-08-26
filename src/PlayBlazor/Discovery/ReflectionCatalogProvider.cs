@@ -103,7 +103,8 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
             Category: type.Namespace ?? string.Empty,
             Summary: _xmlDocs?.GetTypeSummary(type),
             Parameters: parameters,
-            Warning: warning);
+            Warning: warning,
+            CanInstantiate: instance is not null);
     }
 
     private static string StripArity(string typeName)

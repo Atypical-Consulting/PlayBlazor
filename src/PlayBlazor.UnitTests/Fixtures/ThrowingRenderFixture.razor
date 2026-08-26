@@ -1,0 +1,7 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div>never rendered</div>
+@code {
+    [Parameter] public bool Dense { get; set; }
+
+    protected override void OnParametersSet() => throw new InvalidOperationException("render boom");
+}

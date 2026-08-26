@@ -7,4 +7,5 @@ public sealed record ComponentDescriptor(
     string Category,
     string? Summary,
     IReadOnlyList<ParameterDescriptor> Parameters,
-    string? Warning);
+    string? Warning,
+    bool CanInstantiate);
