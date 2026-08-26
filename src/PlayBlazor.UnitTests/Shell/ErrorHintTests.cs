@@ -38,4 +38,16 @@ public class ErrorHintTests
         cut.FindAll(".pb-error-hint").Should().BeEmpty();
         cut.Find(".pb-error").TextContent.Should().Contain("render boom");
     }
+
+    [Test]
+    public void SwitchingComponent_RecoversFromPreviousError()
+    {
+        var cut = _context.Render<PlaygroundView>(ps => ps.Add(v => v.Component, typeof(ThrowingRenderFixture)));
+        cut.Find(".pb-error").Should().NotBeNull();
+
+        cut.Render(ps => ps.Add(v => v.Component, typeof(BasicFixture)));
+
+        cut.FindAll(".pb-error").Should().BeEmpty();
+        cut.Find(".basic-fixture").Should().NotBeNull();
+    }
 }

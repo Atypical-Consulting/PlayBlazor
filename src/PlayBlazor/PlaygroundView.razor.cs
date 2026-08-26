@@ -79,6 +79,8 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         {
             _descriptor = Catalog.Describe(Component);
             _state.ResetAll();
+            // A previous specimen's failure must not poison the next one.
+            _errorBoundary?.Recover();
             RestoreFromPermalink();
         }
     }
@@ -134,10 +136,16 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         {
             _state.Set(parameter.Name, value);
         }
+
+        // Changing an input is the natural way to retry a specimen that crashed.
+        _errorBoundary?.Recover();
     }
 
     private void ResetAll()
-        => _state.ResetAll();
+    {
+        _state.ResetAll();
+        _errorBoundary?.Recover();
+    }
 
     private void OnViewportChanged(ChangeEventArgs e)
         => _environment.ViewportWidth = int.TryParse((string?)e.Value, out var width) ? width : null;

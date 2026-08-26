@@ -55,7 +55,11 @@
                                     its grid, a toggle item its group) and cannot run standalone yet.
                                 </p>
                             }
-                            <pre>@exception.Message</pre>
+                            <pre>@exception.GetType().Name: @exception.Message</pre>
+                            <details class="pb-error-stack">
+                                <summary>Stack trace</summary>
+                                <pre>@exception.ToString()</pre>
+                            </details>
                             <button type="button" @onclick="RecoverFromError">Reset</button>
                         </div>
                     </ErrorContent>
