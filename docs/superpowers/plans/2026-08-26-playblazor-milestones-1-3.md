@@ -37,7 +37,7 @@
 **Interfaces:**
 - Produces: two buildable projects; test project runs NUnit via `dotnet run --project src/PlayBlazor.UnitTests`.
 
-- [ ] **Step 1: Create the core RCL project file**
+- [x] **Step 1: Create the core RCL project file**
 
 `src/PlayBlazor/PlayBlazor.csproj`:
 
@@ -56,14 +56,14 @@
 </Project>
 ```
 
-- [ ] **Step 2: Create `src/PlayBlazor/_Imports.razor`**
+- [x] **Step 2: Create `src/PlayBlazor/_Imports.razor`**
 
 ```razor
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
 ```
 
-- [ ] **Step 3: Create the test project file**
+- [x] **Step 3: Create the test project file**
 
 `src/PlayBlazor.UnitTests/PlayBlazor.UnitTests.csproj` (Razor SDK so fixture components can be `.razor` files):
 
@@ -97,7 +97,7 @@
 </Project>
 ```
 
-- [ ] **Step 4: Create `src/PlayBlazor.UnitTests/SmokeTest.cs`**
+- [x] **Step 4: Create `src/PlayBlazor.UnitTests/SmokeTest.cs`**
 
 ```csharp
 using AwesomeAssertions;
@@ -115,7 +115,7 @@ public class SmokeTest
 }
 ```
 
-- [ ] **Step 5: Register both projects in `src/MudBlazor.slnx`**
+- [x] **Step 5: Register both projects in `src/MudBlazor.slnx`**
 
 Add a `/playblazor/` folder before the `/Solution Items/` folder, and the test project inside the existing `/tests/` folder:
 
@@ -131,12 +131,12 @@ and inside `<Folder Name="/tests/">`:
     <Project Path="PlayBlazor.UnitTests/PlayBlazor.UnitTests.csproj" />
 ```
 
-- [ ] **Step 6: Build and run the smoke test**
+- [x] **Step 6: Build and run the smoke test**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: build succeeds, 1 test passes.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/PlayBlazor src/PlayBlazor.UnitTests src/MudBlazor.slnx
@@ -161,7 +161,7 @@ git commit -m "PlayBlazor: scaffold core RCL and test projects"
   - `sealed record ComponentDescriptor(Type Type, string DisplayName, string Category, string? Summary, IReadOnlyList<ParameterDescriptor> Parameters, string? Warning)`
   - `static class ControlKindResolver { public static (ControlKind Kind, bool IsNullable) Resolve(Type parameterType); }` (namespace `PlayBlazor.Discovery`)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Discovery/ControlKindResolverTests.cs`:
 
@@ -205,12 +205,12 @@ public class ControlKindResolverTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `ControlKind`, `ControlKindResolver` do not exist.
 
-- [ ] **Step 3: Implement the model types**
+- [x] **Step 3: Implement the model types**
 
 `src/PlayBlazor/Model/ControlKind.cs`:
 
@@ -324,12 +324,12 @@ public static class ControlKindResolver
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS (all 20 cases + smoke test).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/PlayBlazor/Model src/PlayBlazor/Discovery src/PlayBlazor.UnitTests/Discovery
@@ -356,7 +356,7 @@ git commit -m "PlayBlazor: add descriptor model and control kind resolver"
   - `sealed class ReflectionCatalogProvider : IComponentCatalogProvider` with constructor `ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null)` — the `xmlDocs` parameter is added in Task 5; in this task the constructor is parameterless.
   - Fixture components in namespace `PlayBlazor.UnitTests.Fixtures`: `BasicFixture` (parameters listed below), `ThrowingCtorFixture`, `FixtureSize` enum.
 
-- [ ] **Step 1: Create the fixture components**
+- [x] **Step 1: Create the fixture components**
 
 `src/PlayBlazor.UnitTests/_Imports.razor`:
 
@@ -414,7 +414,7 @@ public enum FixtureSize
 }
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Discovery/DescribeTests.cs`:
 
@@ -509,12 +509,12 @@ public class DescribeTests
 }
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `IComponentCatalogProvider`, `ReflectionCatalogProvider` do not exist.
 
-- [ ] **Step 4: Implement the provider**
+- [x] **Step 4: Implement the provider**
 
 `src/PlayBlazor/Discovery/IComponentCatalogProvider.cs`:
 
@@ -618,12 +618,12 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
 }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/PlayBlazor/Discovery src/PlayBlazor.UnitTests
@@ -644,7 +644,7 @@ git commit -m "PlayBlazor: add reflection-based component describer with default
 - Consumes: `ReflectionCatalogProvider.Describe` (Task 3).
 - Produces: working `IReadOnlyList<ComponentDescriptor> Discover(Assembly assembly)` — public, non-abstract, top-level `ComponentBase` types; open generics closed with `string` then `int` (skipped if neither satisfies constraints); ordered by `DisplayName` (ordinal).
 
-- [ ] **Step 1: Create the additional fixtures**
+- [x] **Step 1: Create the additional fixtures**
 
 `src/PlayBlazor.UnitTests/Fixtures/GenericFixture.razor`:
 
@@ -671,7 +671,7 @@ public abstract class AbstractFixture : ComponentBase
 }
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Discovery/DiscoverTests.cs`:
 
@@ -729,12 +729,12 @@ public class DiscoverTests
 }
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: `Discover` tests FAIL with `NotImplementedException`.
 
-- [ ] **Step 4: Implement `Discover`**
+- [x] **Step 4: Implement `Discover`**
 
 In `src/PlayBlazor/Discovery/ReflectionCatalogProvider.cs`, replace the stub with:
 
@@ -773,12 +773,12 @@ In `src/PlayBlazor/Discovery/ReflectionCatalogProvider.cs`, replace the stub wit
     }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/PlayBlazor/Discovery src/PlayBlazor.UnitTests
@@ -800,7 +800,7 @@ git commit -m "PlayBlazor: add assembly discovery with generic closing and exclu
   - `sealed class XmlDocSummaryReader` (namespace `PlayBlazor.Discovery`) with `static XmlDocSummaryReader FromStream(Stream stream)`, `string? GetTypeSummary(Type type)`, `string? GetPropertySummary(System.Reflection.PropertyInfo property)`.
   - `ReflectionCatalogProvider` constructor becomes `ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null)`; descriptors carry summaries when a reader is provided.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Discovery/XmlDocSummaryReaderTests.cs`:
 
@@ -882,12 +882,12 @@ public class XmlDocSummaryReaderTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `XmlDocSummaryReader` does not exist.
 
-- [ ] **Step 3: Implement the reader**
+- [x] **Step 3: Implement the reader**
 
 `src/PlayBlazor/Discovery/XmlDocSummaryReader.cs`:
 
@@ -983,7 +983,7 @@ public sealed partial class XmlDocSummaryReader
 }
 ```
 
-- [ ] **Step 4: Integrate into `ReflectionCatalogProvider`**
+- [x] **Step 4: Integrate into `ReflectionCatalogProvider`**
 
 In `src/PlayBlazor/Discovery/ReflectionCatalogProvider.cs`:
 
@@ -998,12 +998,12 @@ In `src/PlayBlazor/Discovery/ReflectionCatalogProvider.cs`:
 
 2. In `Build`, replace `Summary: null` for the parameter with `Summary: _xmlDocs?.GetPropertySummary(property)`, and `Summary: null` for the component with `Summary: _xmlDocs?.GetTypeSummary(type)`.
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/PlayBlazor/Discovery src/PlayBlazor.UnitTests/Discovery
@@ -1023,7 +1023,7 @@ git commit -m "PlayBlazor: read XML doc summaries into descriptors"
 - Consumes: `ReflectionCatalogProvider` (Tasks 3–5).
 - Produces: `public static IServiceCollection AddPlayBlazor(this IServiceCollection services)` (namespace `PlayBlazor`) registering `IComponentCatalogProvider` as a singleton `ReflectionCatalogProvider`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Discovery/MudBlazorGeneralityTests.cs`:
 
@@ -1082,12 +1082,12 @@ public class ServiceRegistrationTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `AddPlayBlazor` does not exist. (The generality test may already pass — that is fine.)
 
-- [ ] **Step 3: Implement the DI extension**
+- [x] **Step 3: Implement the DI extension**
 
 `src/PlayBlazor/PlayBlazorServiceCollectionExtensions.cs`:
 
@@ -1108,12 +1108,12 @@ public static class PlayBlazorServiceCollectionExtensions
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS — including the MudBlazor scan (zero exceptions, > 50 components).
 
-- [ ] **Step 5: Commit — milestone 1 complete**
+- [x] **Step 5: Commit — milestone 1 complete**
 
 ```bash
 git add src/PlayBlazor src/PlayBlazor.UnitTests
@@ -1148,7 +1148,7 @@ public sealed class PlaygroundState
 }
 ```
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/State/PlaygroundStateTests.cs`:
 
@@ -1242,12 +1242,12 @@ public class PlaygroundStateTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `PlaygroundState` does not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/PlayBlazor/State/PlaygroundState.cs`:
 
@@ -1307,12 +1307,12 @@ public sealed class PlaygroundState
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/PlayBlazor/State src/PlayBlazor.UnitTests/State
@@ -1331,7 +1331,7 @@ git commit -m "PlayBlazor: add playground state with reset-aware instance key"
 - Consumes: `ComponentDescriptor`, `PlaygroundState` (Tasks 2, 7).
 - Produces: `static class ParameterDictionaryBuilder { public static Dictionary<string, object> Build(ComponentDescriptor component, PlaygroundState state); }` (namespace `PlayBlazor.Rendering`) — only **modified**, non-null values of drivable kinds (`Bool`, `Enum`, `Text`, `Number`); `Slot`/`Event`/`Unsupported` and unmodified parameters are omitted.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Rendering/ParameterDictionaryBuilderTests.cs`:
 
@@ -1387,12 +1387,12 @@ public class ParameterDictionaryBuilderTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `ParameterDictionaryBuilder` does not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/PlayBlazor/Rendering/ParameterDictionaryBuilder.cs`:
 
@@ -1429,12 +1429,12 @@ public static class ParameterDictionaryBuilder
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/PlayBlazor/Rendering src/PlayBlazor.UnitTests/Rendering
@@ -1466,7 +1466,7 @@ git commit -m "PlayBlazor: build DynamicComponent parameter dictionaries from st
 
 `ControlHost` dispatches on `Parameter.Kind` to the matching control and renders nothing for other kinds. Value semantics: `TextControl` reports empty input as `null`; `NumberControl` reports blank as `null` and swallows unparsable input; `EnumControl` parses the selected name into the enum type.
 
-- [ ] **Step 1: Extend `src/PlayBlazor/_Imports.razor`**
+- [x] **Step 1: Extend `src/PlayBlazor/_Imports.razor`**
 
 ```razor
 @using Microsoft.AspNetCore.Components
@@ -1474,7 +1474,7 @@ git commit -m "PlayBlazor: build DynamicComponent parameter dictionaries from st
 @using PlayBlazor.Model
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Shell/ControlTests.cs`:
 
@@ -1598,12 +1598,12 @@ public class ControlTests
 }
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — the control components do not exist.
 
-- [ ] **Step 4: Implement the controls**
+- [x] **Step 4: Implement the controls**
 
 `src/PlayBlazor/Shell/Controls/BoolControl.razor`:
 
@@ -1736,12 +1736,12 @@ Expected: FAIL to build — the control components do not exist.
 }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/PlayBlazor/Shell src/PlayBlazor/_Imports.razor src/PlayBlazor.UnitTests/Shell
@@ -1763,7 +1763,7 @@ git commit -m "PlayBlazor: add basic parameter controls and control host"
 - Consumes: everything from Tasks 2–9.
 - Produces: `PlaygroundView` (namespace `PlayBlazor`) with `[Parameter, EditorRequired] public Type Component { get; set; }`. Renders: preview (DynamicComponent in ErrorBoundary), control rows with per-row reset, header with display name + warning badge + "Reset" button, collapsed "Uncontrolled" list. Test hooks: preview container has class `pb-preview`, error container `pb-error`, header reset button `pb-reset`, per-row reset `pb-row-reset`.
 
-- [ ] **Step 1: Create the throwing-render fixture**
+- [x] **Step 1: Create the throwing-render fixture**
 
 `src/PlayBlazor.UnitTests/Fixtures/ThrowingRenderFixture.razor`:
 
@@ -1777,7 +1777,7 @@ git commit -m "PlayBlazor: add basic parameter controls and control host"
 }
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Shell/PlaygroundViewTests.cs`:
 
@@ -1877,12 +1877,12 @@ public class PlaygroundViewTests
 }
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `PlaygroundView` does not exist.
 
-- [ ] **Step 4: Implement the view**
+- [x] **Step 4: Implement the view**
 
 `src/PlayBlazor/PlaygroundView.razor`:
 
@@ -2122,12 +2122,12 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/PlayBlazor src/PlayBlazor.UnitTests
@@ -2152,7 +2152,7 @@ git commit -m "PlayBlazor: add PlaygroundView with auto-generated controls and e
 - Consumes: `PlaygroundView`, `AddPlayBlazor` (Tasks 6, 10).
 - Produces: a runnable WASM demo site (`dotnet run --project src/PlayBlazor.DemoHost`) showing MudBlazor components inside PlayBlazor playgrounds.
 
-- [ ] **Step 1: Create the project**
+- [x] **Step 1: Create the project**
 
 `src/PlayBlazor.DemoHost/PlayBlazor.DemoHost.csproj`:
 
@@ -2271,7 +2271,7 @@ await builder.Build().RunAsync();
 </html>
 ```
 
-- [ ] **Step 2: Register in `src/MudBlazor.slnx`**
+- [x] **Step 2: Register in `src/MudBlazor.slnx`**
 
 Inside `<Folder Name="/playblazor/">` add:
 
@@ -2279,7 +2279,7 @@ Inside `<Folder Name="/playblazor/">` add:
     <Project Path="PlayBlazor.DemoHost/PlayBlazor.DemoHost.csproj" />
 ```
 
-- [ ] **Step 3: Build and verify trimmed publish**
+- [x] **Step 3: Build and verify trimmed publish**
 
 Run: `dotnet build src/PlayBlazor.DemoHost`
 Expected: build succeeds.
@@ -2287,16 +2287,16 @@ Expected: build succeeds.
 Run: `dotnet publish src/PlayBlazor.DemoHost -c Release -o /private/tmp/claude-501/-Users-philippe-repo-phmatray-public-MudBlazor/8d6118c8-0bb1-4693-9fab-cbe7fad30472/scratchpad/demohost-publish`
 Expected: publish succeeds (WASM publish trims by default; this is the early trimming guard from the spec).
 
-- [ ] **Step 4: Manual smoke run**
+- [x] **Step 4: Manual smoke run**
 
 Run: `dotnet run --project src/PlayBlazor.DemoHost` (background), then load the printed localhost URL and verify: three playgrounds render; toggling MudButton's `Disabled`, `Variant`, `Color` changes the button live; `MudProgressCircular` `Indeterminate` animates. Stop the server afterwards.
 
-- [ ] **Step 5: Run the full test suite (regression)**
+- [x] **Step 5: Run the full test suite (regression)**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 6: Commit — milestone 2 complete**
+- [x] **Step 6: Commit — milestone 2 complete**
 
 ```bash
 git add src/PlayBlazor.DemoHost src/MudBlazor.slnx
@@ -2317,7 +2317,7 @@ git commit -m "PlayBlazor: add WASM DemoHost exercising MudBlazor components (mi
 - Consumes: `ComponentDescriptor`, `PlaygroundState` (Tasks 2, 7).
 - Produces: `static class RazorSnippetGenerator { public static string Generate(ComponentDescriptor component, PlaygroundState state); }` (namespace `PlayBlazor.CodeGen`). Rules: only modified, non-null, drivable parameters, in declaration order; bool → `Name="true"/"false"`; enum → `Name="EnumType.Member"`; string → `Name="value"` with `"` escaped as `&quot;`; number → invariant culture; 0 attributes → `<Name />`; 1–2 attributes → single line; 3+ → one attribute per line aligned under the first.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/CodeGen/RazorSnippetGeneratorTests.cs`:
 
@@ -2418,12 +2418,12 @@ public class RazorSnippetGeneratorTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL to build — `RazorSnippetGenerator` does not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/PlayBlazor/CodeGen/RazorSnippetGenerator.cs`:
 
@@ -2493,12 +2493,12 @@ public static class RazorSnippetGenerator
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/PlayBlazor/CodeGen src/PlayBlazor.UnitTests/CodeGen
@@ -2519,7 +2519,7 @@ git commit -m "PlayBlazor: generate idiomatic Razor snippets from playground sta
 - Consumes: `RazorSnippetGenerator` (Task 12), `PlaygroundView` (Task 10).
 - Produces: a `.pb-code` section inside `PlaygroundView` containing `<pre><code>` with the live snippet and a `.pb-copy` button calling `navigator.clipboard.writeText` via JS interop.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/PlayBlazor.UnitTests/Shell/CodePanelTests.cs`:
 
@@ -2583,12 +2583,12 @@ public class CodePanelTests
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: FAIL — `.pb-code` not found.
 
-- [ ] **Step 3: Implement the code panel**
+- [x] **Step 3: Implement the code panel**
 
 In `src/PlayBlazor/PlaygroundView.razor`, add `@using PlayBlazor.CodeGen` to the top and insert after the closing `</div>` of `pb-panel` but before the closing `</div>` of `pb-playground`:
 
@@ -2652,18 +2652,29 @@ In `src/PlayBlazor/PlaygroundView.razor.css`, append:
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet run --project src/PlayBlazor.UnitTests`
 Expected: PASS (full suite).
 
-- [ ] **Step 5: DemoHost visual check**
+- [x] **Step 5: DemoHost visual check**
 
 Run: `dotnet run --project src/PlayBlazor.DemoHost` (background), load the URL, verify the code panel shows under each playground and updates live; stop the server.
 
-- [ ] **Step 6: Commit — milestone 3 complete**
+- [x] **Step 6: Commit — milestone 3 complete**
 
 ```bash
 git add src/PlayBlazor src/PlayBlazor.UnitTests
 git commit -m "PlayBlazor: add live Razor code panel with copy button (milestone 3)"
 ```
+
+---
+
+## Journal d'exécution (2026-08-26) — écarts vs plan
+
+Exécuté intégralement le 2026-08-26 ; 72 tests verts. Quatre écarts, tous documentés dans les commits :
+
+1. **`ComponentDescriptor.CanInstantiate` ajouté** (Task 10). Une exception de *constructeur* n'est pas interceptable par `ErrorBoundary` (l'instanciation se fait dans la component factory, hors cycle de vie). Quand la découverte sait que l'instanciation échoue, `PlaygroundView` affiche l'erreur directement au lieu de tenter le rendu.
+2. **bUnit 2.x est en JSInterop Strict par défaut** (Task 13). Le test du bouton Copy requiert `_context.JSInterop.SetupVoid("navigator.clipboard.writeText", _ => true)`.
+3. **Vérification navigateur du DemoHost remplacée** (Tasks 11/13). Les deux canaux navigateur étaient indisponibles dans la session (profil chrome-devtools verrouillé par une autre instance, extension Claude in Chrome déconnectée). Couverture équivalente : `MudBlazorIntegrationTests.cs` (bUnit rend `PlaygroundView` sur les vrais `MudButton`/`MudProgressCircular`, le select `Variant` auto-généré change les classes rendues), check du contenu servi par le dev server, publish Release trimmed OK. La passe visuelle reste à faire à la main : `dotnet run --project src/PlayBlazor.DemoHost`.
+4. **SDK .NET** : `global.json` exige 10.0.400 ; seul `~/.dotnet` le contient sur cette machine — préfixer les commandes avec `DOTNET_ROOT=$HOME/.dotnet` et `PATH=$HOME/.dotnet:$PATH`.
