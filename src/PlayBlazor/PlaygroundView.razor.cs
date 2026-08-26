@@ -17,6 +17,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private readonly PlaygroundEnvironment _environment = new();
     private ComponentDescriptor _descriptor = default!;
     private ErrorBoundary? _errorBoundary;
+    private string? _activeVariant;
 
     [Inject]
     private IComponentCatalogProvider Catalog { get; set; } = default!;
@@ -79,6 +80,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         {
             _descriptor = Catalog.Describe(Component);
             _state.ResetAll();
+            _activeVariant = null;
             // A previous specimen's failure must not poison the next one.
             _errorBoundary?.Recover();
             RestoreFromPermalink();
@@ -138,12 +140,32 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         }
 
         // Changing an input is the natural way to retry a specimen that crashed.
+        _activeVariant = null;
         _errorBoundary?.Recover();
     }
 
     private void ResetAll()
     {
         _state.ResetAll();
+        _activeVariant = null;
+        _errorBoundary?.Recover();
+    }
+
+    private IReadOnlyList<PlaygroundVariantDefinition> VariantDefinitions
+        => Options.GetVariants(_descriptor.Type);
+
+    private void ApplyVariant(PlaygroundVariantDefinition variant)
+    {
+        _state.ResetAll();
+        foreach (var (name, value) in variant.Values)
+        {
+            if (value is not null)
+            {
+                _state.Set(name, value);
+            }
+        }
+
+        _activeVariant = variant.Name;
         _errorBoundary?.Recover();
     }
 

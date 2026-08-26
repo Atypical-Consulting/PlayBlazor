@@ -1,0 +1,173 @@
+@namespace PlayBlazor.DemoHost
+@* Static example fragments used as slot presets — official-docs-flavored content. *@
+@code {
+    public static RenderFragment SelectItems => @<text>
+        <MudSelectItem T="string" Value="@("Espresso")">Espresso</MudSelectItem>
+        <MudSelectItem T="string" Value="@("Cappuccino")">Cappuccino</MudSelectItem>
+        <MudSelectItem T="string" Value="@("Flat white")">Flat white</MudSelectItem>
+    </text>;
+
+    public static RenderFragment ListItems => @<text>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Inbox" Text="Inbox" />
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Send" Text="Sent" />
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Delete" Text="Trash" />
+    </text>;
+
+    public static RenderFragment Chips => @<text>
+        <MudChip T="string" Color="Color.Primary">Blazor</MudChip>
+        <MudChip T="string" Color="Color.Secondary">WASM</MudChip>
+        <MudChip T="string" Color="Color.Info">.NET</MudChip>
+    </text>;
+
+    public static RenderFragment ButtonGroupButtons => @<text>
+        <MudButton>One</MudButton>
+        <MudButton>Two</MudButton>
+        <MudButton>Three</MudButton>
+    </text>;
+
+    public static RenderFragment Avatars => @<text>
+        <MudAvatar Color="Color.Primary">A</MudAvatar>
+        <MudAvatar Color="Color.Secondary">B</MudAvatar>
+        <MudAvatar Color="Color.Tertiary">C</MudAvatar>
+    </text>;
+
+    public static RenderFragment CardBody => @<text>
+        <MudCardContent>
+            <MudText Typo="Typo.h6">Old paint</MudText>
+            <MudText Typo="Typo.body2">A study of layered paint on wood, found in a Copenhagen attic.</MudText>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Text" Color="Color.Primary">Learn more</MudButton>
+        </MudCardActions>
+    </text>;
+
+    public static RenderFragment TabPanels => @<text>
+        <MudTabPanel Text="Discover">
+            <MudText Class="pa-4">Reflection finds every parameter on its own.</MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="Play">
+            <MudText Class="pa-4">Every control on the right is generated.</MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="Share">
+            <MudText Class="pa-4">The URL carries the exact configuration.</MudText>
+        </MudTabPanel>
+    </text>;
+
+    public static RenderFragment ExpansionPanels => @<text>
+        <MudExpansionPanel Text="How does discovery work?" Expanded="true">
+            <MudText Typo="Typo.body2">By reflecting over [Parameter] properties.</MudText>
+        </MudExpansionPanel>
+        <MudExpansionPanel Text="Does it need story files?">
+            <MudText Typo="Typo.body2">No — that is the whole point.</MudText>
+        </MudExpansionPanel>
+    </text>;
+
+    public static RenderFragment MenuItems => @<text>
+        <MudMenuItem Icon="@Icons.Material.Filled.ContentCopy">Copy</MudMenuItem>
+        <MudMenuItem Icon="@Icons.Material.Filled.ContentPaste">Paste</MudMenuItem>
+        <MudMenuItem Icon="@Icons.Material.Filled.Delete">Delete</MudMenuItem>
+    </text>;
+
+    public static RenderFragment NavLinks => @<text>
+        <MudNavLink Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        <MudNavLink Icon="@Icons.Material.Filled.People">Team</MudNavLink>
+        <MudNavLink Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+    </text>;
+
+    public static RenderFragment Radios => @<text>
+        <MudRadio T="string" Value="@("small")">Small</MudRadio>
+        <MudRadio T="string" Value="@("medium")">Medium</MudRadio>
+        <MudRadio T="string" Value="@("large")">Large</MudRadio>
+    </text>;
+
+    public static RenderFragment ToggleItems => @<text>
+        <MudToggleItem T="string" Value="@("left")" Text="Left" />
+        <MudToggleItem T="string" Value="@("center")" Text="Center" />
+        <MudToggleItem T="string" Value="@("right")" Text="Right" />
+    </text>;
+
+    public static RenderFragment CarouselItems => @<text>
+        <MudCarouselItem Color="Color.Primary">
+            <div class="d-flex" style="height:100%"><MudText Class="ma-auto" Typo="Typo.h5">Slide one</MudText></div>
+        </MudCarouselItem>
+        <MudCarouselItem Color="Color.Secondary">
+            <div class="d-flex" style="height:100%"><MudText Class="ma-auto" Typo="Typo.h5">Slide two</MudText></div>
+        </MudCarouselItem>
+    </text>;
+
+    public static RenderFragment TimelineItems => @<text>
+        <MudTimelineItem Color="Color.Primary">
+            <MudText Typo="Typo.body2">Discovered by reflection</MudText>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Secondary">
+            <MudText Typo="Typo.body2">Driven by generated controls</MudText>
+        </MudTimelineItem>
+        <MudTimelineItem Color="Color.Tertiary">
+            <MudText Typo="Typo.body2">Shared as a permalink</MudText>
+        </MudTimelineItem>
+    </text>;
+
+    public static RenderFragment TreeItems => @<text>
+        <MudTreeViewItem T="string" Text="src" Expanded="true">
+            <MudTreeViewItem T="string" Text="PlayBlazor" />
+            <MudTreeViewItem T="string" Text="PlayBlazor.DemoHost" />
+        </MudTreeViewItem>
+        <MudTreeViewItem T="string" Text="docs" />
+    </text>;
+
+    public static RenderFragment Steps => @<text>
+        <MudStep Title="Point at an assembly" />
+        <MudStep Title="Play with parameters" />
+        <MudStep Title="Copy the snippet" />
+    </text>;
+
+    public static RenderFragment SimpleTableContent => @<text>
+        <thead>
+            <tr><th>Name</th><th>Role</th><th>Age</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Ada Lovelace</td><td>Engineering</td><td>36</td></tr>
+            <tr><td>Grace Hopper</td><td>R&amp;D</td><td>85</td></tr>
+            <tr><td>Katherine Johnson</td><td>Science</td><td>101</td></tr>
+        </tbody>
+    </text>;
+
+    public static RenderFragment ToolBarContent => @<text>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" />
+        <MudText Typo="Typo.h6">Title</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" />
+    </text>;
+
+    public static RenderFragment TooltipChild => @<text>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary">Hover me</MudButton>
+    </text>;
+
+    public static RenderFragment BadgeChild => @<text>
+        <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
+    </text>;
+
+    public static RenderFragment PaperChild => @<text>
+        <MudText Class="pa-4">Elevation carries depth.</MudText>
+    </text>;
+
+    public static RenderFragment StackItems => @<text>
+        <MudPaper Class="pa-3">Item 1</MudPaper>
+        <MudPaper Class="pa-3">Item 2</MudPaper>
+        <MudPaper Class="pa-3">Item 3</MudPaper>
+    </text>;
+
+    public static RenderFragment GridItems => @<text>
+        <MudItem xs="4"><MudPaper Class="pa-4 mud-theme-primary">xs-4</MudPaper></MudItem>
+        <MudItem xs="4"><MudPaper Class="pa-4 mud-theme-secondary">xs-4</MudPaper></MudItem>
+        <MudItem xs="4"><MudPaper Class="pa-4 mud-theme-tertiary">xs-4</MudPaper></MudItem>
+    </text>;
+
+    public static RenderFragment FieldChild => @<text>
+        <MudText>Read-only value inside a field</MudText>
+    </text>;
+
+    public static RenderFragment OverlayChild => @<text>
+        <MudText Class="ma-auto" Style="color:white">Overlay content</MudText>
+    </text>;
+}

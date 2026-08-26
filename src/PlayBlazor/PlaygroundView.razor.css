@@ -239,6 +239,43 @@
     color: var(--pb-accent);
 }
 
+.pb-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0 0.25rem;
+    margin-bottom: 0.375rem;
+}
+
+.pb-variant {
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--pb-line);
+    border-radius: 999px;
+    background: var(--pb-stage);
+    color: var(--pb-ink-2);
+    font: inherit;
+    font-size: 0.6875rem;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
+}
+
+.pb-variant:hover {
+    border-color: var(--pb-accent);
+    color: var(--pb-accent);
+}
+
+.pb-variant:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--pb-accent-soft);
+}
+
+.pb-variant-active {
+    border-color: var(--pb-accent);
+    background: var(--pb-accent-soft);
+    color: var(--pb-accent);
+    font-weight: 600;
+}
+
 .pb-eyebrow {
     padding: 0 0.25rem;
     margin: 0.125rem 0 0.25rem;

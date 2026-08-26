@@ -80,6 +80,18 @@
                 <button type="button" class="pb-reset" @onclick="ResetAll">Reset all</button>
             }
         </div>
+        @if (VariantDefinitions.Count > 0)
+        {
+            <span class="pb-eyebrow">Examples</span>
+            <div class="pb-variants">
+                @foreach (var variant in VariantDefinitions)
+                {
+                    <button type="button" @key="variant.Name"
+                            class="pb-variant @(_activeVariant == variant.Name ? "pb-variant-active" : null)"
+                            @onclick="() => ApplyVariant(variant)">@variant.Name</button>
+                }
+            </div>
+        }
         <span class="pb-eyebrow">Parameters</span>
         @foreach (var parameter in Controllable)
         {

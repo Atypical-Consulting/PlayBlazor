@@ -34,7 +34,7 @@ public partial class PlaygroundExplorer : ComponentBase
     {
         _components = Assemblies
             .SelectMany(assembly => Catalog.Discover(assembly))
-            .Where(c => !Options.IsExcluded(c.Type))
+            .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
             .OrderBy(static c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
         // A shared permalink names its component (?pb-MudRating=…) — land the visitor on it.

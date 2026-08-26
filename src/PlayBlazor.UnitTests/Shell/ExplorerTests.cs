@@ -65,6 +65,15 @@ public class ExplorerTests
     }
 
     [Test]
+    public void ComponentFilter_CuratesTheList()
+    {
+        var cut = RenderExplorer(options => options.ComponentFilter = t => t != typeof(EventFixture));
+
+        cut.FindAll(".pb-explorer-item").Select(i => i.TextContent.Trim())
+            .Should().Contain("BasicFixture").And.NotContain("EventFixture");
+    }
+
+    [Test]
     public void IconResolver_RendersHostIcons()
     {
         var cut = RenderExplorer(options => options.IconResolver =

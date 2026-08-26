@@ -14,6 +14,8 @@ public sealed class PlayBlazorOptions
 
     private readonly HashSet<Type> _excluded = [];
 
+    private readonly Dictionary<Type, List<PlaygroundVariantDefinition>> _variants = new();
+
     /// <summary>
     /// Wraps the rendered specimen in the host's theme infrastructure (e.g. a theme provider
     /// honoring <see cref="PlaygroundEnvironment.Dark"/>). Null renders the specimen bare.
@@ -25,6 +27,26 @@ public sealed class PlayBlazorOptions
     /// in the explorer — e.g. MudBlazor's <c>Icons.Material</c> constants. Null for no icon.
     /// </summary>
     public Func<Type, string?>? IconResolver { get; set; }
+
+    /// <summary>
+    /// Curates which discovered components the explorer lists (true = shown). Null shows all
+    /// non-excluded components. Use it to restrict a large library to its documented surface.
+    /// </summary>
+    public Func<Type, bool>? ComponentFilter { get; set; }
+
+    internal void AddVariant(Type componentType, PlaygroundVariantDefinition variant)
+    {
+        if (!_variants.TryGetValue(componentType, out var list))
+        {
+            _variants[componentType] = list = [];
+        }
+
+        list.Add(variant);
+    }
+
+    /// <summary>Named example configurations for one component (exact generic closing).</summary>
+    public IReadOnlyList<PlaygroundVariantDefinition> GetVariants(Type componentType)
+        => _variants.TryGetValue(componentType, out var list) ? list : [];
 
     /// <summary>
     /// Converts Debug.Assert failures into catchable exceptions while a playground is active.
@@ -112,6 +134,34 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     public ComponentOptionsBuilder<TComponent> Scaffold(Func<RenderFragment, RenderFragment> scaffold)
     {
         _options.AddScaffold(typeof(TComponent), scaffold);
+        return this;
+    }
+
+    /// <summary>
+    /// A named example configuration (an official docs example, typically). Applying a
+    /// variant seeds the playground state with its values — the user tweaks from there,
+    /// and the generated snippet reflects them.
+    /// </summary>
+    public ComponentOptionsBuilder<TComponent> Variant(string name, Action<PlaygroundVariantBuilder> configure)
+    {
+        var builder = new PlaygroundVariantBuilder();
+        configure(builder);
+        _options.AddVariant(typeof(TComponent), new PlaygroundVariantDefinition(name, builder.Values));
+        return this;
+    }
+}
+
+/// <summary>A named example configuration for one component.</summary>
+public sealed record PlaygroundVariantDefinition(string Name, IReadOnlyDictionary<string, object?> Values);
+
+/// <summary>Collects the parameter values of one variant (slot text included, by parameter name).</summary>
+public sealed class PlaygroundVariantBuilder
+{
+    internal Dictionary<string, object?> Values { get; } = new(StringComparer.Ordinal);
+
+    public PlaygroundVariantBuilder Set(string parameterName, object? value)
+    {
+        Values[parameterName] = value;
         return this;
     }
 }
