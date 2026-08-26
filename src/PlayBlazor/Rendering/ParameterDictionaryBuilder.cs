@@ -34,10 +34,19 @@ public static class ParameterDictionaryBuilder
             }
             if (parameter.Kind is ControlKind.Unsupported)
             {
+                // Non-drivable parameters become usable when the host presets them (Items, expressions…).
+                if (TryGetPreset(component, parameter, options, out var unsupportedPreset))
+                {
+                    result[parameter.Name] = unsupportedPreset;
+                }
                 continue;
             }
             if (!state.IsModified(parameter.Name))
             {
+                if (TryGetPreset(component, parameter, options, out var preset))
+                {
+                    result[parameter.Name] = preset;
+                }
                 continue;
             }
 
@@ -48,6 +57,24 @@ public static class ParameterDictionaryBuilder
         }
 
         return result;
+    }
+
+    private static bool TryGetPreset(
+        ComponentDescriptor component,
+        ParameterDescriptor parameter,
+        PlayBlazorOptions? options,
+        out object value)
+    {
+        value = null!;
+        if (options is not null
+            && options.TryGetParameterPreset(component.Type, parameter.Name, out var preset)
+            && preset is not null)
+        {
+            value = preset;
+            return true;
+        }
+
+        return false;
     }
 
     private static object? BuildSlot(

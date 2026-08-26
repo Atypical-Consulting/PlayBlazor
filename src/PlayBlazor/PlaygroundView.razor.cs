@@ -142,6 +142,19 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private void OnViewportChanged(ChangeEventArgs e)
         => _environment.ViewportWidth = int.TryParse((string?)e.Value, out var width) ? width : null;
 
+    /// <summary>Resolution order: user modification &gt; host preset &gt; component default.</summary>
+    private object? EffectiveValue(ParameterDescriptor parameter)
+    {
+        if (_state.IsModified(parameter.Name))
+        {
+            return _state.GetValue(parameter);
+        }
+
+        return Options.TryGetParameterPreset(_descriptor.Type, parameter.Name, out var preset)
+            ? preset
+            : parameter.DefaultValue;
+    }
+
     private string Snippet => RazorSnippetGenerator.Generate(_descriptor, _state);
 
     private async Task CopySnippet()

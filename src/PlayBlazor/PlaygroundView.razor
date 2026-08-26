@@ -37,11 +37,11 @@
                         <CascadingValue Value="_environment">
                             @if (Options.ThemeWrapper is { } wrapper)
                             {
-                                @wrapper(new PlaygroundThemeContext(Specimen, _environment))
+                                @wrapper(new PlaygroundThemeContext(ScaffoldedSpecimen, _environment))
                             }
                             else
                             {
-                                @Specimen
+                                @ScaffoldedSpecimen
                             }
                         </CascadingValue>
                     </ChildContent>
@@ -81,7 +81,7 @@
         {
             <div class="pb-row @(_state.IsModified(parameter.Name) ? "pb-row-modified" : null)" @key="parameter.Name">
                 <ControlHost Parameter="parameter"
-                             Value="_state.GetValue(parameter)"
+                             Value="EffectiveValue(parameter)"
                              ValueChanged="value => OnControlChanged(parameter, value)" />
                 @if (_state.IsModified(parameter.Name))
                 {
@@ -143,4 +143,7 @@
         @<DynamicComponent @key="@_state.InstanceKey"
                            Type="@_descriptor.Type"
                            Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state, Options, _eventLog)" />;
+
+    private RenderFragment ScaffoldedSpecimen
+        => Options.TryGetScaffold(_descriptor.Type, out var scaffold) ? scaffold(Specimen) : Specimen;
 }

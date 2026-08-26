@@ -63,6 +63,12 @@ body {
     margin-bottom: 2.5rem;
 }
 
+.demo-note {
+    margin: -0.25rem 0 0.75rem;
+    color: var(--demo-ink-2);
+    font-size: 0.8125rem;
+}
+
 .demo-tag {
     margin: 0 0 0.75rem;
     font-family: var(--demo-mono);

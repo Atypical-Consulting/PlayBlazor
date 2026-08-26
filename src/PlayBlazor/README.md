@@ -37,10 +37,25 @@ builder.Services.AddPlayBlazor(options =>
     // Give slots realistic content (the user's typed text always wins):
     options.For<MudButton>().Slot(nameof(MudButton.ChildContent), b => b.AddContent(0, "Click me"));
 
+    // Baseline parameter values (resolution: user modification > preset > component default).
+    // Also makes non-drivable parameters usable — collections, expressions…
+    options.For<MudDataGrid<Person>>().Parameter(nameof(MudDataGrid<Person>.Items), Person.Samples);
+
+    // Composition graphs: components that only live inside a parent get a scaffold —
+    // the played specimen is injected where it belongs, controls keep driving it.
+    options.For<PropertyColumn<Person, string>>().Scaffold(specimen => builder => { /* grid around specimen */ });
+
+    // Hide providers and internals from the explorer:
+    options.Exclude<MudThemeProvider>().Exclude<MudPopoverProvider>();
+
     // Wrap every specimen in your theme infrastructure:
     options.ThemeWrapper = context => builder => { /* your provider, driven by context.Environment */ };
 });
 ```
+
+A `Debug.Assert` failing inside a component lifecycle terminates the process in Debug builds;
+the playground converts assertion failures into error-boundary-visible exceptions by default
+(`options.GuardDebugAsserts = false` opts out; Release builds compile asserts out anyway).
 
 The shell has **zero UI dependencies** — system fonts, scoped CSS, no JS beyond
 `navigator.clipboard`. It imposes nothing on the host site.
@@ -49,8 +64,8 @@ The shell has **zero UI dependencies** — system fonts, scoped CSS, no JS beyon
 
 - Generic components need a closed type (`typeof(MudSelect<string>)`); the explorer tries
   `string` then `int` automatically.
-- Complex-typed parameters are listed but not drivable; register richer mappers in a later
-  version (`Color`/`Icon` kinds are reserved).
+- Complex-typed parameters are not drivable from generated controls (host `Parameter` presets
+  can still inject them); richer mappers come later (`Color`/`Icon` kinds are reserved).
 - Only the conventional `ChildContent` slot round-trips into the generated snippet.
 
 ## Roadmap

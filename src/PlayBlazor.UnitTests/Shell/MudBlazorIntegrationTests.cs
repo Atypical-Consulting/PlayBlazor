@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Bunit;
 using MudBlazor;
+using MudBlazor.Services;
 using NUnit.Framework;
 
 namespace PlayBlazor.UnitTests.Shell;
@@ -54,5 +55,40 @@ public class MudBlazorIntegrationTests
         var cut = _context.Render<PlaygroundView>(ps => ps.Add(v => v.Component, typeof(MudProgressCircular)));
 
         cut.Find(".pb-preview .mud-progress-circular").Should().NotBeNull();
+    }
+
+    public sealed record TestPerson(string Name, int Age)
+    {
+        public static readonly IReadOnlyList<TestPerson> Samples =
+        [
+            new("Ada Lovelace", 36),
+            new("Grace Hopper", 85),
+        ];
+    }
+
+    [Test]
+    public async Task PropertyColumn_IsPlayableInsideScaffoldedGrid()
+    {
+        await using var context = new BunitContext();
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+        context.Services.AddMudServices();
+        context.Services.AddPlayBlazor(options => options
+            .For<PropertyColumn<TestPerson, string>>()
+            .Parameter(nameof(PropertyColumn<TestPerson, string>.Property),
+                (System.Linq.Expressions.Expression<Func<TestPerson, string>>)(p => p.Name))
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<MudDataGrid<TestPerson>>(0);
+                builder.AddComponentParameter(1, nameof(MudDataGrid<TestPerson>.Items), TestPerson.Samples);
+                builder.AddComponentParameter(2, nameof(MudDataGrid<TestPerson>.Columns),
+                    (Microsoft.AspNetCore.Components.RenderFragment)(columns => columns.AddContent(0, specimen)));
+                builder.CloseComponent();
+            }));
+
+        var cut = context.Render<PlaygroundView>(ps => ps
+            .Add(v => v.Component, typeof(PropertyColumn<TestPerson, string>)));
+
+        cut.FindAll(".pb-error").Should().BeEmpty();
+        cut.Find(".pb-specimen").TextContent.Should().Contain("Ada Lovelace").And.Contain("Grace Hopper");
     }
 }

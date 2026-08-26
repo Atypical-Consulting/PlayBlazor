@@ -23,6 +23,18 @@
         <h2 class="demo-tag">MudAlert</h2>
         <PlaygroundView Component="typeof(MudAlert)" />
     </section>
+
+    <section class="demo-section">
+        <h2 class="demo-tag">MudDataGrid&lt;Person&gt;</h2>
+        <p class="demo-note">Sample rows and columns come from host presets — Dense, Striped, Hover… stay yours to play with.</p>
+        <PlaygroundView Component="typeof(MudDataGrid<Person>)" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
+        <p class="demo-note">A column cannot live outside its grid: the host scaffold renders the played column inside a real MudDataGrid.</p>
+        <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
+    </section>
 </main>
 <footer class="demo-footer">
     Incubated inside the MudBlazor repository — MudBlazor is the first demo library, not a dependency.

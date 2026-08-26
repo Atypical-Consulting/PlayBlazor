@@ -8,6 +8,10 @@ public sealed class PlayBlazorOptions
 {
     private readonly Dictionary<(Type Component, string Parameter), RenderFragment> _slotPresets = new();
 
+    private readonly Dictionary<(Type Component, string Parameter), object?> _parameterPresets = new();
+
+    private readonly Dictionary<Type, Func<RenderFragment, RenderFragment>> _scaffolds = new();
+
     private readonly HashSet<Type> _excluded = [];
 
     /// <summary>
@@ -39,6 +43,12 @@ public sealed class PlayBlazorOptions
     internal void AddSlotPreset(Type componentType, string parameterName, RenderFragment content)
         => _slotPresets[(Normalize(componentType), parameterName)] = content;
 
+    internal void AddParameterPreset(Type componentType, string parameterName, object? value)
+        => _parameterPresets[(Normalize(componentType), parameterName)] = value;
+
+    internal void AddScaffold(Type componentType, Func<RenderFragment, RenderFragment> scaffold)
+        => _scaffolds[Normalize(componentType)] = scaffold;
+
     public bool TryGetSlotPreset(Type componentType, string parameterName, out RenderFragment fragment)
     {
         if (_slotPresets.TryGetValue((componentType, parameterName), out fragment!))
@@ -47,6 +57,26 @@ public sealed class PlayBlazorOptions
         }
 
         return _slotPresets.TryGetValue((Normalize(componentType), parameterName), out fragment!);
+    }
+
+    public bool TryGetParameterPreset(Type componentType, string parameterName, out object? value)
+    {
+        if (_parameterPresets.TryGetValue((componentType, parameterName), out value))
+        {
+            return true;
+        }
+
+        return _parameterPresets.TryGetValue((Normalize(componentType), parameterName), out value);
+    }
+
+    public bool TryGetScaffold(Type componentType, out Func<RenderFragment, RenderFragment> scaffold)
+    {
+        if (_scaffolds.TryGetValue(componentType, out scaffold!))
+        {
+            return true;
+        }
+
+        return _scaffolds.TryGetValue(Normalize(componentType), out scaffold!);
     }
 
     private static Type Normalize(Type componentType)
@@ -64,6 +94,28 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     public ComponentOptionsBuilder<TComponent> Slot(string parameterName, RenderFragment content)
     {
         _options.AddSlotPreset(typeof(TComponent), parameterName, content);
+        return this;
+    }
+
+    /// <summary>
+    /// Baseline value for one parameter: used when the user has not modified it
+    /// (resolution: user modification &gt; host preset &gt; component default). Also makes
+    /// otherwise non-drivable parameters (collections, expressions…) usable in the playground.
+    /// </summary>
+    public ComponentOptionsBuilder<TComponent> Parameter(string parameterName, object? value)
+    {
+        _options.AddParameterPreset(typeof(TComponent), parameterName, value);
+        return this;
+    }
+
+    /// <summary>
+    /// Renders the component inside a host-provided parent graph (a grid column inside its
+    /// grid, a toggle item inside its group). The played specimen is passed in; return the
+    /// surrounding markup with the specimen placed where it belongs.
+    /// </summary>
+    public ComponentOptionsBuilder<TComponent> Scaffold(Func<RenderFragment, RenderFragment> scaffold)
+    {
+        _options.AddScaffold(typeof(TComponent), scaffold);
         return this;
     }
 }
