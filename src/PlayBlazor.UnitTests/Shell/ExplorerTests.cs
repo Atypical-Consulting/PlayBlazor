@@ -54,10 +54,12 @@ public class ExplorerTests
     [Test]
     public void PermalinkInUrl_PreselectsItsComponent()
     {
+        _context.Services.AddPlayBlazor();
         var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
         navigation.NavigateTo($"{navigation.BaseUri}?pb-EventFixture=e30");
 
-        var cut = RenderExplorer();
+        var cut = _context.Render<PlaygroundExplorer>(ps => ps
+            .Add(e => e.Assemblies, new[] { typeof(BasicFixture).Assembly }));
 
         cut.Find(".pb-explorer-selected").TextContent.Trim().Should().Be("EventFixture");
     }
