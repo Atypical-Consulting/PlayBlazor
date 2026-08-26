@@ -1,0 +1,5 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<button class="event-source" @onclick="@(() => OnPing.InvokeAsync("ping!"))">ping</button>
+@code {
+    [Parameter] public EventCallback<string> OnPing { get; set; }
+}

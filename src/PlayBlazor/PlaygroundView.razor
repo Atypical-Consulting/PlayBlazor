@@ -19,7 +19,7 @@
                 <ChildContent>
                     <DynamicComponent @key="@_state.InstanceKey"
                                       Type="@_descriptor.Type"
-                                      Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state, Options)" />
+                                      Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state, Options, _eventLog)" />
                 </ChildContent>
                 <ErrorContent Context="exception">
                     <div class="pb-error">
@@ -54,6 +54,32 @@
                 {
                     <button type="button" class="pb-row-reset" title="Restore default"
                             @onclick="() => _state.Reset(parameter.Name)">&times;</button>
+                }
+            </div>
+        }
+        @if (Events.Any())
+        {
+            <span class="pb-eyebrow">Events</span>
+            <div class="pb-events">
+                @if (_eventLog.Entries.Count == 0)
+                {
+                    <div class="pb-events-empty">
+                        Listening to @string.Join(", ", Events.Select(e => e.Name)) — interactions will show up here.
+                    </div>
+                }
+                else
+                {
+                    <button type="button" class="pb-events-clear" @onclick="() => _eventLog.Clear()">Clear</button>
+                    <ul>
+                        @foreach (var entry in _eventLog.Entries)
+                        {
+                            <li>
+                                <span class="pb-event-time">@entry.Timestamp.ToString("HH:mm:ss")</span>
+                                <span class="pb-event-name">@entry.Name</span>
+                                <span class="pb-event-payload">@entry.Payload</span>
+                            </li>
+                        }
+                    </ul>
                 }
             </div>
         }

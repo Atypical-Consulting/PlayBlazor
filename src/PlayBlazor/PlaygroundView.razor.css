@@ -301,6 +301,73 @@
     background: var(--pb-accent-soft);
 }
 
+/* ---- Events ---- */
+
+.pb-events {
+    position: relative;
+    margin: 0 0.25rem 0.25rem;
+    padding: 0.4rem 0.5rem;
+    border: 1px dashed var(--pb-line);
+    border-radius: 6px;
+    font-size: 0.6875rem;
+}
+
+.pb-events-empty {
+    color: var(--pb-ink-3);
+    line-height: 1.5;
+}
+
+.pb-events-clear {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--pb-line);
+    border-radius: 4px;
+    background: var(--pb-panel);
+    color: var(--pb-ink-2);
+    font: inherit;
+    font-size: 0.625rem;
+    cursor: pointer;
+}
+
+.pb-events-clear:hover {
+    border-color: var(--pb-accent);
+    color: var(--pb-accent);
+}
+
+.pb-events ul {
+    margin: 0;
+    padding: 0;
+    max-height: 130px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.pb-events li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.1rem 0;
+    font-family: var(--pb-mono);
+}
+
+.pb-event-time {
+    color: var(--pb-ink-3);
+}
+
+.pb-event-name {
+    color: var(--pb-accent);
+    font-weight: 600;
+}
+
+.pb-event-payload {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--pb-ink-2);
+}
+
 /* ---- Uncontrolled ---- */
 
 .pb-uncontrolled {

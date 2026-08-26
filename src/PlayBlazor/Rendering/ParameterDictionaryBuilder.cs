@@ -9,7 +9,8 @@ public static class ParameterDictionaryBuilder
     public static Dictionary<string, object> Build(
         ComponentDescriptor component,
         PlaygroundState state,
-        PlayBlazorOptions? options = null)
+        PlayBlazorOptions? options = null,
+        PlaygroundEventLog? eventLog = null)
     {
         var result = new Dictionary<string, object>(StringComparer.Ordinal);
         foreach (var parameter in component.Parameters)
@@ -22,7 +23,16 @@ public static class ParameterDictionaryBuilder
                 }
                 continue;
             }
-            if (parameter.Kind is ControlKind.Event or ControlKind.Unsupported)
+            if (parameter.Kind is ControlKind.Event)
+            {
+                if (eventLog is not null)
+                {
+                    var name = parameter.Name;
+                    result[name] = EventCallbackInterceptor.Create(parameter.Type, arg => eventLog.Record(name, arg));
+                }
+                continue;
+            }
+            if (parameter.Kind is ControlKind.Unsupported)
             {
                 continue;
             }

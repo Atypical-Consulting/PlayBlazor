@@ -71,7 +71,7 @@ public class PlaygroundViewTests
         var cut = RenderView(typeof(BasicFixture));
 
         var uncontrolled = cut.Find(".pb-uncontrolled").TextContent;
-        uncontrolled.Should().Contain("OnValueChanged").And.Contain("Endpoint").And.NotContain("ChildContent");
+        uncontrolled.Should().Contain("Endpoint").And.NotContain("ChildContent").And.NotContain("OnValueChanged");
     }
 
     [Test]

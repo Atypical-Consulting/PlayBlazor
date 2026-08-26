@@ -12,6 +12,7 @@ namespace PlayBlazor;
 public partial class PlaygroundView : ComponentBase, IDisposable
 {
     private readonly PlaygroundState _state = new();
+    private readonly PlaygroundEventLog _eventLog = new();
     private ComponentDescriptor _descriptor = default!;
     private ErrorBoundary? _errorBoundary;
 
@@ -37,10 +38,16 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     private IEnumerable<ParameterDescriptor> Uncontrollable
         => _descriptor.Parameters.Where(static p =>
-            (p.Kind is ControlKind.Slot && !IsTextSlot(p)) || p.Kind is ControlKind.Event or ControlKind.Unsupported);
+            (p.Kind is ControlKind.Slot && !IsTextSlot(p)) || p.Kind is ControlKind.Unsupported);
+
+    private IEnumerable<ParameterDescriptor> Events
+        => _descriptor.Parameters.Where(static p => p.Kind is ControlKind.Event);
 
     protected override void OnInitialized()
-        => _state.Changed += OnStateChanged;
+    {
+        _state.Changed += OnStateChanged;
+        _eventLog.Changed += OnStateChanged;
+    }
 
     protected override void OnParametersSet()
     {
@@ -52,7 +59,10 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     }
 
     public void Dispose()
-        => _state.Changed -= OnStateChanged;
+    {
+        _state.Changed -= OnStateChanged;
+        _eventLog.Changed -= OnStateChanged;
+    }
 
     private void OnStateChanged()
         => _ = InvokeAsync(StateHasChanged);
