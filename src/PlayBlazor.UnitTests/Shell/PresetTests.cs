@@ -115,16 +115,25 @@ public class PresetTests
     }
 
     [Test]
-    public void OpenGenericPreset_AppliesToClosedType()
+    public void ParameterPreset_DoesNotLeakToOtherGenericClosings()
     {
+        // A preset typed for one closing (Items = List<Person>) must never be served to
+        // another closing (the explorer's MudDataGrid<string>) — that's an InvalidCast.
         var descriptor = new ReflectionCatalogProvider().Describe(typeof(GenericFixture<int>));
         var options = new PlayBlazorOptions();
-        options.For<GenericFixture<string>>().Parameter("Value", 5);
+        options.For<GenericFixture<string>>().Parameter("Value", "typed for string");
 
-        var state = new PlaygroundState();
-        var generated = RazorSnippetGenerator.Generate(descriptor, state);
+        ParameterDictionaryBuilder.Build(descriptor, new PlaygroundState(), options)
+            .Should().NotContainKey("Value");
+    }
 
-        ParameterDictionaryBuilder.Build(descriptor, state, options).Should().ContainKey("Value");
-        generated.Should().Be("<GenericFixture />");
+    [Test]
+    public void Scaffold_DoesNotLeakToOtherGenericClosings()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<GenericFixture<string>>().Scaffold(specimen => specimen);
+
+        options.TryGetScaffold(typeof(GenericFixture<int>), out _).Should().BeFalse();
+        options.TryGetScaffold(typeof(GenericFixture<string>), out _).Should().BeTrue();
     }
 }

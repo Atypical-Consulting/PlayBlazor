@@ -44,10 +44,10 @@ public sealed class PlayBlazorOptions
         => _slotPresets[(Normalize(componentType), parameterName)] = content;
 
     internal void AddParameterPreset(Type componentType, string parameterName, object? value)
-        => _parameterPresets[(Normalize(componentType), parameterName)] = value;
+        => _parameterPresets[(componentType, parameterName)] = value;
 
     internal void AddScaffold(Type componentType, Func<RenderFragment, RenderFragment> scaffold)
-        => _scaffolds[Normalize(componentType)] = scaffold;
+        => _scaffolds[componentType] = scaffold;
 
     public bool TryGetSlotPreset(Type componentType, string parameterName, out RenderFragment fragment)
     {
@@ -59,25 +59,15 @@ public sealed class PlayBlazorOptions
         return _slotPresets.TryGetValue((Normalize(componentType), parameterName), out fragment!);
     }
 
+    // Parameter presets and scaffolds carry values typed for ONE closing of a generic
+    // component (Items = List<Person>). Serving them to another closing (the explorer's
+    // MudDataGrid<string>) is an InvalidCastException — so both match the exact type only.
+    // Slot presets are plain RenderFragments, safe to share across closings.
     public bool TryGetParameterPreset(Type componentType, string parameterName, out object? value)
-    {
-        if (_parameterPresets.TryGetValue((componentType, parameterName), out value))
-        {
-            return true;
-        }
-
-        return _parameterPresets.TryGetValue((Normalize(componentType), parameterName), out value);
-    }
+        => _parameterPresets.TryGetValue((componentType, parameterName), out value);
 
     public bool TryGetScaffold(Type componentType, out Func<RenderFragment, RenderFragment> scaffold)
-    {
-        if (_scaffolds.TryGetValue(componentType, out scaffold!))
-        {
-            return true;
-        }
-
-        return _scaffolds.TryGetValue(Normalize(componentType), out scaffold!);
-    }
+        => _scaffolds.TryGetValue(componentType, out scaffold!);
 
     private static Type Normalize(Type componentType)
         => componentType.IsGenericType ? componentType.GetGenericTypeDefinition() : componentType;
