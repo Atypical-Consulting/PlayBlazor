@@ -51,6 +51,15 @@ public class ExplorerTests
     }
 
     [Test]
+    public void Groups_AreOrderedByCategoryName()
+    {
+        var cut = RenderExplorer();
+
+        var groups = cut.FindAll(".pb-explorer-eyebrow").Select(e => e.TextContent.Trim()).ToList();
+        groups.Should().BeInAscendingOrder(StringComparer.Ordinal);
+    }
+
+    [Test]
     public void ExcludedComponents_AreHiddenFromTheList()
     {
         var cut = RenderExplorer(options => options.Exclude<EventFixture>());
