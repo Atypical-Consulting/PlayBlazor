@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using PlayBlazor.Rendering;
 
 namespace PlayBlazor;
 
@@ -6,6 +7,12 @@ namespace PlayBlazor;
 public sealed class PlayBlazorOptions
 {
     private readonly Dictionary<(Type Component, string Parameter), RenderFragment> _slotPresets = new();
+
+    /// <summary>
+    /// Wraps the rendered specimen in the host's theme infrastructure (e.g. a theme provider
+    /// honoring <see cref="PlaygroundEnvironment.Dark"/>). Null renders the specimen bare.
+    /// </summary>
+    public RenderFragment<PlaygroundThemeContext>? ThemeWrapper { get; set; }
 
     public ComponentOptionsBuilder<TComponent> For<TComponent>() where TComponent : IComponent
         => new(this);

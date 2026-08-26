@@ -4,8 +4,22 @@
 @using PlayBlazor.Shell
 
 <div class="pb-playground">
-    <div class="pb-preview">
+    <div class="pb-preview @(_environment.Dark ? "pb-stage-dark" : null) @(_environment.Checkerboard ? "pb-stage-checker" : null)">
         <span class="pb-stage-chip">&lt;@_descriptor.DisplayName /&gt;</span>
+        <div class="pb-stage-toolbar">
+            <button type="button" class="pb-env-btn pb-env-dark @(_environment.Dark ? "pb-env-on" : null)"
+                    title="Dark surface" @onclick="() => _environment.Dark = !_environment.Dark">&#9681;</button>
+            <button type="button" class="pb-env-btn pb-env-rtl @(_environment.Rtl ? "pb-env-on" : null)"
+                    title="Right-to-left" @onclick="() => _environment.Rtl = !_environment.Rtl">&#8646;</button>
+            <button type="button" class="pb-env-btn pb-env-checker @(_environment.Checkerboard ? "pb-env-on" : null)"
+                    title="Checkerboard surface" @onclick="() => _environment.Checkerboard = !_environment.Checkerboard">&#9638;</button>
+            <select class="pb-env-width" title="Viewport width" value="@(_environment.ViewportWidth?.ToString() ?? "")" @onchange="OnViewportChanged">
+                <option value="">Auto</option>
+                <option value="360">360</option>
+                <option value="768">768</option>
+                <option value="1200">1200</option>
+            </select>
+        </div>
         @if (!_descriptor.CanInstantiate)
         {
             <div class="pb-error">
@@ -15,20 +29,31 @@
         }
         else
         {
-            <ErrorBoundary @ref="_errorBoundary">
-                <ChildContent>
-                    <DynamicComponent @key="@_state.InstanceKey"
-                                      Type="@_descriptor.Type"
-                                      Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state, Options, _eventLog)" />
-                </ChildContent>
-                <ErrorContent Context="exception">
-                    <div class="pb-error">
-                        <strong>The component threw an exception.</strong>
-                        <pre>@exception.Message</pre>
-                        <button type="button" @onclick="RecoverFromError">Reset</button>
-                    </div>
-                </ErrorContent>
-            </ErrorBoundary>
+            <div class="pb-specimen @(_environment.ViewportWidth is not null ? "pb-specimen-constrained" : null)"
+                 dir="@(_environment.Rtl ? "rtl" : null)"
+                 style="@(_environment.ViewportWidth is { } width ? $"width:{width}px" : null)">
+                <ErrorBoundary @ref="_errorBoundary">
+                    <ChildContent>
+                        <CascadingValue Value="_environment">
+                            @if (Options.ThemeWrapper is { } wrapper)
+                            {
+                                @wrapper(new PlaygroundThemeContext(Specimen, _environment))
+                            }
+                            else
+                            {
+                                @Specimen
+                            }
+                        </CascadingValue>
+                    </ChildContent>
+                    <ErrorContent Context="exception">
+                        <div class="pb-error">
+                            <strong>The component threw an exception.</strong>
+                            <pre>@exception.Message</pre>
+                            <button type="button" @onclick="RecoverFromError">Reset</button>
+                        </div>
+                    </ErrorContent>
+                </ErrorBoundary>
+            </div>
         }
     </div>
     <div class="pb-panel">
@@ -104,3 +129,10 @@
         <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">Copy</button>
     </div>
 </div>
+
+@code {
+    private RenderFragment Specimen =>
+        @<DynamicComponent @key="@_state.InstanceKey"
+                           Type="@_descriptor.Type"
+                           Parameters="@ParameterDictionaryBuilder.Build(_descriptor, _state, Options, _eventLog)" />;
+}

@@ -1,0 +1,6 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+@using PlayBlazor.Rendering
+<div class="env-fixture">Dark=@(Environment?.Dark ?? false)</div>
+@code {
+    [CascadingParameter] public PlaygroundEnvironment? Environment { get; set; }
+}

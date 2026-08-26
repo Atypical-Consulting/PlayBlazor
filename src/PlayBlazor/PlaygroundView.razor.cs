@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using PlayBlazor.CodeGen;
 using PlayBlazor.Discovery;
 using PlayBlazor.Model;
+using PlayBlazor.Rendering;
 using PlayBlazor.State;
 
 namespace PlayBlazor;
@@ -13,6 +14,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 {
     private readonly PlaygroundState _state = new();
     private readonly PlaygroundEventLog _eventLog = new();
+    private readonly PlaygroundEnvironment _environment = new();
     private ComponentDescriptor _descriptor = default!;
     private ErrorBoundary? _errorBoundary;
 
@@ -81,6 +83,9 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     private void ResetAll()
         => _state.ResetAll();
+
+    private void OnViewportChanged(ChangeEventArgs e)
+        => _environment.ViewportWidth = int.TryParse((string?)e.Value, out var width) ? width : null;
 
     private string Snippet => RazorSnippetGenerator.Generate(_descriptor, _state);
 
