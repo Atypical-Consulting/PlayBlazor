@@ -18,6 +18,9 @@ public partial class PlaygroundExplorer : ComponentBase
     [Inject]
     private PlayBlazorOptions Options { get; set; } = default!;
 
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
     [Parameter, EditorRequired]
     public IReadOnlyList<Assembly> Assemblies { get; set; } = default!;
 
@@ -34,7 +37,30 @@ public partial class PlaygroundExplorer : ComponentBase
             .Where(c => !Options.IsExcluded(c.Type))
             .OrderBy(static c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
-        _selected ??= _components.FirstOrDefault();
+        // A shared permalink names its component (?pb-MudRating=…) — land the visitor on it.
+        _selected ??= FindPermalinkTarget() ?? _components.FirstOrDefault();
+    }
+
+    private ComponentDescriptor? FindPermalinkTarget()
+    {
+        var query = new Uri(Navigation.Uri).Query.TrimStart('?');
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var separator = pair.IndexOf('=');
+            var key = Uri.UnescapeDataString(separator < 0 ? pair : pair[..separator]);
+            if (!key.StartsWith("pb-", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var name = key["pb-".Length..];
+            if (_components.FirstOrDefault(c => c.DisplayName == name) is { } match)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     private void OnSearchChanged(ChangeEventArgs e)

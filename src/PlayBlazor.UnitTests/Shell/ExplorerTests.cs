@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using PlayBlazor.UnitTests.Fixtures;
 
@@ -48,6 +49,17 @@ public class ExplorerTests
 
         var items = cut.FindAll(".pb-explorer-item").Select(i => i.TextContent.Trim()).ToList();
         items.Should().Contain("BasicFixture").And.NotContain("EventFixture");
+    }
+
+    [Test]
+    public void PermalinkInUrl_PreselectsItsComponent()
+    {
+        var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        navigation.NavigateTo($"{navigation.BaseUri}?pb-EventFixture=e30");
+
+        var cut = RenderExplorer();
+
+        cut.Find(".pb-explorer-selected").TextContent.Trim().Should().Be("EventFixture");
     }
 
     [Test]
