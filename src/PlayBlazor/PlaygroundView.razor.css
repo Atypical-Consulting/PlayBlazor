@@ -406,15 +406,23 @@
     background: var(--pb-accent-soft);
 }
 
-/* ---- Events ---- */
+/* ---- Events — full-width strip below the code panel ---- */
 
 .pb-events {
     position: relative;
-    margin: 0 0.25rem 0.25rem;
-    padding: 0.4rem 0.5rem;
-    border: 1px dashed var(--pb-line);
-    border-radius: 6px;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem 0.625rem;
+    border-top: 1px solid var(--pb-line);
+    background: var(--pb-panel);
     font-size: 0.6875rem;
+}
+
+.pb-events .pb-eyebrow {
+    padding: 0;
+    margin: 0;
 }
 
 .pb-events-empty {
@@ -424,12 +432,12 @@
 
 .pb-events-clear {
     position: absolute;
-    top: 0.3rem;
-    right: 0.3rem;
+    top: 0.45rem;
+    right: 1rem;
     padding: 0.1rem 0.45rem;
     border: 1px solid var(--pb-line);
     border-radius: 4px;
-    background: var(--pb-panel);
+    background: var(--pb-stage);
     color: var(--pb-ink-2);
     font: inherit;
     font-size: 0.625rem;
@@ -444,7 +452,7 @@
 .pb-events ul {
     margin: 0;
     padding: 0;
-    max-height: 130px;
+    max-height: 140px;
     overflow-y: auto;
     list-style: none;
 }
