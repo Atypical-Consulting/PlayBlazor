@@ -81,6 +81,54 @@ body {
     color: var(--demo-accent);
 }
 
+.demo-explorer-link {
+    display: inline-block;
+    max-width: 880px;
+    margin: 1rem auto 0;
+    color: var(--demo-accent);
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.demo-explorer-link:hover {
+    text-decoration: underline;
+}
+
+.demo-hero .demo-explorer-link {
+    display: block;
+    max-width: 880px;
+    margin: 1rem auto 0;
+}
+
+.demo-explorer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.demo-explorer-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.demo-back {
+    color: var(--demo-accent);
+    font-family: var(--demo-mono);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.demo-explorer-title {
+    color: var(--demo-ink-2);
+    font-size: 0.8125rem;
+}
+
+.demo-specimen-dark {
+    color-scheme: dark;
+}
+
 .demo-footer {
     max-width: 880px;
     margin: 0 auto;

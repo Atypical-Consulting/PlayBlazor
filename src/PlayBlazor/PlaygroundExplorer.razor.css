@@ -1,0 +1,105 @@
+.pb-explorer {
+    --pb-accent: #6d4aff;
+    --pb-accent-soft: rgba(109, 74, 255, 0.12);
+    --pb-ink: #1b1b22;
+    --pb-ink-2: #6e6e7a;
+    --pb-ink-3: #a0a0ac;
+    --pb-line: #e6e6ee;
+    --pb-panel: #fbfbfd;
+    --pb-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.pb-explorer-nav {
+    position: sticky;
+    top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    max-height: calc(100vh - 2rem);
+    padding: 0.625rem;
+    overflow-y: auto;
+    border: 1px solid var(--pb-line);
+    border-radius: 10px;
+    background: var(--pb-panel);
+}
+
+.pb-explorer-search {
+    margin-bottom: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--pb-line);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--pb-ink);
+    font: inherit;
+    font-size: 0.75rem;
+}
+
+.pb-explorer-search:focus-visible {
+    outline: none;
+    border-color: var(--pb-accent);
+    box-shadow: 0 0 0 3px var(--pb-accent-soft);
+}
+
+.pb-explorer-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+}
+
+.pb-explorer-eyebrow {
+    margin: 0.5rem 0.25rem 0.25rem;
+    color: var(--pb-ink-3);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pb-explorer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.3rem 0.5rem;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--pb-ink);
+    font-family: var(--pb-mono);
+    font-size: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+.pb-explorer-item:hover {
+    background: rgba(27, 27, 34, 0.05);
+}
+
+.pb-explorer-item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--pb-accent-soft);
+}
+
+.pb-explorer-selected,
+.pb-explorer-selected:hover {
+    background: var(--pb-accent-soft);
+    color: var(--pb-accent);
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .pb-explorer {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pb-explorer-nav {
+        position: static;
+        max-height: 240px;
+    }
+}

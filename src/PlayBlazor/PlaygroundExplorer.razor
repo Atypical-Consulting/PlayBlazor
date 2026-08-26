@@ -1,0 +1,33 @@
+@namespace PlayBlazor
+
+<div class="pb-explorer">
+    <nav class="pb-explorer-nav">
+        <input class="pb-explorer-search" type="search" placeholder="Filter components…"
+               value="@_search" @oninput="OnSearchChanged" />
+        @foreach (var group in Groups)
+        {
+            <div class="pb-explorer-group" @key="group.Key">
+                <span class="pb-explorer-eyebrow">@group.Key</span>
+                @foreach (var component in group)
+                {
+                    <button type="button" @key="component.Type"
+                            class="pb-explorer-item @(component.Type == _selected?.Type ? "pb-explorer-selected" : null)"
+                            title="@component.Summary"
+                            @onclick="() => _selected = component">
+                        @component.DisplayName
+                        @if (component.Warning is not null)
+                        {
+                            <span class="pb-warning" title="@component.Warning">&#9888;</span>
+                        }
+                    </button>
+                }
+            </div>
+        }
+    </nav>
+    <div class="pb-explorer-detail">
+        @if (_selected is not null)
+        {
+            <PlaygroundView Component="_selected.Type" />
+        }
+    </div>
+</div>
