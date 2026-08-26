@@ -1,16 +1,66 @@
 using System.Globalization;
+using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using PlayBlazor.Model;
 using PlayBlazor.State;
 
 namespace PlayBlazor.CodeGen;
 
-/// <summary>Generates the Razor snippet matching the current playground state.</summary>
+/// <summary>
+/// Generates the Razor snippet matching the current playground state — as plain text for
+/// the clipboard, and as natively highlighted markup for display. Both views render the
+/// same token stream, so they can never drift apart.
+/// </summary>
 public static class RazorSnippetGenerator
 {
-    public static string Generate(ComponentDescriptor component, PlaygroundState state)
+    private enum TokenKind
     {
-        var attributes = new List<string>();
+        Punctuation,
+        Tag,
+        AttributeName,
+        AttributeValue,
+        ChildContent,
+    }
+
+    private readonly record struct Token(TokenKind Kind, string Text);
+
+    public static string Generate(ComponentDescriptor component, PlaygroundState state)
+        => string.Concat(Tokenize(component, state).Select(static t => t.Text));
+
+    public static MarkupString GenerateMarkup(ComponentDescriptor component, PlaygroundState state)
+    {
+        var builder = new StringBuilder();
+        foreach (var token in Tokenize(component, state))
+        {
+            var encoded = WebUtility.HtmlEncode(token.Text);
+            if (token.Kind == TokenKind.Punctuation)
+            {
+                builder.Append(encoded);
+            }
+            else
+            {
+                builder.Append("<span class=\"pb-tok-").Append(ClassSuffix(token.Kind)).Append("\">")
+                    .Append(encoded).Append("</span>");
+            }
+        }
+
+        return new MarkupString(builder.ToString());
+    }
+
+    private static string ClassSuffix(TokenKind kind)
+        => kind switch
+        {
+            TokenKind.Tag => "tag",
+            TokenKind.AttributeName => "attr",
+            TokenKind.AttributeValue => "val",
+            TokenKind.ChildContent => "content",
+            _ => "punct",
+        };
+
+    private static List<Token> Tokenize(ComponentDescriptor component, PlaygroundState state)
+    {
+        var attributes = new List<(string Name, string Value)>();
         string? childContent = null;
         foreach (var parameter in component.Parameters)
         {
@@ -38,31 +88,35 @@ public static class RazorSnippetGenerator
                 continue;
             }
 
-            attributes.Add($"{parameter.Name}=\"{FormatValue(value)}\"");
+            attributes.Add((parameter.Name, FormatValue(value)));
         }
 
-        var close = childContent is null ? " />" : $">{childContent}</{component.DisplayName}>";
-
-        if (attributes.Count == 0)
+        var tokens = new List<Token> { new(TokenKind.Punctuation, "<"), new(TokenKind.Tag, component.DisplayName) };
+        var multiline = attributes.Count > 2;
+        var indent = "\n" + new string(' ', component.DisplayName.Length + 2);
+        for (var i = 0; i < attributes.Count; i++)
         {
-            return childContent is null ? $"<{component.DisplayName} />" : $"<{component.DisplayName}{close}";
+            tokens.Add(new Token(TokenKind.Punctuation, i == 0 || !multiline ? " " : indent));
+            tokens.Add(new Token(TokenKind.AttributeName, attributes[i].Name));
+            tokens.Add(new Token(TokenKind.Punctuation, "=\""));
+            tokens.Add(new Token(TokenKind.AttributeValue, attributes[i].Value));
+            tokens.Add(new Token(TokenKind.Punctuation, "\""));
         }
 
-        if (attributes.Count <= 2)
+        if (childContent is null)
         {
-            return $"<{component.DisplayName} {string.Join(" ", attributes)}{close}";
+            tokens.Add(new Token(TokenKind.Punctuation, " />"));
         }
-
-        var indent = new string(' ', component.DisplayName.Length + 2);
-        var builder = new StringBuilder();
-        builder.Append('<').Append(component.DisplayName).Append(' ').Append(attributes[0]);
-        foreach (var attribute in attributes.Skip(1))
+        else
         {
-            builder.Append('\n').Append(indent).Append(attribute);
+            tokens.Add(new Token(TokenKind.Punctuation, ">"));
+            tokens.Add(new Token(TokenKind.ChildContent, childContent));
+            tokens.Add(new Token(TokenKind.Punctuation, "</"));
+            tokens.Add(new Token(TokenKind.Tag, component.DisplayName));
+            tokens.Add(new Token(TokenKind.Punctuation, ">"));
         }
 
-        builder.Append(close);
-        return builder.ToString();
+        return tokens;
     }
 
     private static string EscapeContent(string text)

@@ -165,6 +165,8 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     private string Snippet => RazorSnippetGenerator.Generate(_descriptor, _state);
 
+    private MarkupString SnippetMarkup => RazorSnippetGenerator.GenerateMarkup(_descriptor, _state);
+
     private async Task CopySnippet()
         => await Js.InvokeVoidAsync("navigator.clipboard.writeText", Snippet);
 

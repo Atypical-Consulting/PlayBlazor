@@ -42,6 +42,19 @@ public class CodePanelTests
     }
 
     [Test]
+    public void CodePanel_HighlightsTokens_WithoutChangingText()
+    {
+        var cut = RenderView();
+        cut.FindAll("input[type=checkbox]")[0].Change(true); // Dense
+
+        var code = cut.Find(".pb-code code");
+        code.TextContent.Should().Be("""<BasicFixture Dense="true" />""");
+        code.QuerySelector(".pb-tok-tag")!.TextContent.Should().Be("BasicFixture");
+        code.QuerySelector(".pb-tok-attr")!.TextContent.Should().Be("Dense");
+        code.QuerySelector(".pb-tok-val")!.TextContent.Should().Be("true");
+    }
+
+    [Test]
     public void CopyButton_WritesSnippetToClipboard()
     {
         _context.JSInterop.SetupVoid("navigator.clipboard.writeText", _ => true);

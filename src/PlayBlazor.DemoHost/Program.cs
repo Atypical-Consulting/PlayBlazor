@@ -58,6 +58,9 @@ builder.Services.AddPlayBlazor(options =>
             columns.CloseComponent();
         });
 
+    // Explorer icons from MudBlazor's own Material set.
+    options.IconResolver = ComponentIcons.Resolve;
+
     // Providers make no sense as playground specimens.
     options.Exclude<MudThemeProvider>()
         .Exclude<MudPopoverProvider>()

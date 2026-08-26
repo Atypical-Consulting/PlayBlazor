@@ -21,6 +21,12 @@ public sealed class PlayBlazorOptions
     public RenderFragment<PlaygroundThemeContext>? ThemeWrapper { get; set; }
 
     /// <summary>
+    /// Supplies an SVG fragment (inner markup of a 24×24 viewBox) shown next to a component
+    /// in the explorer — e.g. MudBlazor's <c>Icons.Material</c> constants. Null for no icon.
+    /// </summary>
+    public Func<Type, string?>? IconResolver { get; set; }
+
+    /// <summary>
     /// Converts Debug.Assert failures into catchable exceptions while a playground is active.
     /// A failed assert in a component lifecycle would otherwise terminate the process in
     /// Debug builds. No-op in Release builds, where asserts are compiled out.

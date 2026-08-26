@@ -65,6 +65,16 @@ public class ExplorerTests
     }
 
     [Test]
+    public void IconResolver_RendersHostIcons()
+    {
+        var cut = RenderExplorer(options => options.IconResolver =
+            _ => """<path d="M0 0h24v24H0z"/>""");
+
+        cut.FindAll(".pb-explorer-item .pb-explorer-icon").Count
+            .Should().Be(cut.FindAll(".pb-explorer-item").Count);
+    }
+
+    [Test]
     public void Groups_AreOrderedByCategoryName()
     {
         var cut = RenderExplorer();

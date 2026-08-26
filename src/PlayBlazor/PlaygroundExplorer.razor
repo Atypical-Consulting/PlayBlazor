@@ -14,6 +14,10 @@
                             class="pb-explorer-item @(component.Type == _selected?.Type ? "pb-explorer-selected" : null)"
                             title="@component.Summary"
                             @onclick="() => _selected = component">
+                        @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
+                        {
+                            <svg class="pb-explorer-icon" viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
+                        }
                         @component.DisplayName
                         @if (component.Warning is not null)
                         {

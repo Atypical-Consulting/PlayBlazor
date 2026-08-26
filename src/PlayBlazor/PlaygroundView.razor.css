@@ -535,6 +535,24 @@
     line-height: 1.6;
 }
 
+/* Native syntax highlighting — spans come from GenerateMarkup (raw markup, so ::deep). */
+.pb-code ::deep .pb-tok-tag {
+    color: #b3a1ff;
+    font-weight: 600;
+}
+
+.pb-code ::deep .pb-tok-attr {
+    color: #8fd3e8;
+}
+
+.pb-code ::deep .pb-tok-val {
+    color: #e6c07b;
+}
+
+.pb-code ::deep .pb-tok-content {
+    color: #d6d6e7;
+}
+
 .pb-copy {
     position: absolute;
     top: 0.55rem;
