@@ -54,6 +54,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     {
         _state.Changed += OnStateChanged;
         _eventLog.Changed += OnStateChanged;
+        _eventLog.Recorded += OnSpecimenEvent;
         if (Options.GuardDebugAsserts)
         {
             DebugAssertGuard.Install();
@@ -124,6 +125,15 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     {
         _state.Changed -= OnStateChanged;
         _eventLog.Changed -= OnStateChanged;
+        _eventLog.Recorded -= OnSpecimenEvent;
+    }
+
+    private void OnSpecimenEvent(string name, object? payload)
+    {
+        if (SpecimenStateSync.TryApply(_descriptor, _state, name, payload))
+        {
+            _activeVariant = null;
+        }
     }
 
     private void OnStateChanged()

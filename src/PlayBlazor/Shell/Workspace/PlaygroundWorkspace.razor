@@ -265,6 +265,12 @@
                             title="Show only modified parameters"
                             @onclick="() => _modifiedOnly = !_modifiedOnly">Modified &#183; @ModifiedCount/@_selected!.Parameters.Count</button>
                 </div>
+                @if (ParameterGroups.All(g => VisibleRows(g).Count == 0))
+                {
+                    <p class="pbw-params-empty">
+                        No parameter matches this filter@(_modifiedOnly ? " — nothing is modified yet" : null).
+                    </p>
+                }
                 @foreach (var group in ParameterGroups)
                 {
                     var rows = VisibleRows(group);

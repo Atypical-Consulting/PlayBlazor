@@ -77,6 +77,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     {
         _state.Changed += OnBenchChanged;
         _eventLog.Changed += OnBenchChanged;
+        _eventLog.Recorded += OnSpecimenEvent;
         _layout.Changed += OnBenchChanged;
         if (Options.GuardDebugAsserts)
         {
@@ -197,6 +198,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     {
         _state.Changed -= OnBenchChanged;
         _eventLog.Changed -= OnBenchChanged;
+        _eventLog.Recorded -= OnSpecimenEvent;
         _layout.Changed -= OnBenchChanged;
         _layout.Changed -= PersistLayout;
         _disposeCts.Cancel();
@@ -218,6 +220,15 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private void OnBenchChanged()
         => _ = InvokeAsync(StateHasChanged);
+
+    private void OnSpecimenEvent(string name, object? payload)
+    {
+        if (_selected is not null && SpecimenStateSync.TryApply(_selected, _state, name, payload))
+        {
+            // The bench no longer matches the example that seeded it.
+            _activeVariant = null;
+        }
+    }
 
     /* ── Component selection ─────────────────────────── */
 

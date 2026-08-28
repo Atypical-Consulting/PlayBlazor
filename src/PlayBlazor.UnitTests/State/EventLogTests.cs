@@ -55,6 +55,31 @@ public class EventLogTests
     }
 
     [Test]
+    public void Record_FormatsCollectionsAsTheirItems()
+    {
+        var log = new PlaygroundEventLog();
+
+        log.Record("SelectedValuesChanged", new HashSet<string> { "Alaska", "Nebraska" });
+        log.Record("Big", Enumerable.Range(1, 9).ToArray());
+
+        log.Entries[1].Payload.Should().Be("[Alaska, Nebraska]");
+        log.Entries[0].Payload.Should().Be("[1, 2, 3, 4, 5, 6, …]");
+    }
+
+    [Test]
+    public void Record_RaisesRecordedWithTheRawPayload()
+    {
+        var log = new PlaygroundEventLog();
+        (string Name, object? Payload) seen = default;
+        log.Recorded += (name, payload) => seen = (name, payload);
+
+        log.Record("ValueChanged", 42);
+
+        seen.Name.Should().Be("ValueChanged");
+        seen.Payload.Should().Be(42);
+    }
+
+    [Test]
     public void Record_LeavesDetailNullWhenItAddsNothing()
     {
         var log = new PlaygroundEventLog();

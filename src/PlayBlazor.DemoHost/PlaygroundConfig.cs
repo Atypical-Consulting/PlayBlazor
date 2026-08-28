@@ -186,6 +186,17 @@ public static class PlaygroundConfig
         options.For<MudNavMenu>()
             .Slot("ChildContent", DemoFragments.NavLinks);
 
+        // AppBar and Drawer default to Fixed=true — they'd render fixed OVER the workspace
+        // chrome instead of inside the stage. Un-fix them and give them visible content.
+        options.For<MudAppBar>()
+            .Parameter(nameof(MudAppBar.Fixed), false)
+            .Slot(nameof(MudAppBar.ChildContent), b => b.AddContent(0, "My application"));
+
+        options.For<MudDrawer>()
+            .Parameter(nameof(MudDrawer.Fixed), false)
+            .Slot(nameof(MudDrawer.ChildContent), DemoFragments.NavLinks)
+            .Variant("Open", v => v.Set(nameof(MudDrawer.Open), true));
+
         options.For<MudNumericField<double>>()
             .Parameter("Label", "Amount");
 

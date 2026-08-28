@@ -207,6 +207,7 @@
 .pbw-prow-reset { background: transparent; border: 0; color: var(--pbw-muted); cursor: pointer; font-size: 0.8125rem; padding: 0 0.2rem; }
 .pbw-prow-reset:hover { color: var(--pbw-accent); }
 .pbw-prow-name { font-family: var(--pbw-mono); font-size: 0.71875rem; }
+.pbw-params-empty { font-family: var(--pbw-mono); font-size: 0.6875rem; color: var(--pbw-muted); margin: 0.3rem 0 0; line-height: 1.7; }
 .pbw-wired { font-family: var(--pbw-mono); font-size: 0.65rem; color: #14996a; }
 .pbw-slot-badge { font-family: var(--pbw-mono); font-size: 0.65rem; color: var(--pbw-muted); }
 

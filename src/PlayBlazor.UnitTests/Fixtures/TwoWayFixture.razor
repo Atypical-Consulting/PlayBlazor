@@ -1,0 +1,6 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<button class="two-way-source" @onclick="@(() => ValueChanged.InvokeAsync(Value + 1))">Value=@Value</button>
+@code {
+    [Parameter] public int Value { get; set; }
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+}

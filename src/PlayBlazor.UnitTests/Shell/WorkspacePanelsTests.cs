@@ -158,6 +158,32 @@ public class WorkspacePanelsTests
     }
 
     [Test]
+    public void SpecimenInteraction_FlowsBackIntoTheBench()
+    {
+        var cut = RenderWorkspace();
+        cut.Find(".pbw-picker").Change(nameof(TwoWayFixture));
+
+        cut.Find(".two-way-source").Click();
+        cut.Find(".two-way-source").Click();
+
+        // The two-way bound value sticks (no snap-back), the bench marks it modified,
+        // and the generated razor follows.
+        cut.Find(".two-way-source").TextContent.Should().Contain("Value=2");
+        cut.Find(".pbw-modchip").TextContent.Should().Contain("1/");
+        cut.Find("[data-panel=razor]").TextContent.Should().Contain("Value=\"2\"");
+    }
+
+    [Test]
+    public void FilterWithoutMatch_ShowsAnEmptyState()
+    {
+        var cut = RenderWorkspace();
+
+        cut.Find(".pbw-pfilter").Input("zzzz");
+
+        cut.Find(".pbw-params-empty").TextContent.Should().Contain("No parameter matches");
+    }
+
+    [Test]
     public void Variants_AppearAsExampleChips_AndSeedState()
     {
         var cut = RenderWorkspace(options =>

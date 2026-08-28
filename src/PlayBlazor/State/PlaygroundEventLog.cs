@@ -13,12 +13,18 @@ public sealed class PlaygroundEventLog
 
     public event Action? Changed;
 
+    /// <summary>Raised for every intercepted event, payload included — the shell uses it to
+    /// flow <c>XxxChanged</c> events back into the <c>Xxx</c> parameter.</summary>
+    public event Action<string, object?>? Recorded;
+
     public void Record(string name, object? payload)
     {
         var text = payload switch
         {
             null => "(null)",
             EventArgs args when ReferenceEquals(args, EventArgs.Empty) => string.Empty,
+            string s => s,
+            System.Collections.IEnumerable items => FormatCollection(items),
             _ => payload.ToString() ?? "(null)",
         };
 
@@ -28,7 +34,27 @@ public sealed class PlaygroundEventLog
             _entries.RemoveAt(_entries.Count - 1);
         }
 
+        Recorded?.Invoke(name, payload);
         Changed?.Invoke();
+    }
+
+    /// <summary>Collections read as their first items, not as a CLR type name.</summary>
+    private static string FormatCollection(System.Collections.IEnumerable items)
+    {
+        var shown = new List<string>();
+        var more = false;
+        foreach (var item in items)
+        {
+            if (shown.Count == 6)
+            {
+                more = true;
+                break;
+            }
+
+            shown.Add(item?.ToString() ?? "null");
+        }
+
+        return $"[{string.Join(", ", shown)}{(more ? ", …" : string.Empty)}]";
     }
 
     /// <summary>
