@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 
 namespace PlayBlazor.DemoHost;
@@ -44,6 +45,10 @@ public static class PlaygroundConfig
     {
         options.ComponentFilter = type => Curated.Contains(StripArity(type.Name));
         options.IconResolver = ComponentIcons.Resolve;
+
+        // Discovery closes T with string, which MudFileUpload warns about at render time —
+        // declare the closing it actually supports.
+        options.For<MudFileUpload<IBrowserFile>>();
 
         options.For<MudAlert>()
             .Slot(nameof(MudAlert.ChildContent), b => b.AddContent(0, "The reactor is running at optimum temperature."))

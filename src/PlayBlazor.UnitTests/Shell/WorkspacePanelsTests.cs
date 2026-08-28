@@ -141,6 +141,23 @@ public class WorkspacePanelsTests
     }
 
     [Test]
+    public void RichTypes_GetRealControls_AndDriveTheSpecimen()
+    {
+        var cut = RenderWorkspace();
+        cut.Find(".pbw-picker").Change(nameof(RichTypesFixture));
+
+        cut.Find("[data-panel=parameters] input[type=datetime-local]").Change("2026-08-28T09:30:00");
+        cut.Find("[data-panel=parameters] input[type=time]").Change("00:00:30");
+        var texts = cut.FindAll("[data-panel=parameters] .pb-control-text input");
+        texts.First(t => t.Closest("label")!.TextContent.Contains("Tags")).Change("alpha, beta");
+
+        var specimen = cut.Find(".rich-fixture").TextContent;
+        specimen.Should().Contain("When=2026-08-28 09:30");
+        specimen.Should().Contain("Every=00:00:30");
+        specimen.Should().Contain("Tags=alpha|beta");
+    }
+
+    [Test]
     public void Variants_AppearAsExampleChips_AndSeedState()
     {
         var cut = RenderWorkspace(options =>

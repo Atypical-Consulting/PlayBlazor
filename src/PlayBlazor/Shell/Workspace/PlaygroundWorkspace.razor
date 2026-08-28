@@ -297,7 +297,7 @@
                                 else
                                 {
                                     <span class="pbw-prow-name">@parameter.Name</span>
-                                    <span class="pbw-slot-badge">&#9671; @(Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _) || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _) ? "host preset" : parameter.Kind.ToString())</span>
+                                    <span class="pbw-slot-badge">&#9671; @(Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _) || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _) ? "host preset" : ParameterSignature.TypeName(parameter.Type))</span>
                                 }
                             </div>
                         }

@@ -128,6 +128,8 @@ public static class RazorSnippetGenerator
             bool boolean => boolean ? "true" : "false",
             Enum enumValue => $"{enumValue.GetType().Name}.{enumValue}",
             string text => text.Replace("\"", "&quot;"),
+            Array array => string.Join(", ", array.Cast<object?>()
+                .Select(static item => Convert.ToString(item, CultureInfo.InvariantCulture))),
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
             _ => value.ToString() ?? string.Empty,
         };

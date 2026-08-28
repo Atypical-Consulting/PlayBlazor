@@ -1,13 +1,27 @@
 @namespace PlayBlazor.Shell
+@using PlayBlazor.State
 <label class="pb-control pb-control-text">
     <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
-    <input type="text" value="@(Value as string)" @onchange="OnChanged" />
+    <input type="text" value="@ParameterValueConverter.Format(Parameter, Value)"
+           maxlength="@(UnderlyingType == typeof(char) ? "1" : null)" @onchange="OnChanged" />
 </label>
 @code {
     [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
     [Parameter] public object? Value { get; set; }
     [Parameter] public EventCallback<object?> ValueChanged { get; set; }
 
+    private Type UnderlyingType => Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type;
+
     private Task OnChanged(ChangeEventArgs e)
-        => ValueChanged.InvokeAsync((string?)e.Value is { Length: > 0 } text ? text : null);
+    {
+        if ((string?)e.Value is not { Length: > 0 } text)
+        {
+            return ValueChanged.InvokeAsync(null);
+        }
+
+        // char, MarkupString, and CSV arrays share the Text kind — the converter types them.
+        return ParameterValueConverter.TryParse(Parameter, text, out var value)
+            ? ValueChanged.InvokeAsync(value)
+            : Task.CompletedTask;
+    }
 }

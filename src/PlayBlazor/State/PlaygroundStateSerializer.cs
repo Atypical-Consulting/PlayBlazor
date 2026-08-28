@@ -25,15 +25,7 @@ public static class PlaygroundStateSerializer
                 continue;
             }
 
-            var text = state.GetValue(parameter) switch
-            {
-                null => null,
-                bool boolean => boolean ? "true" : "false",
-                string s => s,
-                Enum enumValue => enumValue.ToString(),
-                IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
-                _ => null,
-            };
+            var text = ParameterValueConverter.Format(parameter, state.GetValue(parameter));
 
             if (text is not null)
             {
@@ -91,27 +83,10 @@ public static class PlaygroundStateSerializer
                 continue;
             }
 
-            var underlying = Nullable.GetUnderlyingType(parameter.Type) ?? parameter.Type;
-            try
+            // Mismatched values in a stale permalink simply fail to parse and are skipped.
+            if (ParameterValueConverter.TryParse(parameter, text, out var value))
             {
-                object? value = parameter.Kind switch
-                {
-                    ControlKind.Bool => bool.Parse(text),
-                    ControlKind.Enum => Enum.Parse(underlying, text),
-                    ControlKind.Text => text,
-                    ControlKind.Slot => text,
-                    ControlKind.Number => Convert.ChangeType(text, underlying, CultureInfo.InvariantCulture),
-                    _ => null,
-                };
-
-                if (value is not null)
-                {
-                    state.Set(name, value);
-                }
-            }
-            catch (Exception)
-            {
-                // Mismatched value in a stale permalink — skip this parameter.
+                state.Set(name, value);
             }
         }
     }

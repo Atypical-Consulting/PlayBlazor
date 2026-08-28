@@ -1,0 +1,40 @@
+@namespace PlayBlazor.Shell
+@using System.Globalization
+<label class="pb-control pb-control-date">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <input type="@(IsDateOnly ? "date" : "datetime-local")" step="1" value="@Formatted" @onchange="OnChanged" />
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private bool IsDateOnly
+        => (Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type) == typeof(DateOnly);
+
+    private string Formatted => Value switch
+    {
+        DateTime dateTime => dateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture),
+        DateOnly date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        _ => string.Empty,
+    };
+
+    private Task OnChanged(ChangeEventArgs e)
+    {
+        if ((string?)e.Value is not { Length: > 0 } raw)
+        {
+            return ValueChanged.InvokeAsync(null);
+        }
+
+        try
+        {
+            return ValueChanged.InvokeAsync(IsDateOnly
+                ? DateOnly.Parse(raw, CultureInfo.InvariantCulture)
+                : DateTime.Parse(raw, CultureInfo.InvariantCulture));
+        }
+        catch (FormatException)
+        {
+            return Task.CompletedTask;
+        }
+    }
+}

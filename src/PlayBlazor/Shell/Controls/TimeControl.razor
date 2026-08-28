@@ -1,0 +1,40 @@
+@namespace PlayBlazor.Shell
+@using System.Globalization
+<label class="pb-control pb-control-time">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <input type="time" step="1" value="@Formatted" @onchange="OnChanged" />
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private bool IsTimeOnly
+        => (Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type) == typeof(TimeOnly);
+
+    private string Formatted => Value switch
+    {
+        TimeSpan time => time.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture),
+        TimeOnly time => time.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
+        _ => string.Empty,
+    };
+
+    private Task OnChanged(ChangeEventArgs e)
+    {
+        if ((string?)e.Value is not { Length: > 0 } raw)
+        {
+            return ValueChanged.InvokeAsync(null);
+        }
+
+        try
+        {
+            return ValueChanged.InvokeAsync(IsTimeOnly
+                ? TimeOnly.Parse(raw, CultureInfo.InvariantCulture)
+                : TimeSpan.Parse(raw, CultureInfo.InvariantCulture));
+        }
+        catch (FormatException)
+        {
+            return Task.CompletedTask;
+        }
+    }
+}

@@ -40,6 +40,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private IEnumerable<ParameterDescriptor> Controllable
         => _descriptor.Parameters.Where(static p => p.Kind
             is ControlKind.Bool or ControlKind.Enum or ControlKind.Text or ControlKind.Number
+                or ControlKind.Date or ControlKind.Time or ControlKind.Color
             || IsTextSlot(p));
 
     private IEnumerable<ParameterDescriptor> Uncontrollable

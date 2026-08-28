@@ -5,12 +5,17 @@ public enum ControlKind
 {
     Bool,
     Enum,
+    /// <summary>Strings — plus char, MarkupString and string/numeric arrays (CSV-edited).</summary>
     Text,
     Number,
-    /// <summary>Reserved for host-registered rich mappers (milestone 4).</summary>
+    /// <summary>Library color types recognized structurally (R/G/B properties + string constructor).</summary>
     Color,
-    /// <summary>Reserved for host-registered rich mappers (milestone 4).</summary>
+    /// <summary>Reserved for host-registered rich mappers (icon pickers…).</summary>
     Icon,
+    /// <summary>DateTime / DateOnly.</summary>
+    Date,
+    /// <summary>TimeSpan / TimeOnly.</summary>
+    Time,
     Slot,
     Event,
     Unsupported,

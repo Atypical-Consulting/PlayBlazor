@@ -197,6 +197,13 @@
 }
 .pbw-prow ::deep select:hover, .pbw-prow ::deep input:hover { border-color: var(--pbw-accent); }
 .pbw-prow ::deep input[type="checkbox"] { accent-color: var(--pbw-accent); }
+.pbw-prow ::deep input[type="datetime-local"], .pbw-prow ::deep input[type="date"], .pbw-prow ::deep input[type="time"] {
+    font-family: var(--pbw-mono); font-size: 0.65rem; color: var(--pbw-ink);
+    background: var(--pbw-bg); border: 1px solid var(--pbw-line); border-radius: 6px; padding: 0.2rem 0.35rem;
+}
+.pbw-prow ::deep .pb-color-pair { display: flex; align-items: center; gap: 0.4rem; }
+.pbw-prow ::deep input[type="color"] { width: 34px; height: 22px; border: 1px solid var(--pbw-line); border-radius: 5px; background: var(--pbw-bg); padding: 1px; }
+.pbw-prow ::deep .pb-color-hex { font-family: var(--pbw-mono); font-size: 0.625rem; color: var(--pbw-muted); }
 .pbw-prow-reset { background: transparent; border: 0; color: var(--pbw-muted); cursor: pointer; font-size: 0.8125rem; padding: 0 0.2rem; }
 .pbw-prow-reset:hover { color: var(--pbw-accent); }
 .pbw-prow-name { font-family: var(--pbw-mono); font-size: 0.71875rem; }

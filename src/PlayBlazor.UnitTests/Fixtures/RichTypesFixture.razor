@@ -1,0 +1,8 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div class="rich-fixture">When=@(When?.ToString("yyyy-MM-dd HH:mm") ?? "-");Every=@Every;Tags=@string.Join("|", Tags ?? []);Html=@Html</div>
+@code {
+    [Parameter] public DateTime? When { get; set; }
+    [Parameter] public TimeSpan Every { get; set; } = TimeSpan.FromMinutes(5);
+    [Parameter] public string[]? Tags { get; set; }
+    [Parameter] public MarkupString Html { get; set; }
+}

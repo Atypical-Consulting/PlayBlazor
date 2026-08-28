@@ -1,0 +1,59 @@
+@namespace PlayBlazor.Shell
+@using System.Globalization
+@using System.Reflection
+<label class="pb-control pb-control-color">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <span class="pb-color-pair">
+        <input type="color" value="@Hex" @onchange="OnChanged" />
+        <code class="pb-color-hex">@Hex</code>
+    </span>
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private Type UnderlyingType => Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type;
+
+    /// <summary>Reads the duck-typed R/G/B channels back into the #rrggbb the input needs.</summary>
+    private string Hex
+    {
+        get
+        {
+            if (Value is null)
+            {
+                return "#000000";
+            }
+
+            var type = Value.GetType();
+            var channels = new[] { "R", "G", "B" }
+                .Select(name => type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance)?.GetValue(Value))
+                .ToArray();
+            if (channels.Any(static c => c is null))
+            {
+                return "#000000";
+            }
+
+            return "#" + string.Concat(channels.Select(static c =>
+                Convert.ToInt32(c, CultureInfo.InvariantCulture).ToString("x2", CultureInfo.InvariantCulture)));
+        }
+    }
+
+    private Task OnChanged(ChangeEventArgs e)
+    {
+        if ((string?)e.Value is not { Length: > 0 } hex)
+        {
+            return ValueChanged.InvokeAsync(null);
+        }
+
+        try
+        {
+            return ValueChanged.InvokeAsync(Activator.CreateInstance(UnderlyingType, hex));
+        }
+        catch (Exception)
+        {
+            // A color type that rejects this CSS string simply keeps its previous value.
+            return Task.CompletedTask;
+        }
+    }
+}

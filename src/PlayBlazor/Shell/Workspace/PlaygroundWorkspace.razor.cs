@@ -308,6 +308,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private static bool IsDrivable(ParameterDescriptor parameter)
         => parameter.Kind is ControlKind.Bool or ControlKind.Enum or ControlKind.Text or ControlKind.Number
+               or ControlKind.Date or ControlKind.Time or ControlKind.Color
            || IsTextSlot(parameter);
 
     private IEnumerable<IGrouping<string, ParameterDescriptor>> ParameterGroups
