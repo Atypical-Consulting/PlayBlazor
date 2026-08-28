@@ -26,7 +26,8 @@ public sealed class WorkspaceLayout
 
     public event Action? Changed;
 
-    public double RightWidth { get; private set; } = 330;
+    // 380 rather than the handoff's 330: the parameter rows breathe (user feedback).
+    public double RightWidth { get; private set; } = 380;
 
     public double BottomHeight { get; private set; } = 235;
 
@@ -102,7 +103,7 @@ public sealed class WorkspaceLayout
         _bottom.AddRange(DefaultBottom);
         _floats.Clear();
         _hidden.Clear();
-        RightWidth = 330;
+        RightWidth = 380;
         BottomHeight = 235;
         Notify();
     }

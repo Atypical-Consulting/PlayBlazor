@@ -130,6 +130,8 @@
     font-family: var(--pbw-mono); font-size: 0.6875rem; color: var(--pbw-muted);
 }
 .pbw-present .pbw-stage-name, .pbw-present .pbw-stage-toolbar { display: none; }
+/* Muted chrome text fails contrast on the dark stage surface — lift it there. */
+.pbw-stage-dark .pbw-stage-name, .pbw-stage-dark .pbw-chips-label { color: #9a9ab0; }
 .pbw-error {
     max-width: 560px; background: #fff; border: 1px solid #e5484d; border-radius: 10px;
     padding: 0.9rem 1.1rem; font-size: 0.8125rem;
@@ -154,9 +156,11 @@
 .pbw-zgrip { position: absolute; z-index: 6; display: grid; place-items: center; touch-action: none; }
 .pbw-zgrip::after { content: ""; border-radius: 999px; background: var(--pbw-line); }
 .pbw-zgrip:hover::after { background: var(--pbw-accent); }
-.pbw-zgrip-bottom { top: -9px; left: 0; right: 0; height: 14px; cursor: row-resize; }
+/* The workspace grid gap is 10px — a 14px grip band starting at -12px centers its
+   4px bar exactly in the middle of the gap between the two resizable sections. */
+.pbw-zgrip-bottom { top: -12px; left: 0; right: 0; height: 14px; cursor: row-resize; }
 .pbw-zgrip-bottom::after { width: 44px; height: 4px; }
-.pbw-zgrip-right { left: -9px; top: 0; bottom: 0; width: 14px; cursor: col-resize; }
+.pbw-zgrip-right { left: -12px; top: 0; bottom: 0; width: 14px; cursor: col-resize; }
 .pbw-zgrip-right::after { width: 4px; height: 44px; }
 
 /* ── Parameters panel ───────────────────────────────── */
@@ -226,7 +230,7 @@
 .pbw-tnode-sel { background: rgba(109, 74, 255, 0.12); color: #4c30c4; font-weight: 600; }
 .pbw-tnode-info { color: var(--pbw-muted); cursor: default; }
 .pbw-tnode-info:hover { background: transparent; }
-.pbw-tag-p { color: #9a9aae; }
+.pbw-tag-p { color: #7c7c94; }
 .pbw-tag-n { color: #5335d1; }
 .pbw-tag-a { color: #2b5fde; font-size: 0.65rem; }
 .pbw-tnode-sel .pbw-tag-n { color: #4c30c4; }
@@ -253,6 +257,7 @@
 .pbw-code ::deep .pb-tok-attr { color: #2b5fde; }
 .pbw-code ::deep .pb-tok-val { color: #1b7f4d; }
 .pbw-code ::deep .pb-tok-content { color: var(--pbw-ink); }
+.pbw-code ::deep .pb-tok-comment { color: #6f6f84; font-style: italic; }
 
 /* ── Signals panel ──────────────────────────────────── */
 .pbw-signals-empty { font-family: var(--pbw-mono); font-size: 0.6875rem; color: var(--pbw-muted); margin: 0; line-height: 1.7; }
@@ -298,7 +303,7 @@
 @keyframes pbw-fill { to { transform: scaleX(1); } }
 .pbw-hud-pause { background: transparent; border: 0; color: #9a9ab0; cursor: pointer; font-size: 0.8125rem; padding: 0.2rem 0.4rem; }
 .pbw-hud-pause:hover { color: #fff; }
-.pbw-hud-exit { font-family: var(--pbw-mono); font-size: 0.625rem; color: #6f6f8a; border-left: 1px solid #2b2b3a; padding-left: 0.75rem; }
+.pbw-hud-exit { font-family: var(--pbw-mono); font-size: 0.625rem; color: #8f8fa6; border-left: 1px solid #2b2b3a; padding-left: 0.75rem; }
 .pbw-toast {
     position: fixed; top: 58px; left: 50%; transform: translateX(-50%); z-index: 70;
     font-family: var(--pbw-mono); font-size: 0.71875rem; font-weight: 600;

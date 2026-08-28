@@ -63,11 +63,12 @@ public class PresetTests
     }
 
     [Test]
-    public void Preset_IsNotEmittedInSnippet()
+    public void Preset_IsEmittedInSnippet()
     {
+        // The snippet reflects everything the stage renders — host presets included.
         var cut = RenderView(o => o.For<BasicFixture>().Parameter(nameof(BasicFixture.Dense), true));
 
-        cut.Find(".pb-code code").TextContent.Should().Be("<BasicFixture />");
+        cut.Find(".pb-code code").TextContent.Should().Be("<BasicFixture Dense=\"true\" />");
     }
 
     [Test]

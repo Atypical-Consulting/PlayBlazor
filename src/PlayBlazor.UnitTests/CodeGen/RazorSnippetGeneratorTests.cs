@@ -91,4 +91,54 @@ public class RazorSnippetGeneratorTests
         RazorSnippetGenerator.Generate(_descriptor, state)
             .Should().Be("<BasicFixture />");
     }
+
+    [Test]
+    public void Generate_WithOptions_ShowsHostPresetsAndSlots()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>()
+            .Parameter(nameof(BasicFixture.Count), 9)
+            .Parameter(nameof(BasicFixture.Endpoint), new Uri("https://example.test/"))
+            .Slot(nameof(BasicFixture.ChildContent), builder => { });
+
+        RazorSnippetGenerator.Generate(_descriptor, new PlaygroundState(), options)
+            .Should().Be("""<BasicFixture Count="9" Endpoint="@_endpoint">@* … *@</BasicFixture>""");
+    }
+
+    [Test]
+    public void Generate_UserModification_WinsOverThePreset()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>().Parameter(nameof(BasicFixture.Count), 9);
+        var state = new PlaygroundState();
+        state.Set("Count", 4);
+
+        RazorSnippetGenerator.Generate(_descriptor, state, options)
+            .Should().Be("""<BasicFixture Count="4" />""");
+    }
+
+    [Test]
+    public void Generate_NamedSlotPresets_BecomeChildElements()
+    {
+        var descriptor = new ReflectionCatalogProvider().Describe(typeof(SlottedFixture));
+        var options = new PlayBlazorOptions();
+        options.For<SlottedFixture>()
+            .Slot(nameof(SlottedFixture.Header), builder => { })
+            .Slot(nameof(SlottedFixture.ChildContent), builder => { });
+
+        RazorSnippetGenerator.Generate(descriptor, new PlaygroundState(), options).Should().Be(
+            "<SlottedFixture>\n" +
+            "    @* … *@\n" +
+            "    <Header>@* … *@</Header>\n" +
+            "</SlottedFixture>");
+    }
+
+    [Test]
+    public void Generate_GenericClosing_BecomesTypeAttributes()
+    {
+        var descriptor = new ReflectionCatalogProvider().Describe(typeof(GenericFixture<int>));
+
+        RazorSnippetGenerator.Generate(descriptor, new PlaygroundState())
+            .Should().Be("""<GenericFixture TItem="int" />""");
+    }
 }

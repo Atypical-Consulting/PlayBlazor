@@ -51,7 +51,7 @@
     font-style: normal;
     font-family: var(--pbw-mono);
     font-size: 0.625rem;
-    color: var(--pbw-muted);
+    color: #5f5f6d;
     background: var(--pbw-bg);
     border-radius: 999px;
     padding: 0.06rem 0.45rem;

@@ -13,7 +13,7 @@ public class WorkspaceLayoutTests
 
         layout.Zone(WorkspaceLayout.RightZone).Should().ContainInOrder("graph", "parameters");
         layout.Zone(WorkspaceLayout.BottomZone).Should().ContainInOrder("razor", "signals");
-        layout.RightWidth.Should().Be(330);
+        layout.RightWidth.Should().Be(380);
         layout.BottomHeight.Should().Be(235);
         layout.IsHidden("graph").Should().BeFalse();
         layout.Float("graph").Should().BeNull();

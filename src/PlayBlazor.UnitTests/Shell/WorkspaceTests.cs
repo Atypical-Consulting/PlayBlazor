@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using PlayBlazor.Shell.Workspace;
 using PlayBlazor.UnitTests.Fixtures;
@@ -120,6 +121,35 @@ public class WorkspaceTests
             "the Person-style host preset only binds on the host's own closing");
         cut.Find("[data-panel=graph] .pbw-tnode-sel").TextContent
             .Should().Contain("TItem=\"double\"", "the graph shows the real generic closing");
+    }
+
+    [Test]
+    public void TheAddressBar_AlwaysCarriesTheBench()
+    {
+        var cut = RenderWorkspace();
+        var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        navigation.Uri.Should().Contain("pb-BasicFixture=", "selecting a component makes the URL shareable");
+
+        cut.Find(".pbw-picker").Change(nameof(EventFixture));
+        navigation.Uri.Should().Contain("pb-EventFixture=").And.NotContain("pb-BasicFixture=");
+
+        cut.Find(".pbw-picker").Change(nameof(BasicFixture));
+        var pristine = navigation.Uri;
+        cut.FindAll("[data-panel=parameters] input[type=checkbox]")[0].Change(true); // Dense
+        navigation.Uri.Should().NotBe(pristine, "modified state re-encodes into the URL");
+        navigation.Uri.Should().Contain("pb-BasicFixture=");
+    }
+
+    [Test]
+    public void Snippet_ShowsWhatTheHostContributes()
+    {
+        var cut = RenderWorkspace(options => options.For<GenericFixture<double>>()
+            .Parameter(nameof(GenericFixture<double>.Value), 2.5));
+        cut.Find(".pbw-picker").Change(nameof(GenericFixture<double>));
+
+        var code = cut.Find("[data-panel=razor] .pbw-code").TextContent;
+        code.Should().Contain("TItem=\"double\"", "the generic closing renders");
+        code.Should().Contain("Value=\"2.5\"", "drivable presets render as literals");
     }
 
     [Test]

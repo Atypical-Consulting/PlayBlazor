@@ -75,6 +75,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
+        _state.Changed += SyncUrl;
         _state.Changed += OnBenchChanged;
         _eventLog.Changed += OnBenchChanged;
         _eventLog.Recorded += OnSpecimenEvent;
@@ -196,6 +197,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _state.Changed -= SyncUrl;
         _state.Changed -= OnBenchChanged;
         _eventLog.Changed -= OnBenchChanged;
         _eventLog.Recorded -= OnSpecimenEvent;
@@ -264,6 +266,31 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         if (restorePermalink)
         {
             RestoreFromPermalink();
+        }
+
+        SyncUrl();
+    }
+
+    /// <summary>
+    /// The address bar IS the permalink: it always carries the played component and its
+    /// encoded state, so copying the URL shares the exact bench — no button needed.
+    /// </summary>
+    private void SyncUrl()
+    {
+        if (_selected is null)
+        {
+            return;
+        }
+
+        var encoded = PlaygroundStateSerializer.Encode(_selected, _state, _environment);
+        var kept = QueryPairs()
+            .Where(static pair => !pair.Key.StartsWith("pb-", StringComparison.Ordinal))
+            .Select(static pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}")
+            .Append($"{Uri.EscapeDataString(PermalinkParameterName)}={encoded}");
+        var target = $"{Navigation.Uri.Split('?')[0]}?{string.Join("&", kept)}";
+        if (target != Navigation.Uri)
+        {
+            Navigation.NavigateTo(target, forceLoad: false, replace: true);
         }
     }
 
@@ -388,11 +415,11 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     /* ── Razor / share ───────────────────────────────── */
 
-    private MarkupString SnippetMarkup => RazorSnippetGenerator.GenerateMarkup(_selected!, _state);
+    private MarkupString SnippetMarkup => RazorSnippetGenerator.GenerateMarkup(_selected!, _state, Options);
 
     private async Task CopyRazor()
     {
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", RazorSnippetGenerator.Generate(_selected!, _state));
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", RazorSnippetGenerator.Generate(_selected!, _state, Options));
         ShowToast("Razor copied ✓");
     }
 

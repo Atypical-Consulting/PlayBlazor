@@ -1,0 +1,6 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div class="slotted-fixture">@Header@ChildContent</div>
+@code {
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
