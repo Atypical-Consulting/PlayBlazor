@@ -11,8 +11,17 @@
   would not resolve as a project card) and a `<!-- @dsCard group="…" -->` first line.
   Groups: "Start here" (hub), "Round 1 · Exploration" (a/b/c), "Round 2 · Scale" (d/e/f),
   "Round 3 · Synthesis" (g — the retained direction).
-- **Re-sync recipe**: regenerate ds-bundle (inline the model, prepend @dsCard), then
-  finalize_plan(localDir ds-bundle, writes ["mockups/**","README.md"], deletes
-  ["mockups/**"]) and write_files with localPath.
+- **Re-sync recipe**: regenerate ds-bundle (inline the model, prepend @dsCard — SKIP the
+  prepend when the file already starts with `<!-- @dsCard`, e.g. concept-g-ide-v2.html which
+  came back FROM Claude Design with its own richer marker), then finalize_plan(localDir
+  ds-bundle, writes ["mockups/**","README.md"], deletes ["mockups/**"]) and write_files
+  with localPath.
+- **2026-08-28 round-trip**: Claude Design refined G into `mockups/concept-g-ide-v2.html` +
+  `design_handoff_playblazor_mini_ide/` (README = implementation spec, tokens, behaviors).
+  v2 pulled back into the repo design dir and verified in Chrome (keys 1–4, `/`, dbl-click
+  re-dock, float edge/corner resize `rz-r/rz-b/rz-c`, signals unfold, `[Parameter]` signature
+  tooltips, MultiSelection wiring `.selrow td`). v2 is self-contained (model inlined by the
+  design agent) — never re-inline into it. The handoff files live only in the project; the
+  repo copy of the spec is mirrored in NOTES of the design dir.
 - Concept B links Google Fonts (Archivo, IBM Plex Mono) with full system fallbacks — if the
   design pane blocks external fonts the card still renders correctly.
