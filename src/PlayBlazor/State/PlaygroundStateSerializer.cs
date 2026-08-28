@@ -125,4 +125,5 @@ internal sealed record PermalinkPayload(
     [property: JsonPropertyName("w")] int? ViewportWidth);
 
 [JsonSerializable(typeof(PermalinkPayload))]
+[JsonSerializable(typeof(WorkspaceLayoutDto))]
 internal sealed partial class PlayBlazorJsonContext : JsonSerializerContext;

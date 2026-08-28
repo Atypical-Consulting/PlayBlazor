@@ -8,4 +8,6 @@ public sealed record ParameterDescriptor(
     bool IsNullable,
     object? DefaultValue,
     bool HasDefault,
-    string? Summary);
+    string? Summary,
+    string Group = "General",
+    int GroupOrder = int.MaxValue);

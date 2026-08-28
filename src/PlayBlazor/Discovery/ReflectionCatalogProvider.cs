@@ -63,6 +63,7 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
         }
 
         var parameters = new List<ParameterDescriptor>();
+        var nullability = new NullabilityInfoContext();
         foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (property.GetCustomAttribute<ParameterAttribute>() is null)
@@ -71,6 +72,11 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
             }
 
             var (kind, isNullable) = ControlKindResolver.Resolve(property.PropertyType);
+            if (!isNullable && !property.PropertyType.IsValueType)
+            {
+                // Nullable<T> is visible on the type; reference-type `string?` only on the property.
+                isNullable = nullability.Create(property).WriteState == NullabilityState.Nullable;
+            }
 
             object? defaultValue = null;
             var hasDefault = false;
@@ -87,6 +93,7 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
                 }
             }
 
+            var (group, groupOrder) = ResolveCategory(property);
             parameters.Add(new ParameterDescriptor(
                 Name: property.Name,
                 Type: property.PropertyType,
@@ -94,7 +101,9 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
                 IsNullable: isNullable,
                 DefaultValue: defaultValue,
                 HasDefault: hasDefault,
-                Summary: _xmlDocs?.GetPropertySummary(property)));
+                Summary: _xmlDocs?.GetPropertySummary(property),
+                Group: group,
+                GroupOrder: groupOrder));
         }
 
         return new ComponentDescriptor(
@@ -105,6 +114,36 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
             Parameters: parameters,
             Warning: warning,
             CanInstantiate: instance is not null);
+    }
+
+    /// <summary>
+    /// Groups a parameter by any <c>CategoryAttribute</c> the library declares — matched by
+    /// type name so MudBlazor's own attribute (string <c>Name</c>, int <c>Order</c>) and
+    /// <see cref="System.ComponentModel.CategoryAttribute"/> (string <c>Category</c>) both
+    /// work without a compile-time dependency.
+    /// </summary>
+    private static (string Group, int Order) ResolveCategory(PropertyInfo property)
+    {
+        foreach (var attribute in property.GetCustomAttributes(inherit: true))
+        {
+            var type = attribute.GetType();
+            if (type.Name != "CategoryAttribute")
+            {
+                continue;
+            }
+
+            var name = type.GetProperty("Name")?.GetValue(attribute) as string
+                       ?? type.GetProperty("Category")?.GetValue(attribute) as string;
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+
+            var order = type.GetProperty("Order")?.GetValue(attribute) is int o ? o : int.MaxValue - 1;
+            return (name, order);
+        }
+
+        return ("General", int.MaxValue);
     }
 
     private static string StripArity(string typeName)

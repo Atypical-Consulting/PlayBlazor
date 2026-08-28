@@ -44,6 +44,30 @@ public class EventLogTests
     }
 
     [Test]
+    public void Record_CapturesADetailDumpOfPayloadProperties()
+    {
+        var log = new PlaygroundEventLog();
+
+        log.Record("OnClick", new Microsoft.AspNetCore.Components.Web.MouseEventArgs { Detail = 2, Button = 1 });
+
+        log.Entries[0].Detail.Should().NotBeNull();
+        log.Entries[0].Detail.Should().Contain("Detail = 2").And.Contain("Button = 1");
+    }
+
+    [Test]
+    public void Record_LeavesDetailNullWhenItAddsNothing()
+    {
+        var log = new PlaygroundEventLog();
+
+        log.Record("A", null);
+        log.Record("B", EventArgs.Empty);
+        log.Record("C", 42);
+        log.Record("D", "text");
+
+        log.Entries.Should().OnlyContain(e => e.Detail == null);
+    }
+
+    [Test]
     public void Clear_EmptiesAndNotifies()
     {
         var log = new PlaygroundEventLog();
