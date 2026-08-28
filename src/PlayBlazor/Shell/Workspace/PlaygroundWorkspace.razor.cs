@@ -14,8 +14,10 @@ namespace PlayBlazor.Shell.Workspace;
 /// The mini-IDE shell (Concept G v2): a specimen stage surrounded by four dockable panels —
 /// Graph, Parameters, Razor, Signals — with a Present mode for demos.
 /// </summary>
-public partial class PlaygroundWorkspace : ComponentBase, IDisposable
+public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 {
+    private const string ModulePath = "./_content/PlayBlazor/playground-workspace.js";
+
     internal sealed record PanelDef(string Id, string Title);
 
     internal const string GraphId = "graph";
@@ -53,6 +55,8 @@ public partial class PlaygroundWorkspace : ComponentBase, IDisposable
     private bool _autoPlaying;
     private int _autoIndex;
     private CancellationTokenSource? _autoCts;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<PlaygroundWorkspace>? _selfRef;
 
     [Inject]
     private IComponentCatalogProvider Catalog { get; set; } = default!;
@@ -93,13 +97,120 @@ public partial class PlaygroundWorkspace : ComponentBase, IDisposable
         }
     }
 
-    public void Dispose()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            _module = await Js.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            _selfRef = DotNetObjectReference.Create(this);
+            var saved = await _module.InvokeAsync<string?>("init", _selfRef);
+            if (saved is not null)
+            {
+                _layout.CopyFrom(WorkspaceLayout.FromJson(saved));
+            }
+
+            _layout.Changed += PersistLayout;
+        }
+        catch (JSException)
+        {
+            // No module (static prerender, tests without a module mock): the workspace
+            // still works, minus drag gestures and persistence.
+        }
+    }
+
+    private void PersistLayout()
+    {
+        if (_module is { } module)
+        {
+            _ = module.InvokeVoidAsync("saveLayout", _layout.ToJson()).AsTask();
+        }
+    }
+
+    /* ── Gesture callbacks (from playground-workspace.js) ── */
+
+    [JSInvokable]
+    public Task OnPanelDropped(string id, string? zone, int index, double x, double y)
+        => InvokeAsync(() =>
+        {
+            if (zone is null)
+            {
+                _layout.SetFloat(id, x, y);
+            }
+            else
+            {
+                _layout.Dock(id, zone, index);
+            }
+        });
+
+    [JSInvokable]
+    public Task OnZoneResized(string zone, double pixels)
+        => InvokeAsync(() => _layout.Resize(zone, pixels));
+
+    [JSInvokable]
+    public Task OnFloatResized(string id, double width, double height)
+        => InvokeAsync(() => _layout.SetFloatSize(id, width, height));
+
+    [JSInvokable]
+    public Task OnKey(string key)
+        => InvokeAsync(() =>
+        {
+            switch (key)
+            {
+                case "1" or "2" or "3" or "4":
+                    TogglePanel(Panels[key[0] - '1'].Id);
+                    break;
+                case "/":
+                    if (_layout.IsHidden(ParametersId))
+                    {
+                        _layout.ToggleHidden(ParametersId);
+                    }
+
+                    break;
+                case "Escape" when _present:
+                    SetPresent(false);
+                    StateHasChanged();
+                    break;
+                case "ArrowLeft" or "ArrowRight" when _present && Variants.Count > 0:
+                    StopAutoplay();
+                    var count = Variants.Count;
+                    var current = _activeVariant is null
+                        ? 0
+                        : Variants.ToList().FindIndex(v => v.Name == _activeVariant);
+                    var next = key == "ArrowRight"
+                        ? (current + 1) % count
+                        : (current + count - 1) % count;
+                    ApplyVariant(Variants[next]);
+                    StateHasChanged();
+                    break;
+            }
+        });
+
+    public async ValueTask DisposeAsync()
     {
         _state.Changed -= OnBenchChanged;
         _eventLog.Changed -= OnBenchChanged;
         _layout.Changed -= OnBenchChanged;
+        _layout.Changed -= PersistLayout;
         _disposeCts.Cancel();
         _disposeCts.Dispose();
+        _selfRef?.Dispose();
+        if (_module is { } module)
+        {
+            try
+            {
+                await module.InvokeVoidAsync("dispose");
+                await module.DisposeAsync();
+            }
+            catch (JSException)
+            {
+                // The runtime is tearing down — nothing left to release.
+            }
+        }
     }
 
     private void OnBenchChanged()

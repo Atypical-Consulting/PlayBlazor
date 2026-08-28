@@ -15,6 +15,10 @@ public class WorkspacePanelsTests
     {
         _context = new BunitContext();
         _context.JSInterop.SetupVoid("navigator.clipboard.writeText", _ => true).SetVoidResult();
+        var module = _context.JSInterop.SetupModule("./_content/PlayBlazor/playground-workspace.js");
+        module.Setup<string?>("init", _ => true).SetResult(null);
+        module.SetupVoid("saveLayout", _ => true).SetVoidResult();
+        module.SetupVoid("dispose").SetVoidResult();
     }
 
     [TearDown]

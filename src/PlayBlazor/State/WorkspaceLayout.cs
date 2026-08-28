@@ -160,6 +160,26 @@ public sealed class WorkspaceLayout
         return layout;
     }
 
+    /// <summary>Adopts another layout's state in place (persisted-JSON restore), then notifies.</summary>
+    public void CopyFrom(WorkspaceLayout other)
+    {
+        _right.Clear();
+        _right.AddRange(other._right);
+        _bottom.Clear();
+        _bottom.AddRange(other._bottom);
+        _floats.Clear();
+        foreach (var (panel, info) in other._floats)
+        {
+            _floats[panel] = info;
+        }
+
+        _hidden.Clear();
+        _hidden.UnionWith(other._hidden);
+        RightWidth = other.RightWidth;
+        BottomHeight = other.BottomHeight;
+        Notify();
+    }
+
     private static string DefaultZoneOf(string panel)
         => DefaultRight.Contains(panel) ? RightZone : BottomZone;
 

@@ -144,6 +144,8 @@
 .pbw-zone-bottom { grid-area: bottom; height: var(--pbw-bottom); flex-direction: row; }
 .pbw-zone-right { grid-area: right; width: var(--pbw-right); flex-direction: column; }
 .pbw-zone[data-empty="true"] { display: none; }
+/* While a panel is being dragged, empty zones re-appear as drop targets. */
+.pbw-zone.pbw-zone-droptarget { display: flex; min-width: 72px; min-height: 72px; }
 .pbw-zone-droptarget::after {
     content: ""; position: absolute; inset: -4px; border: 2px dashed var(--pbw-accent);
     border-radius: 14px; background: rgba(109, 74, 255, 0.06); pointer-events: none; z-index: 5;

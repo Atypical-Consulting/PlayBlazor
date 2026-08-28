@@ -16,6 +16,10 @@ public class WorkspaceTests
         _context = new BunitContext();
         // SetVoidResult completes the interop task so code after the await (toasts) runs.
         _context.JSInterop.SetupVoid("navigator.clipboard.writeText", _ => true).SetVoidResult();
+        var module = _context.JSInterop.SetupModule("./_content/PlayBlazor/playground-workspace.js");
+        module.Setup<string?>("init", _ => true).SetResult(null);
+        module.SetupVoid("saveLayout", _ => true).SetVoidResult();
+        module.SetupVoid("dispose").SetVoidResult();
     }
 
     [TearDown]
