@@ -16,6 +16,8 @@ public sealed class PlayBlazorOptions
 
     private readonly Dictionary<Type, List<PlaygroundVariantDefinition>> _variants = new();
 
+    private readonly Dictionary<Type, List<Type>> _related = new();
+
     /// <summary>
     /// Wraps the rendered specimen in the host's theme infrastructure (e.g. a theme provider
     /// honoring <see cref="PlaygroundEnvironment.Dark"/>). Null renders the specimen bare.
@@ -47,6 +49,23 @@ public sealed class PlayBlazorOptions
     /// <summary>Named example configurations for one component (exact generic closing).</summary>
     public IReadOnlyList<PlaygroundVariantDefinition> GetVariants(Type componentType)
         => _variants.TryGetValue(componentType, out var list) ? list : [];
+
+    internal void AddRelated(Type componentType, Type relatedType)
+    {
+        if (!_related.TryGetValue(componentType, out var list))
+        {
+            _related[componentType] = list = [];
+        }
+
+        if (!list.Contains(relatedType))
+        {
+            list.Add(relatedType);
+        }
+    }
+
+    /// <summary>Components the graph panel links from this one (exact generic closing).</summary>
+    public IReadOnlyList<Type> GetRelated(Type componentType)
+        => _related.TryGetValue(componentType, out var list) ? list : [];
 
     /// <summary>
     /// Converts Debug.Assert failures into catchable exceptions while a playground is active.
@@ -134,6 +153,16 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     public ComponentOptionsBuilder<TComponent> Scaffold(Func<RenderFragment, RenderFragment> scaffold)
     {
         _options.AddScaffold(typeof(TComponent), scaffold);
+        return this;
+    }
+
+    /// <summary>
+    /// Declares a component the workspace's graph panel links to from this one — a grid to
+    /// its column type and back, typically. Selecting the node opens that component's bench.
+    /// </summary>
+    public ComponentOptionsBuilder<TComponent> Related<TOther>() where TOther : IComponent
+    {
+        _options.AddRelated(typeof(TComponent), typeof(TOther));
         return this;
     }
 

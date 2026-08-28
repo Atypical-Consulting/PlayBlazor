@@ -309,7 +309,8 @@ public static class PlaygroundConfig
                 AddColumn<int>(columns, 4, p => p.Age);
             })
             .Variant("Dense striped", v => v.Set(nameof(MudDataGrid<Person>.Dense), true).Set(nameof(MudDataGrid<Person>.Striped), true))
-            .Variant("Hover bordered", v => v.Set(nameof(MudDataGrid<Person>.Hover), true).Set(nameof(MudDataGrid<Person>.Bordered), true));
+            .Variant("Hover bordered", v => v.Set(nameof(MudDataGrid<Person>.Hover), true).Set(nameof(MudDataGrid<Person>.Bordered), true))
+            .Related<PropertyColumn<Person, string>>();
 
         options.For<PropertyColumn<Person, string>>()
             .Parameter(nameof(PropertyColumn<Person, string>.Property),
@@ -324,7 +325,8 @@ public static class PlaygroundConfig
                     AddColumn<int>(columns, 1, p => p.Age);
                 }));
                 builder.CloseComponent();
-            });
+            })
+            .Related<MudDataGrid<Person>>();
 
         // Providers make no sense as playground specimens (defense in depth next to the filter).
         options.Exclude<MudThemeProvider>()

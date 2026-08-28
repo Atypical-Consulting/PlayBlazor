@@ -1,0 +1,342 @@
+@namespace PlayBlazor.Shell.Workspace
+@using PlayBlazor.CodeGen
+@using PlayBlazor.Model
+@using PlayBlazor.Rendering
+@using PlayBlazor.Shell
+@using PlayBlazor.State
+
+@if (_selected is null)
+{
+    <div class="pbw-empty">No components discovered in the given assemblies.</div>
+    return;
+}
+
+<div class="pbw @(_present ? "pbw-present" : null)"
+     style="--pbw-right:@(_layout.RightWidth.ToString(System.Globalization.CultureInfo.InvariantCulture))px;--pbw-bottom:@(_layout.BottomHeight.ToString(System.Globalization.CultureInfo.InvariantCulture))px">
+
+    <header class="pbw-bar">
+        <span class="pbw-wordmark"><span>&#9654;</span> PlayBlazor</span>
+        <select class="pbw-picker" value="@_selected.DisplayName" @onchange="OnPickerChanged" aria-label="Component">
+            @foreach (var group in PickerGroups)
+            {
+                <optgroup label="@group.Key">
+                    @foreach (var component in group)
+                    {
+                        <option value="@component.DisplayName">@component.DisplayName</option>
+                    }
+                </optgroup>
+            }
+        </select>
+        <div class="pbw-pills">
+            @foreach (var panel in Panels)
+            {
+                <button type="button" @key="panel.Id"
+                        class="pbw-pill @(!_layout.IsHidden(panel.Id) ? "pbw-pill-on" : null)"
+                        @onclick="() => TogglePanel(panel.Id)">@panel.Title</button>
+            }
+        </div>
+        <div class="pbw-modes" role="tablist" aria-label="Workspace mode">
+            <button type="button" class="pbw-mode @(!_present ? "pbw-mode-active" : null)" @onclick="() => SetPresent(false)">Play</button>
+            <button type="button" class="pbw-mode @(_present ? "pbw-mode-active" : null)" @onclick="() => SetPresent(true)">Present</button>
+        </div>
+        <div class="pbw-bar-right">
+            <button type="button" class="pbw-reset-layout" title="Restore the default panel arrangement" @onclick="ResetLayout">Reset layout</button>
+            <button type="button" class="pbw-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">Share &#10548;</button>
+        </div>
+    </header>
+
+    <div class="pbw-work">
+        <section class="pbw-stage @(_environment.Dark || _present ? "pbw-stage-dark" : null) @(_environment.Checkerboard ? "pbw-stage-checker" : null)">
+            @if (Variants.Count > 0 && !_present)
+            {
+                <div class="pbw-chips">
+                    <span class="pbw-chips-label">Examples</span>
+                    @foreach (var variant in Variants)
+                    {
+                        <button type="button" @key="variant.Name"
+                                class="pbw-chip @(_activeVariant == variant.Name ? "pbw-chip-active" : null)"
+                                @onclick="() => PickVariantManually(variant)">@variant.Name</button>
+                    }
+                </div>
+            }
+            @if (!_present)
+            {
+                <div class="pbw-stage-toolbar">
+                    <button type="button" class="pbw-env-btn @(_environment.Dark ? "pbw-env-on" : null)"
+                            title="Dark surface" @onclick="() => _environment.Dark = !_environment.Dark">&#9681;</button>
+                    <button type="button" class="pbw-env-btn @(_environment.Rtl ? "pbw-env-on" : null)"
+                            title="Right-to-left" @onclick="() => _environment.Rtl = !_environment.Rtl">&#8646;</button>
+                    <button type="button" class="pbw-env-btn @(_environment.Checkerboard ? "pbw-env-on" : null)"
+                            title="Checkerboard surface" @onclick="() => _environment.Checkerboard = !_environment.Checkerboard">&#9638;</button>
+                    <select class="pbw-env-width" title="Viewport width" value="@(_environment.ViewportWidth?.ToString() ?? "")" @onchange="OnViewportChanged">
+                        <option value="">Auto</option>
+                        <option value="360">360</option>
+                        <option value="768">768</option>
+                        <option value="1200">1200</option>
+                    </select>
+                </div>
+            }
+            @if (!_selected.CanInstantiate)
+            {
+                <div class="pbw-error">
+                    <strong>This component cannot be rendered.</strong>
+                    <pre>@_selected.Warning</pre>
+                </div>
+            }
+            else
+            {
+                <div class="pbw-specimen-zone @(_environment.ViewportWidth is not null ? "pbw-specimen-constrained" : null)"
+                     dir="@(_environment.Rtl ? "rtl" : null)"
+                     style="@(_environment.ViewportWidth is { } width ? $"width:{width}px" : null)">
+                    <ErrorBoundary @ref="_errorBoundary">
+                        <ChildContent>
+                            <CascadingValue Value="_environment">
+                                @if (Options.ThemeWrapper is { } wrapper)
+                                {
+                                    @wrapper(new PlaygroundThemeContext(ScaffoldedSpecimen, _environment))
+                                }
+                                else
+                                {
+                                    @ScaffoldedSpecimen
+                                }
+                            </CascadingValue>
+                        </ChildContent>
+                        <ErrorContent Context="exception">
+                            <div class="pbw-error">
+                                <strong>The component threw an exception.</strong>
+                                @if (LooksLikeMissingParent(exception))
+                                {
+                                    <p class="pbw-error-hint">
+                                        This component most likely requires a specific parent (a grid column needs
+                                        its grid, a toggle item its group) and cannot run standalone yet.
+                                    </p>
+                                }
+                                <pre>@exception.GetType().Name: @exception.Message</pre>
+                                <details class="pbw-error-stack">
+                                    <summary>Stack trace</summary>
+                                    <pre>@exception.ToString()</pre>
+                                </details>
+                                <button type="button" @onclick="RecoverFromError">Reset</button>
+                            </div>
+                        </ErrorContent>
+                    </ErrorBoundary>
+                </div>
+            }
+            <div class="pbw-stage-name">&#8249;@_selected.DisplayName /&#8250; &#183; @_selected.Parameters.Count parameters &#183; @_selected.Category</div>
+        </section>
+
+        <div class="pbw-zone pbw-zone-bottom" data-empty="@(ZoneEmpty(WorkspaceLayout.BottomZone) ? "true" : "false")">
+            <div class="pbw-zgrip pbw-zgrip-bottom" title="Drag to resize"></div>
+            @foreach (var id in _layout.Zone(WorkspaceLayout.BottomZone))
+            {
+                if (!_layout.IsHidden(id))
+                {
+                    @PanelFragment(id)
+                }
+            }
+        </div>
+        <div class="pbw-zone pbw-zone-right" data-empty="@(ZoneEmpty(WorkspaceLayout.RightZone) ? "true" : "false")">
+            <div class="pbw-zgrip pbw-zgrip-right" title="Drag to resize"></div>
+            @foreach (var id in _layout.Zone(WorkspaceLayout.RightZone))
+            {
+                if (!_layout.IsHidden(id))
+                {
+                    @PanelFragment(id)
+                }
+            }
+        </div>
+    </div>
+
+    @foreach (var panel in Panels)
+    {
+        if (_layout.Float(panel.Id) is not null && !_layout.IsHidden(panel.Id))
+        {
+            @PanelFragment(panel.Id)
+        }
+    }
+
+    @if (_present)
+    {
+        <div class="pbw-hud">
+            <span class="pbw-hud-name"><span>&#8249;</span>@_selected.DisplayName<span>/&#8250;</span></span>
+            @if (Variants.Count > 0)
+            {
+                <div class="pbw-film">
+                    @foreach (var variant in Variants)
+                    {
+                        <button type="button" @key="variant.Name"
+                                class="pbw-film-chip @(_activeVariant == variant.Name ? "pbw-film-active" : null) @(_autoPlaying ? "pbw-film-auto" : null)"
+                                @onclick="() => PickVariantManually(variant)">@variant.Name</button>
+                    }
+                </div>
+                <button type="button" class="pbw-hud-pause" @onclick="ToggleAutoplay"
+                        title="@(_autoPlaying ? "Pause" : "Play")">@(_autoPlaying ? "❚❚" : "▶")</button>
+            }
+            <span class="pbw-hud-exit">esc to exit</span>
+        </div>
+    }
+
+    @if (_toast is not null)
+    {
+        <div class="pbw-toast">@_toast</div>
+    }
+</div>
+
+@code {
+    private RenderFragment Specimen =>
+        @<DynamicComponent @key="@_state.InstanceKey"
+                           Type="@_selected!.Type"
+                           Parameters="@ParameterDictionaryBuilder.Build(_selected!, _state, Options, _eventLog)" />;
+
+    private RenderFragment ScaffoldedSpecimen
+        => Options.TryGetScaffold(_selected!.Type, out var scaffold) ? scaffold(Specimen) : Specimen;
+
+    private RenderFragment PanelFragment(string id) => id switch
+    {
+        GraphId => @<WorkspacePanel @key="GraphId" Id="@GraphId" Title="Graph" Badge="scaffold"
+                                    Collapsed="_collapsed.Contains(GraphId)" FloatInfo="_layout.Float(GraphId)"
+                                    OnToggleCollapse="() => ToggleCollapse(GraphId)"
+                                    OnClose="() => TogglePanel(GraphId)"
+                                    OnRedock="() => _layout.Redock(GraphId)">
+            <Body>
+                @foreach (var node in GraphNodes())
+                {
+                    if (node.Target is { } target)
+                    {
+                        <button type="button" @key="node.Label"
+                                class="pbw-tnode @(node.Selected ? "pbw-tnode-sel" : null)"
+                                style="padding-left:@(0.45 + node.Depth * 0.85)rem"
+                                @onclick="() => { if (!node.Selected) { SelectComponent(target); } }">
+                            <span class="pbw-tag-p">&lt;</span><span class="pbw-tag-n">@node.Label</span><span class="pbw-tag-p">&gt;</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="pbw-tnode pbw-tnode-info" style="padding-left:@(0.45 + node.Depth * 0.85)rem">
+                            <span class="pbw-tag-p">&#9671;</span> @node.Label
+                        </span>
+                    }
+                }
+                <div class="pbw-tree-hint">
+                    The host scaffold renders the played component inside its real parent graph.
+                    Related components are one click away.
+                </div>
+            </Body>
+        </WorkspacePanel>,
+        ParametersId => @<WorkspacePanel @key="ParametersId" Id="@ParametersId" Title="Parameters" Badge="@_selected!.DisplayName"
+                                         Collapsed="_collapsed.Contains(ParametersId)" FloatInfo="_layout.Float(ParametersId)"
+                                         OnToggleCollapse="() => ToggleCollapse(ParametersId)"
+                                         OnClose="() => TogglePanel(ParametersId)"
+                                         OnRedock="() => _layout.Redock(ParametersId)">
+            <Actions>
+                <button type="button" class="pbw-foldall" title="Fold or unfold every group" @onclick="ToggleFoldAll">@(_allFolded ? "⊞" : "⊟")</button>
+                <button type="button" class="pbw-preset-node" title="Reset every parameter to its default" @onclick="ResetNode">↺</button>
+            </Actions>
+            <Body>
+                <div class="pbw-ptoolbar">
+                    <input class="pbw-pfilter" placeholder="Filter…" aria-label="Filter parameters"
+                           value="@_paramFilter" @oninput="e => _paramFilter = (string?)e.Value ?? string.Empty" />
+                    <button type="button" class="pbw-modchip @(_modifiedOnly ? "pbw-modchip-on" : null)"
+                            title="Show only modified parameters"
+                            @onclick="() => _modifiedOnly = !_modifiedOnly">Modified &#183; @ModifiedCount/@_selected!.Parameters.Count</button>
+                </div>
+                @foreach (var group in ParameterGroups)
+                {
+                    var rows = VisibleRows(group);
+                    if (rows.Count == 0)
+                    {
+                        continue;
+                    }
+                    <details class="pbw-pgroup" @key="group.Key" open="@IsGroupOpen(group.Key)">
+                        <summary @onclick="() => ToggleGroup(group.Key)" @onclick:preventDefault>@group.Key</summary>
+                        @foreach (var parameter in rows)
+                        {
+                            <div class="pbw-prow @(_state.IsModified(parameter.Name) ? "pbw-prow-modified" : null)"
+                                 @key="parameter.Name" title="@ParameterSignature.Format(parameter)">
+                                @if (IsDrivable(parameter))
+                                {
+                                    <ControlHost Parameter="parameter"
+                                                 Value="EffectiveValue(parameter)"
+                                                 ValueChanged="value => OnControlChanged(parameter, value)" />
+                                    @if (_state.IsModified(parameter.Name))
+                                    {
+                                        <button type="button" class="pbw-prow-reset" title="Restore default"
+                                                @onclick="() => _state.Reset(parameter.Name)">&times;</button>
+                                    }
+                                }
+                                else if (parameter.Kind is ControlKind.Event)
+                                {
+                                    <span class="pbw-prow-name">@parameter.Name</span>
+                                    <span class="pbw-wired">&#9889; wired</span>
+                                }
+                                else
+                                {
+                                    <span class="pbw-prow-name">@parameter.Name</span>
+                                    <span class="pbw-slot-badge">&#9671; @(Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _) || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _) ? "host preset" : parameter.Kind.ToString())</span>
+                                }
+                            </div>
+                        }
+                    </details>
+                }
+            </Body>
+        </WorkspacePanel>,
+        RazorId => @<WorkspacePanel @key="RazorId" Id="@RazorId" Title="Razor" Badge="generated"
+                                    Collapsed="_collapsed.Contains(RazorId)" FloatInfo="_layout.Float(RazorId)"
+                                    OnToggleCollapse="() => ToggleCollapse(RazorId)"
+                                    OnClose="() => TogglePanel(RazorId)"
+                                    OnRedock="() => _layout.Redock(RazorId)">
+            <Actions>
+                <button type="button" class="pbw-ph-copy" title="Copy the razor to the clipboard" @onclick="CopyRazor">&#10697;</button>
+            </Actions>
+            <Body>
+                <pre class="pbw-code"><code>@SnippetMarkup</code></pre>
+            </Body>
+        </WorkspacePanel>,
+        SignalsId => @<WorkspacePanel @key="SignalsId" Id="@SignalsId" Title="Signals" Badge="@_eventLog.Entries.Count.ToString()"
+                                      Collapsed="_collapsed.Contains(SignalsId)" FloatInfo="_layout.Float(SignalsId)"
+                                      OnToggleCollapse="() => ToggleCollapse(SignalsId)"
+                                      OnClose="() => TogglePanel(SignalsId)"
+                                      OnRedock="() => _layout.Redock(SignalsId)">
+            <Actions>
+                <button type="button" class="pbw-ph-clear" title="Clear the log" @onclick="() => _eventLog.Clear()">&#9003;</button>
+            </Actions>
+            <Body>
+                @if (_eventLog.Entries.Count == 0)
+                {
+                    <p class="pbw-signals-empty">
+                        Actuate the specimen — every EventCallback lands here.
+                        @if (EventParameters.Any())
+                        {
+                            <span> Listening to @string.Join(", ", EventParameters.Select(e => e.Name)).</span>
+                        }
+                    </p>
+                }
+                else
+                {
+                    <ul class="pbw-signal-list">
+                        @foreach (var entry in _eventLog.Entries)
+                        {
+                            <li>
+                                <button type="button" class="pbw-signal @(entry.Detail is null ? "pbw-signal-flat" : null)"
+                                        @onclick="() => ToggleUnfold(entry)">
+                                    @if (entry.Detail is not null)
+                                    {
+                                        <span class="pbw-signal-caret">@(_unfolded.Contains(entry) ? "▾" : "▸")</span>
+                                    }
+                                    <span class="pbw-signal-time">@entry.Timestamp.ToString("HH:mm:ss")</span>
+                                    <span class="pbw-signal-name">@entry.Name</span>
+                                    <span class="pbw-signal-payload">@entry.Payload</span>
+                                </button>
+                                @if (entry.Detail is not null && _unfolded.Contains(entry))
+                                {
+                                    <pre class="pbw-signal-detail">@entry.Detail</pre>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </Body>
+        </WorkspacePanel>,
+        _ => @<text></text>,
+    };
+}

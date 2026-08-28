@@ -1,8 +1,3 @@
 @page "/explorer"
-<div class="demo-explorer">
-    <header class="demo-explorer-header">
-        <a class="demo-back" href="/">&larr; PlayBlazor</a>
-        <span class="demo-explorer-title">Explorer — every public MudBlazor component, discovered by reflection</span>
-    </header>
-    <PlaygroundExplorer Assemblies="@(new[] { typeof(MudButton).Assembly })" />
-</div>
+@using PlayBlazor.Shell.Workspace
+<PlaygroundWorkspace Assemblies="@(new[] { typeof(MudButton).Assembly })" />

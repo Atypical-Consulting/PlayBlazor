@@ -106,7 +106,7 @@ public class ExplorerTests
     {
         var cut = RenderExplorer();
 
-        cut.FindAll(".pb-explorer-item").Single(i => i.TextContent.Contains("EventFixture")).Click();
+        cut.FindAll(".pb-explorer-item").Single(i => i.TextContent.Trim() == "EventFixture").Click();
 
         cut.Find(".pb-explorer-detail .pb-title").TextContent.Should().Be("EventFixture");
         cut.Find(".pb-explorer-detail .event-source").Should().NotBeNull();

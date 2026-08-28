@@ -1,0 +1,51 @@
+@namespace PlayBlazor.Shell.Workspace
+
+<section class="pbw-panel @(Collapsed ? "pbw-panel-collapsed" : null) @(FloatInfo is not null ? "pbw-panel-float" : null)"
+         data-panel="@Id"
+         style="@FloatStyle">
+    <header class="pbw-panel-head" @ondblclick="OnRedock">
+        <span class="pbw-ph-grip" aria-hidden="true">&#10495;</span>
+        <span class="pbw-ph-title">@Title</span>
+        @if (Badge is not null)
+        {
+            <em class="pbw-ph-badge">@Badge</em>
+        }
+        <span class="pbw-ph-actions">
+            @Actions
+            <button type="button" class="pbw-ph-collapse" title="@(Collapsed ? "Expand" : "Collapse")"
+                    @onclick="OnToggleCollapse">@(Collapsed ? "▸" : "▾")</button>
+            <button type="button" class="pbw-ph-close" title="Close (its pill brings it back)"
+                    @onclick="OnClose">&#10005;</button>
+        </span>
+    </header>
+    <div class="pbw-panel-body">@Body</div>
+    @if (FloatInfo is not null)
+    {
+        <span class="pbw-rz pbw-rz-r" aria-hidden="true"></span>
+        <span class="pbw-rz pbw-rz-b" aria-hidden="true"></span>
+        <span class="pbw-rz pbw-rz-c" aria-hidden="true"></span>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = default!;
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+    [Parameter] public string? Badge { get; set; }
+    [Parameter] public bool Collapsed { get; set; }
+    [Parameter] public PlayBlazor.State.WorkspaceLayout.FloatInfo? FloatInfo { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter, EditorRequired] public RenderFragment Body { get; set; } = default!;
+    [Parameter] public EventCallback OnToggleCollapse { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnRedock { get; set; }
+
+    private string? FloatStyle
+        => FloatInfo is not { } f
+            ? null
+            : $"left:{F(f.X)}px;top:{F(f.Y)}px;"
+              + (f.Width is { } w ? $"width:{F(w)}px;" : null)
+              + (f.Height is { } h ? $"height:{F(h)}px;" : null);
+
+    private static string F(double value)
+        => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

@@ -1,0 +1,7 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+@using Microsoft.AspNetCore.Components.Web
+<button class="detail-event-source"
+        @onclick="@(() => OnPoke.InvokeAsync(new MouseEventArgs { Detail = 3, Button = 1 }))">poke</button>
+@code {
+    [Parameter] public EventCallback<MouseEventArgs> OnPoke { get; set; }
+}
