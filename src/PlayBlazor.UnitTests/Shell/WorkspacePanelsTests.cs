@@ -122,13 +122,19 @@ public class WorkspacePanelsTests
     public void Graph_ShowsThePlayedNode_AndRelatedNavigation()
     {
         var cut = RenderWorkspace(options =>
-            options.For<BasicFixture>().Related<EventFixture>());
+            options.For<BasicFixture>()
+                .Related<EventFixture>()
+                .Slot(nameof(BasicFixture.ChildContent), builder => { }));
 
         var nodes = cut.FindAll("[data-panel=graph] .pbw-tnode");
-        nodes.Should().HaveCountGreaterThanOrEqualTo(2);
         nodes[0].ClassList.Should().Contain("pbw-tnode-sel");
+        // A filled slot is real structure — it appears as a child of the played node.
+        nodes.Should().Contain(n => n.ClassList.Contains("pbw-tnode-slot")
+                                    && n.TextContent.Contains("ChildContent"));
+        // Related components are typed links in their own section, not fake tree children.
+        cut.Find("[data-panel=graph] .pbw-tree-eyebrow").TextContent.Should().Be("Related");
 
-        cut.FindAll("[data-panel=graph] .pbw-tnode")
+        cut.FindAll("[data-panel=graph] .pbw-tnode-link")
             .First(n => n.TextContent.Contains("EventFixture")).Click();
 
         cut.Find(".pbw-stage-name").TextContent.Should().Contain("EventFixture");

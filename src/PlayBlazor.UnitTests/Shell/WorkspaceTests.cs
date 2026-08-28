@@ -118,6 +118,8 @@ public class WorkspaceTests
         cut.Find(".pbw-stage-name").TextContent.Should().Contain("GenericFixture");
         cut.Find(".pbw-specimen-zone div").TextContent.Should().Contain("1.5",
             "the Person-style host preset only binds on the host's own closing");
+        cut.Find("[data-panel=graph] .pbw-tnode-sel").TextContent
+            .Should().Contain("TItem=\"double\"", "the graph shows the real generic closing");
     }
 
     [Test]

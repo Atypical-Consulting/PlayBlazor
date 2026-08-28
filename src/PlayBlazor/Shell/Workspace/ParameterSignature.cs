@@ -41,7 +41,7 @@ public static class ParameterSignature
         };
     }
 
-    private static string TypeName(Type type)
+    internal static string TypeName(Type type)
     {
         if (Nullable.GetUnderlyingType(type) is { } underlying)
         {

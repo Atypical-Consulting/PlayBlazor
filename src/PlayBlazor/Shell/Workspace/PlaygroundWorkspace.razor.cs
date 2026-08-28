@@ -433,29 +433,78 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     /* ── Graph panel ─────────────────────────────────── */
 
-    internal sealed record GraphNode(string Label, ComponentDescriptor? Target, bool Selected, int Depth);
+    internal enum GraphNodeKind
+    {
+        /// <summary>The opaque host wrapper around the specimen (informational).</summary>
+        Scaffold,
 
+        /// <summary>The component being played.</summary>
+        Component,
+
+        /// <summary>A slot the host (or the user) actually fills — real structure.</summary>
+        Slot,
+    }
+
+    internal sealed record GraphNode(
+        GraphNodeKind Kind, string Label, string? Attrs, ComponentDescriptor? Target, bool Selected, int Depth);
+
+    /// <summary>The generic closing shown as attributes — <c>T="Person"</c> — real type info.</summary>
+    private static string? GenericAttrs(Type type)
+    {
+        if (!type.IsConstructedGenericType)
+        {
+            return null;
+        }
+
+        var names = type.GetGenericTypeDefinition().GetGenericArguments();
+        var values = type.GenericTypeArguments;
+        return string.Join(" ", names.Zip(values,
+            static (n, v) => $"{n.Name}=\"{ParameterSignature.TypeName(v)}\""));
+    }
+
+    /// <summary>
+    /// The structural tree: scaffold wrapper (when the host declares one), the played
+    /// component with its real generic closing, and the slots that are actually filled.
+    /// Related components are NOT part of this tree — they are typed links, listed apart.
+    /// </summary>
     private IReadOnlyList<GraphNode> GraphNodes()
     {
         var nodes = new List<GraphNode>();
         var depth = 0;
         if (Options.TryGetScaffold(_selected!.Type, out _))
         {
-            nodes.Add(new GraphNode("host scaffold", null, false, depth++));
+            nodes.Add(new GraphNode(GraphNodeKind.Scaffold, "host scaffold", null, null, false, depth++));
         }
 
-        nodes.Add(new GraphNode(_selected.DisplayName, _selected, true, depth));
-        foreach (var relatedType in Options.GetRelated(_selected.Type))
+        nodes.Add(new GraphNode(
+            GraphNodeKind.Component, _selected.DisplayName, GenericAttrs(_selected.Type), _selected, true, depth));
+
+        foreach (var parameter in _selected.Parameters)
         {
-            // Resolved through the catalog, not the curated list: a grid's column type is
-            // reachable through the graph even when the picker hides it.
-            var related = _components.FirstOrDefault(c => c.Type == relatedType)
-                          ?? Catalog.Describe(relatedType);
-            nodes.Add(new GraphNode(related.DisplayName, related, false, depth + 1));
+            if (parameter.Kind is not ControlKind.Slot)
+            {
+                continue;
+            }
+
+            var filledByHost = Options.TryGetSlotPreset(_selected.Type, parameter.Name, out _);
+            var filledByUser = IsTextSlot(parameter) && _state.IsModified(parameter.Name);
+            if (filledByHost || filledByUser)
+            {
+                nodes.Add(new GraphNode(
+                    GraphNodeKind.Slot, parameter.Name,
+                    filledByHost && !filledByUser ? "host preset" : null, null, false, depth + 1));
+            }
         }
 
         return nodes;
     }
+
+    private IReadOnlyList<ComponentDescriptor> RelatedComponents()
+        => Options.GetRelated(_selected!.Type)
+            // Resolved through the catalog, not the curated list: a grid's column type is
+            // reachable through the graph even when the picker hides it.
+            .Select(type => _components.FirstOrDefault(c => c.Type == type) ?? Catalog.Describe(type))
+            .ToArray();
 
     /* ── Layout / panels ─────────────────────────────── */
 

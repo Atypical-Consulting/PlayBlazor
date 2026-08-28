@@ -193,7 +193,8 @@
 
     private RenderFragment PanelFragment(string id) => id switch
     {
-        GraphId => @<WorkspacePanel @key="GraphId" Id="@GraphId" Title="Graph" Badge="scaffold"
+        GraphId => @<WorkspacePanel @key="GraphId" Id="@GraphId" Title="Graph"
+                                    Badge="@(Options.TryGetScaffold(_selected!.Type, out _) ? "scaffold" : null)"
                                     Collapsed="_collapsed.Contains(GraphId)" FloatInfo="_layout.Float(GraphId)"
                                     OnToggleCollapse="() => ToggleCollapse(GraphId)"
                                     OnClose="() => TogglePanel(GraphId)"
@@ -201,25 +202,49 @@
             <Body>
                 @foreach (var node in GraphNodes())
                 {
-                    if (node.Target is { } target)
+                    switch (node.Kind)
                     {
-                        <button type="button" @key="node.Label"
-                                class="pbw-tnode @(node.Selected ? "pbw-tnode-sel" : null)"
-                                style="padding-left:@(0.45 + node.Depth * 0.85)rem"
-                                @onclick="() => { if (!node.Selected) { SelectComponent(target); } }">
-                            <span class="pbw-tag-p">&lt;</span><span class="pbw-tag-n">@node.Label</span><span class="pbw-tag-p">&gt;</span>
-                        </button>
+                        case GraphNodeKind.Scaffold:
+                            <span class="pbw-tnode pbw-tnode-info" style="padding-left:@(0.45 + node.Depth * 0.85)rem">
+                                <span class="pbw-tag-p">&#9671;</span> @node.Label
+                            </span>
+                            break;
+                        case GraphNodeKind.Component:
+                            <span class="pbw-tnode @(node.Selected ? "pbw-tnode-sel" : null)"
+                                  style="padding-left:@(0.45 + node.Depth * 0.85)rem">
+                                <span class="pbw-tag-p">&lt;</span><span class="pbw-tag-n">@node.Label</span>@if (node.Attrs is not null)
+                                {<span class="pbw-tag-a">@($" {node.Attrs}")</span>}<span class="pbw-tag-p">&gt;</span>
+                            </span>
+                            break;
+                        case GraphNodeKind.Slot:
+                            <span class="pbw-tnode pbw-tnode-slot" style="padding-left:@(0.45 + node.Depth * 0.85)rem"
+                                  title="@(node.Attrs is null ? "Filled by you" : "Filled by the host")">
+                                <span class="pbw-tag-p">&lt;</span><span class="pbw-tag-n">@node.Label</span><span class="pbw-tag-p">&gt;</span>
+                                @if (node.Attrs is not null)
+                                {
+                                    <span class="pbw-tnode-note">&#9671; @node.Attrs</span>
+                                }
+                            </span>
+                            break;
                     }
-                    else
+                }
+                @if (RelatedComponents() is { Count: > 0 } related)
+                {
+                    <span class="pbw-tree-eyebrow">Related</span>
+                    @foreach (var component in related)
                     {
-                        <span class="pbw-tnode pbw-tnode-info" style="padding-left:@(0.45 + node.Depth * 0.85)rem">
-                            <span class="pbw-tag-p">&#9671;</span> @node.Label
-                        </span>
+                        <button type="button" @key="component.Type"
+                                class="pbw-tnode pbw-tnode-link" title="Open this component's bench"
+                                @onclick="() => SelectComponent(component)">
+                            <span class="pbw-tnode-arrow">&#8599;</span>
+                            <span class="pbw-tag-p">&lt;</span><span class="pbw-tag-n">@component.DisplayName</span>@if (GenericAttrs(component.Type) is { } attrs)
+                            {<span class="pbw-tag-a">@($" {attrs}")</span>}<span class="pbw-tag-p">&gt;</span>
+                        </button>
                     }
                 }
                 <div class="pbw-tree-hint">
-                    The host scaffold renders the played component inside its real parent graph.
-                    Related components are one click away.
+                    The tree is what the stage renders: scaffold, component, filled slots.
+                    Related opens another component's bench.
                 </div>
             </Body>
         </WorkspacePanel>,

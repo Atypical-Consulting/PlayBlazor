@@ -205,19 +205,32 @@
 
 /* ── Graph panel ────────────────────────────────────── */
 .pbw-tnode {
-    display: flex; align-items: center; gap: 0.35rem; width: 100%; text-align: left;
+    /* Block, not flex: end-ellipsis must clip the tail of the tag, never squeeze
+       the leading spans out of existence. */
+    display: block; width: 100%; text-align: left;
     font-family: var(--pbw-mono); font-size: 0.71875rem; color: var(--pbw-ink);
     background: transparent; border: 0; border-radius: 7px;
     padding: 0.3rem 0.45rem; cursor: pointer;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.pbw-tnode-arrow { margin-right: 0.25rem; }
 .pbw-tnode:hover { background: var(--pbw-bg); }
 .pbw-tnode-sel { background: rgba(109, 74, 255, 0.12); color: #4c30c4; font-weight: 600; }
 .pbw-tnode-info { color: var(--pbw-muted); cursor: default; }
 .pbw-tnode-info:hover { background: transparent; }
 .pbw-tag-p { color: #9a9aae; }
 .pbw-tag-n { color: #5335d1; }
+.pbw-tag-a { color: #2b5fde; font-size: 0.65rem; }
 .pbw-tnode-sel .pbw-tag-n { color: #4c30c4; }
+.pbw-tnode-slot { cursor: default; }
+.pbw-tnode-slot:hover { background: transparent; }
+.pbw-tnode-note { font-size: 0.625rem; color: var(--pbw-muted); margin-left: 0.3rem; }
+.pbw-tnode-link .pbw-tnode-arrow { color: var(--pbw-accent); font-size: 0.6875rem; }
+.pbw-tree-eyebrow {
+    display: block; font-family: var(--pbw-mono); font-size: 0.5625rem; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--pbw-muted);
+    margin-top: 0.6rem; padding: 0.3rem 0.45rem 0.1rem;
+}
 .pbw-tree-hint {
     font-family: var(--pbw-mono); font-size: 0.625rem; color: var(--pbw-muted);
     padding-top: 0.5rem; margin-top: 0.4rem; line-height: 1.7; border-top: 1px dashed var(--pbw-hair);
