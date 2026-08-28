@@ -49,6 +49,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private string _paramFilter = string.Empty;
     private bool _modifiedOnly;
     private bool _allFolded;
+    private int _pickerVersion;
     private string? _toast;
     private CancellationTokenSource? _toastCts;
     private bool _present;
@@ -257,6 +258,13 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         {
             SelectComponent(match);
         }
+        else
+        {
+            // Unmatched text must not linger in the input, pretending to be selected —
+            // recreating the input snaps it back to the real selection.
+            _pickerVersion++;
+            StateHasChanged();
+        }
     }
 
     private void SelectComponent(ComponentDescriptor descriptor, bool restorePermalink = false)
@@ -299,11 +307,17 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             return;
         }
 
-        var encoded = PlaygroundStateSerializer.Encode(_selected, _state, _environment);
+        // A pristine bench keeps the URL human-readable: ?pb-MudAlert, no payload.
+        var pristine = _state.ModifiedValues.Count == 0
+                       && !_environment.Dark && !_environment.Rtl && !_environment.Checkerboard
+                       && _environment.ViewportWidth is null;
+        var self = pristine
+            ? Uri.EscapeDataString(PermalinkParameterName)
+            : $"{Uri.EscapeDataString(PermalinkParameterName)}={PlaygroundStateSerializer.Encode(_selected, _state, _environment)}";
         var kept = QueryPairs()
             .Where(static pair => !pair.Key.StartsWith("pb-", StringComparison.Ordinal))
             .Select(static pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}")
-            .Append($"{Uri.EscapeDataString(PermalinkParameterName)}={encoded}");
+            .Append(self);
         var target = $"{Navigation.Uri.Split('?')[0]}?{string.Join("&", kept)}";
         if (target != Navigation.Uri)
         {
@@ -331,7 +345,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     {
         foreach (var (key, value) in QueryPairs())
         {
-            if (key == PermalinkParameterName)
+            if (key == PermalinkParameterName && value.Length > 0)
             {
                 PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment);
                 return;
@@ -345,14 +359,15 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
         {
             var separator = pair.IndexOf('=');
-            if (separator <= 0)
+            if (separator == 0)
             {
                 continue;
             }
 
-            yield return (
-                Uri.UnescapeDataString(pair[..separator]),
-                Uri.UnescapeDataString(pair[(separator + 1)..]));
+            // A bare key (?pb-MudAlert) is the pristine-bench permalink.
+            yield return separator < 0
+                ? (Uri.UnescapeDataString(pair), string.Empty)
+                : (Uri.UnescapeDataString(pair[..separator]), Uri.UnescapeDataString(pair[(separator + 1)..]));
         }
     }
 

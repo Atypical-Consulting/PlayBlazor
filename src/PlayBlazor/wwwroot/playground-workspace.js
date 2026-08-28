@@ -54,6 +54,11 @@ export function init(dotnetRef) {
             e.preventDefault();
             ctx.ref.invokeMethodAsync("OnKey", "/");
             focusFilter(6);
+        } else if (e.key === "Escape" && document.activeElement?.classList?.contains("pbw-pfilter")) {
+            const input = document.activeElement;
+            input.value = "";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
         } else if (e.key === "Escape" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
             ctx.ref.invokeMethodAsync("OnKey", e.key);
         }

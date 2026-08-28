@@ -15,10 +15,10 @@
      style="--pbw-right:@(_layout.RightWidth.ToString(System.Globalization.CultureInfo.InvariantCulture))px;--pbw-bottom:@(_layout.BottomHeight.ToString(System.Globalization.CultureInfo.InvariantCulture))px">
 
     <header class="pbw-bar">
-        <span class="pbw-wordmark"><span>&#9654;</span> PlayBlazor</span>
+        <a class="pbw-wordmark" href="/" title="Back to the landing page"><span>&#9654;</span> PlayBlazor</a>
         @* A searchable input beats a 65-entry native select: type to filter, pick, done. *@
-        <input class="pbw-picker" list="pbw-components" value="@_selected.DisplayName"
-               @onchange="OnPickerChanged" aria-label="Component" placeholder="Component…" />
+        <input class="pbw-picker" list="pbw-components" value="@_selected.DisplayName" @key="_pickerVersion"
+               onfocus="this.select()" @onchange="OnPickerChanged" aria-label="Component" placeholder="Component…" />
         <datalist id="pbw-components">
             @foreach (var component in PickerGroups.SelectMany(static g => g))
             {

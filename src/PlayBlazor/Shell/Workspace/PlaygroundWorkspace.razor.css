@@ -28,7 +28,8 @@
     padding: 0 1rem; background: var(--pbw-chrome); color: #e8e8f2;
     position: relative; z-index: 40;
 }
-.pbw-wordmark { font-family: var(--pbw-mono); font-weight: 700; font-size: 0.875rem; }
+.pbw-wordmark { font-family: var(--pbw-mono); font-weight: 700; font-size: 0.875rem; color: inherit; text-decoration: none; }
+.pbw-wordmark:hover span { filter: brightness(1.2); }
 .pbw-wordmark span { color: var(--pbw-accent-soft); margin-right: 0.2rem; }
 .pbw-picker {
     font-family: var(--pbw-mono); font-size: 0.75rem; color: #e8e8f2;
@@ -179,6 +180,8 @@
 .pbw-modchip-on { color: #fff; background: var(--pbw-accent); border-color: var(--pbw-accent); }
 .pbw-pgroup { margin-bottom: 0.2rem; }
 .pbw-pgroup > summary {
+    /* Stays visible while a 100-parameter group scrolls under it. */
+    position: sticky; top: -0.6rem; z-index: 2; background: #ffffff;
     list-style: none; cursor: pointer; user-select: none;
     font-family: var(--pbw-mono); font-size: 0.5625rem; font-weight: 600;
     letter-spacing: 0.16em; text-transform: uppercase; color: var(--pbw-muted);
@@ -278,7 +281,14 @@
 .pbw-signal-detail {
     margin: 0 0 0.4rem 1.4rem; padding: 0.5rem 0.7rem;
     background: var(--pbw-bg); border-radius: 8px;
-    font-family: var(--pbw-mono); font-size: 0.65rem; line-height: 1.7; white-space: pre-wrap;
+    font-family: var(--pbw-mono); font-size: 0.65rem; line-height: 1.7;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+}
+/* A fresh signal announces itself with a brief highlight. */
+.pbw-signal-list li:first-child .pbw-signal { animation: pbw-signal-in 700ms ease-out; }
+@keyframes pbw-signal-in {
+    from { background: rgba(109, 74, 255, 0.18); }
+    to { background: transparent; }
 }
 
 /* ── Present HUD / toast ────────────────────────────── */

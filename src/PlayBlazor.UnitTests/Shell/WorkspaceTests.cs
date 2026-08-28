@@ -128,16 +128,28 @@ public class WorkspaceTests
     {
         var cut = RenderWorkspace();
         var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
-        navigation.Uri.Should().Contain("pb-BasicFixture=", "selecting a component makes the URL shareable");
+        // Pristine bench: a short human-readable URL, no payload.
+        navigation.Uri.Should().EndWith("?pb-BasicFixture", "selecting a component makes the URL shareable");
 
         cut.Find(".pbw-picker").Change(nameof(EventFixture));
-        navigation.Uri.Should().Contain("pb-EventFixture=").And.NotContain("pb-BasicFixture=");
+        navigation.Uri.Should().EndWith("?pb-EventFixture").And.NotContain("BasicFixture");
 
         cut.Find(".pbw-picker").Change(nameof(BasicFixture));
-        var pristine = navigation.Uri;
         cut.FindAll("[data-panel=parameters] input[type=checkbox]")[0].Change(true); // Dense
-        navigation.Uri.Should().NotBe(pristine, "modified state re-encodes into the URL");
-        navigation.Uri.Should().Contain("pb-BasicFixture=");
+        navigation.Uri.Should().Contain("pb-BasicFixture=", "modified state re-encodes into the URL");
+    }
+
+    [Test]
+    public void ShortPermalink_PreselectsTheComponent()
+    {
+        _context.Services.AddPlayBlazor();
+        var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        navigation.NavigateTo(navigation.BaseUri + "explorer?pb-EventFixture");
+
+        var cut = _context.Render<PlaygroundWorkspace>(ps =>
+            ps.Add(w => w.Assemblies, new[] { typeof(BasicFixture).Assembly }));
+
+        cut.Find(".pbw-stage-name").TextContent.Should().Contain("EventFixture");
     }
 
     [Test]

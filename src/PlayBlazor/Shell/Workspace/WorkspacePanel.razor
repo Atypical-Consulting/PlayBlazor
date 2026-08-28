@@ -3,7 +3,7 @@
 <section class="pbw-panel @(Collapsed ? "pbw-panel-collapsed" : null) @(FloatInfo is not null ? "pbw-panel-float" : null)"
          data-panel="@Id"
          style="@FloatStyle">
-    <header class="pbw-panel-head" @ondblclick="OnRedock">
+    <header class="pbw-panel-head" title="Drag to move — double-click to send back to its dock" @ondblclick="OnRedock">
         <span class="pbw-ph-grip" aria-hidden="true">&#10495;</span>
         <span class="pbw-ph-title">@Title</span>
         @if (Badge is not null)
