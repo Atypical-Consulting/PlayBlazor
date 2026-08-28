@@ -117,14 +117,20 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             if (saved is not null)
             {
                 _layout.CopyFrom(WorkspaceLayout.FromJson(saved));
+                // A float saved on a large screen can be entirely off this one — re-clamp
+                // once the restored positions have rendered (resize events won't help a
+                // window that never resizes).
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(50, _disposeCts.Token);
+                await _module.InvokeVoidAsync("clampNow");
             }
 
             _layout.Changed += PersistLayout;
         }
-        catch (JSException)
+        catch (Exception e) when (e is JSException or InvalidOperationException or OperationCanceledException)
         {
-            // No module (static prerender, tests without a module mock): the workspace
-            // still works, minus drag gestures and persistence.
+            // No module or no JS yet (static prerender, tests without a module mock): the
+            // workspace still works, minus drag gestures and persistence.
         }
     }
 
@@ -436,9 +442,10 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private async Task CopyShareLink()
     {
-        var encoded = PlaygroundStateSerializer.Encode(_selected!, _state, _environment);
-        var uri = Navigation.GetUriWithQueryParameter(PermalinkParameterName, encoded);
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", uri);
+        // The address bar is already the permalink — copy exactly what the user sees,
+        // through the same SyncUrl path, so the two can never drift apart.
+        SyncUrl();
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", Navigation.Uri);
         ShowToast("Link copied ✓");
     }
 

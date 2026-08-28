@@ -141,6 +141,18 @@ public class WorkspaceTests
     }
 
     [Test]
+    public void Share_CopiesExactlyTheSyncedAddressBar()
+    {
+        var cut = RenderWorkspace();
+        var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+
+        cut.Find(".pbw-share").Click();
+
+        _context.JSInterop.Invocations["navigator.clipboard.writeText"].Last()
+            .Arguments[0].Should().Be(navigation.Uri, "Share and the address bar must never drift apart");
+    }
+
+    [Test]
     public void EnvironmentToggles_ReSyncTheUrl()
     {
         var cut = RenderWorkspace();

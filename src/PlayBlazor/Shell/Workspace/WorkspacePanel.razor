@@ -8,9 +8,9 @@
         <span class="pbw-ph-title">@Title</span>
         @if (Badge is not null)
         {
-            <em class="pbw-ph-badge">@Badge</em>
+            <em class="pbw-ph-badge" title="@Badge">@Badge</em>
         }
-        <span class="pbw-ph-actions">
+        <span class="pbw-ph-actions" @ondblclick:stopPropagation>
             @Actions
             <button type="button" class="pbw-ph-collapse" title="@(Collapsed ? "Expand" : "Collapse")"
                     @onclick="OnToggleCollapse">@(Collapsed ? "▸" : "▾")</button>

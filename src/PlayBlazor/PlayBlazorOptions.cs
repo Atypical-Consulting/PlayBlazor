@@ -8,6 +8,10 @@ public sealed class PlayBlazorOptions
 {
     private readonly Dictionary<(Type Component, string Parameter), RenderFragment> _slotPresets = new();
 
+    private readonly Dictionary<(Type Component, string Parameter), string> _slotSources = new();
+
+    private readonly Dictionary<(Type Component, string Parameter), string> _parameterSources = new();
+
     private readonly Dictionary<(Type Component, string Parameter), object?> _parameterPresets = new();
 
     private readonly Dictionary<Type, Func<RenderFragment, RenderFragment>> _scaffolds = new();
@@ -111,11 +115,23 @@ public sealed class PlayBlazorOptions
             ? preferred
             : discoveredType;
 
-    internal void AddSlotPreset(Type componentType, string parameterName, RenderFragment content)
-        => _slotPresets[(Normalize(componentType), parameterName)] = content;
+    internal void AddSlotPreset(Type componentType, string parameterName, RenderFragment content, string? source)
+    {
+        _slotPresets[(Normalize(componentType), parameterName)] = content;
+        if (source is not null)
+        {
+            _slotSources[(Normalize(componentType), parameterName)] = source;
+        }
+    }
 
-    internal void AddParameterPreset(Type componentType, string parameterName, object? value)
-        => _parameterPresets[(componentType, parameterName)] = value;
+    internal void AddParameterPreset(Type componentType, string parameterName, object? value, string? source)
+    {
+        _parameterPresets[(componentType, parameterName)] = value;
+        if (source is not null)
+        {
+            _parameterSources[(componentType, parameterName)] = source;
+        }
+    }
 
     internal void AddScaffold(Type componentType, Func<RenderFragment, RenderFragment> scaffold)
         => _scaffolds[componentType] = scaffold;
@@ -137,6 +153,15 @@ public sealed class PlayBlazorOptions
     public bool TryGetParameterPreset(Type componentType, string parameterName, out object? value)
         => _parameterPresets.TryGetValue((componentType, parameterName), out value);
 
+    /// <summary>The razor text a host provided for a slot preset — the copy-pasteable truth.</summary>
+    public bool TryGetSlotSource(Type componentType, string parameterName, out string source)
+        => _slotSources.TryGetValue((Normalize(componentType), parameterName), out source!);
+
+    /// <summary>The razor expression a host provided for a parameter preset (e.g. <c>@_people</c>).</summary>
+    public bool TryGetParameterSource(Type componentType, string parameterName, out string source)
+        => _parameterSources.TryGetValue((componentType, parameterName), out source!)
+           || _parameterSources.TryGetValue((Normalize(componentType), parameterName), out source!);
+
     public bool TryGetScaffold(Type componentType, out Func<RenderFragment, RenderFragment> scaffold)
         => _scaffolds.TryGetValue(componentType, out scaffold!);
 
@@ -152,9 +177,13 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     internal ComponentOptionsBuilder(PlayBlazorOptions options)
         => _options = options;
 
-    public ComponentOptionsBuilder<TComponent> Slot(string parameterName, RenderFragment content)
+    /// <param name="parameterName">The slot to fill.</param>
+    /// <param name="content">The fragment rendered on the stage.</param>
+    /// <param name="source">The razor text of that fragment — shown verbatim in the generated
+    /// code so users copy something that actually reproduces the bench.</param>
+    public ComponentOptionsBuilder<TComponent> Slot(string parameterName, RenderFragment content, string? source = null)
     {
-        _options.AddSlotPreset(typeof(TComponent), parameterName, content);
+        _options.AddSlotPreset(typeof(TComponent), parameterName, content, source);
         return this;
     }
 
@@ -163,9 +192,9 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     /// (resolution: user modification &gt; host preset &gt; component default). Also makes
     /// otherwise non-drivable parameters (collections, expressions…) usable in the playground.
     /// </summary>
-    public ComponentOptionsBuilder<TComponent> Parameter(string parameterName, object? value)
+    public ComponentOptionsBuilder<TComponent> Parameter(string parameterName, object? value, string? source = null)
     {
-        _options.AddParameterPreset(typeof(TComponent), parameterName, value);
+        _options.AddParameterPreset(typeof(TComponent), parameterName, value, source);
         return this;
     }
 

@@ -82,7 +82,8 @@ public static class RazorSnippetGenerator
 
         string? childText = null;
         var childContentFromHost = false;
-        var slotChildren = new List<string>();
+        string[]? childContentSource = null;
+        var slotChildren = new List<(string Name, string[]? Source)>();
         foreach (var parameter in component.Parameters)
         {
             if (parameter.Kind is ControlKind.Slot)
@@ -100,11 +101,12 @@ public static class RazorSnippetGenerator
                     else if (SlotHasPreset(component, parameter, options))
                     {
                         childContentFromHost = true;
+                        childContentSource = SlotSource(component, parameter, options);
                     }
                 }
                 else if (SlotHasPreset(component, parameter, options))
                 {
-                    slotChildren.Add(parameter.Name);
+                    slotChildren.Add((parameter.Name, SlotSource(component, parameter, options)));
                 }
 
                 continue;
@@ -123,7 +125,10 @@ public static class RazorSnippetGenerator
                     && options.TryGetParameterPreset(component.Type, parameter.Name, out var opaque)
                     && opaque is not null)
                 {
-                    attributes.Add((parameter.Name, $"@_{char.ToLowerInvariant(parameter.Name[0])}{parameter.Name[1..]}"));
+                    attributes.Add((parameter.Name,
+                        options.TryGetParameterSource(component.Type, parameter.Name, out var src)
+                            ? src
+                            : $"@_{char.ToLowerInvariant(parameter.Name[0])}{parameter.Name[1..]}"));
                 }
 
                 continue;
@@ -140,7 +145,10 @@ public static class RazorSnippetGenerator
                      && options.TryGetParameterPreset(component.Type, parameter.Name, out var preset)
                      && preset is not null)
             {
-                attributes.Add((parameter.Name, FormatValue(preset)));
+                attributes.Add((parameter.Name,
+                    options.TryGetParameterSource(component.Type, parameter.Name, out var src)
+                        ? src
+                        : FormatValue(preset)));
             }
         }
 
@@ -156,7 +164,30 @@ public static class RazorSnippetGenerator
             tokens.Add(new Token(TokenKind.Punctuation, "\""));
         }
 
-        if (slotChildren.Count > 0)
+        var inlineChild = slotChildren.Count == 0
+                          && (childText is not null
+                              || (childContentFromHost && (childContentSource is null || childContentSource.Length == 1)));
+        if (inlineChild)
+        {
+            tokens.Add(new Token(TokenKind.Punctuation, ">"));
+            if (childText is not null)
+            {
+                tokens.Add(new Token(TokenKind.ChildContent, childText));
+            }
+            else if (childContentSource is { Length: 1 })
+            {
+                tokens.Add(new Token(TokenKind.ChildContent, childContentSource[0]));
+            }
+            else
+            {
+                tokens.Add(new Token(TokenKind.Comment, HostContentComment));
+            }
+
+            tokens.Add(new Token(TokenKind.Punctuation, "</"));
+            tokens.Add(new Token(TokenKind.Tag, component.DisplayName));
+            tokens.Add(new Token(TokenKind.Punctuation, ">"));
+        }
+        else if (slotChildren.Count > 0 || childContentFromHost || childText is not null)
         {
             // Structured children each get their own line.
             tokens.Add(new Token(TokenKind.Punctuation, ">"));
@@ -167,32 +198,38 @@ public static class RazorSnippetGenerator
             }
             else if (childContentFromHost)
             {
-                tokens.Add(new Token(TokenKind.Punctuation, "\n    "));
-                tokens.Add(new Token(TokenKind.Comment, HostContentComment));
+                if (childContentSource is null)
+                {
+                    tokens.Add(new Token(TokenKind.Punctuation, "\n    "));
+                    tokens.Add(new Token(TokenKind.Comment, HostContentComment));
+                }
+                else
+                {
+                    AppendSourceLines(tokens, childContentSource, "    ");
+                }
             }
 
-            foreach (var slot in slotChildren)
+            foreach (var (slot, source) in slotChildren)
             {
                 tokens.Add(new Token(TokenKind.Punctuation, "\n    <"));
                 tokens.Add(new Token(TokenKind.Tag, slot));
                 tokens.Add(new Token(TokenKind.Punctuation, ">"));
-                tokens.Add(new Token(TokenKind.Comment, HostContentComment));
-                tokens.Add(new Token(TokenKind.Punctuation, "</"));
+                if (source is null)
+                {
+                    tokens.Add(new Token(TokenKind.Comment, HostContentComment));
+                    tokens.Add(new Token(TokenKind.Punctuation, "</"));
+                }
+                else
+                {
+                    AppendSourceLines(tokens, source, "        ");
+                    tokens.Add(new Token(TokenKind.Punctuation, "\n    </"));
+                }
+
                 tokens.Add(new Token(TokenKind.Tag, slot));
                 tokens.Add(new Token(TokenKind.Punctuation, ">"));
             }
 
             tokens.Add(new Token(TokenKind.Punctuation, "\n</"));
-            tokens.Add(new Token(TokenKind.Tag, component.DisplayName));
-            tokens.Add(new Token(TokenKind.Punctuation, ">"));
-        }
-        else if (childText is not null || childContentFromHost)
-        {
-            tokens.Add(new Token(TokenKind.Punctuation, ">"));
-            tokens.Add(childText is not null
-                ? new Token(TokenKind.ChildContent, childText)
-                : new Token(TokenKind.Comment, HostContentComment));
-            tokens.Add(new Token(TokenKind.Punctuation, "</"));
             tokens.Add(new Token(TokenKind.Tag, component.DisplayName));
             tokens.Add(new Token(TokenKind.Punctuation, ">"));
         }
@@ -206,6 +243,37 @@ public static class RazorSnippetGenerator
 
     private static bool SlotHasPreset(ComponentDescriptor component, ParameterDescriptor parameter, PlayBlazorOptions? options)
         => options is not null && options.TryGetSlotPreset(component.Type, parameter.Name, out _);
+
+    /// <summary>Host-provided razor text for a slot, dedented and split into lines.</summary>
+    private static string[]? SlotSource(ComponentDescriptor component, ParameterDescriptor parameter, PlayBlazorOptions? options)
+    {
+        if (options is null || !options.TryGetSlotSource(component.Type, parameter.Name, out var source))
+        {
+            return null;
+        }
+
+        var lines = source.Replace("\r\n", "\n").Split('\n')
+            .SkipWhile(string.IsNullOrWhiteSpace)
+            .Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()
+            .ToArray();
+        if (lines.Length == 0)
+        {
+            return null;
+        }
+
+        var indent = lines.Where(static l => l.Trim().Length > 0)
+            .Min(static l => l.Length - l.TrimStart().Length);
+        return lines.Select(l => l.Length >= indent ? l[indent..] : l.TrimStart()).ToArray();
+    }
+
+    private static void AppendSourceLines(List<Token> tokens, string[]? lines, string indent)
+    {
+        foreach (var line in lines ?? [])
+        {
+            tokens.Add(new Token(TokenKind.Punctuation, "\n" + indent));
+            tokens.Add(new Token(TokenKind.ChildContent, line));
+        }
+    }
 
     private static string EscapeContent(string text)
         => text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");

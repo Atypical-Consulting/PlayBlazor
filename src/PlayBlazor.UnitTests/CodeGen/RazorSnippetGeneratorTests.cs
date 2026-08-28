@@ -134,6 +134,58 @@ public class RazorSnippetGeneratorTests
     }
 
     [Test]
+    public void Generate_SlotSource_IsEmittedVerbatim_SoTheSnippetIsCopyPasteable()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>().Slot(nameof(BasicFixture.ChildContent), builder => { }, """
+            <MudListItem Text="Inbox" />
+            <MudListItem Text="Sent" />
+            """);
+
+        RazorSnippetGenerator.Generate(_descriptor, new PlaygroundState(), options).Should().Be(
+            "<BasicFixture>\n" +
+            "    <MudListItem Text=\"Inbox\" />\n" +
+            "    <MudListItem Text=\"Sent\" />\n" +
+            "</BasicFixture>");
+    }
+
+    [Test]
+    public void Generate_SingleLineChildSource_StaysInline()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>().Slot(nameof(BasicFixture.ChildContent), builder => { }, "Click me");
+
+        RazorSnippetGenerator.Generate(_descriptor, new PlaygroundState(), options)
+            .Should().Be("<BasicFixture>Click me</BasicFixture>");
+    }
+
+    [Test]
+    public void Generate_NamedSlotSource_FillsTheChildElement()
+    {
+        var descriptor = new ReflectionCatalogProvider().Describe(typeof(SlottedFixture));
+        var options = new PlayBlazorOptions();
+        options.For<SlottedFixture>().Slot(nameof(SlottedFixture.Header), builder => { }, "<b>Title</b>");
+
+        RazorSnippetGenerator.Generate(descriptor, new PlaygroundState(), options).Should().Be(
+            "<SlottedFixture>\n" +
+            "    <Header>\n" +
+            "        <b>Title</b>\n" +
+            "    </Header>\n" +
+            "</SlottedFixture>");
+    }
+
+    [Test]
+    public void Generate_ParameterSource_WinsOverThePlaceholder()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>()
+            .Parameter(nameof(BasicFixture.Endpoint), new Uri("https://example.test/"), "@_endpoint");
+
+        RazorSnippetGenerator.Generate(_descriptor, new PlaygroundState(), options)
+            .Should().Be("""<BasicFixture Endpoint="@_endpoint" />""");
+    }
+
+    [Test]
     public void Generate_GenericClosing_BecomesTypeAttributes()
     {
         var descriptor = new ReflectionCatalogProvider().Describe(typeof(GenericFixture<int>));

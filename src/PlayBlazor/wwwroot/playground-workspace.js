@@ -72,6 +72,12 @@ export function loadLayout() {
     try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
 }
 
+export function clampNow() {
+    if (ctx) {
+        clampFloats();
+    }
+}
+
 export function dispose() {
     ctx?.cleanup.forEach(f => f());
     ctx = null;

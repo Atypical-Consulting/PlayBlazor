@@ -51,14 +51,14 @@ public static class PlaygroundConfig
         options.For<MudFileUpload<IBrowserFile>>();
 
         options.For<MudAlert>()
-            .Slot(nameof(MudAlert.ChildContent), b => b.AddContent(0, "The reactor is running at optimum temperature."))
+            .Slot(nameof(MudAlert.ChildContent), b => b.AddContent(0, "The reactor is running at optimum temperature."), "The reactor is running at optimum temperature.")
             .Variant("Info", v => v.Set(nameof(MudAlert.Severity), Severity.Info))
             .Variant("Success", v => v.Set(nameof(MudAlert.Severity), Severity.Success))
             .Variant("Warning", v => v.Set(nameof(MudAlert.Severity), Severity.Warning))
             .Variant("Outlined error", v => v.Set(nameof(MudAlert.Severity), Severity.Error).Set(nameof(MudAlert.Variant), Variant.Outlined));
 
         options.For<MudButton>()
-            .Slot(nameof(MudButton.ChildContent), b => b.AddContent(0, "Click me"))
+            .Slot(nameof(MudButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
             .Variant("Filled primary", v => v.Set(nameof(MudButton.Variant), Variant.Filled).Set(nameof(MudButton.Color), Color.Primary))
             .Variant("Outlined", v => v.Set(nameof(MudButton.Variant), Variant.Outlined).Set(nameof(MudButton.Color), Color.Secondary))
             .Variant("Text", v => v.Set(nameof(MudButton.Variant), Variant.Text))
@@ -75,22 +75,22 @@ public static class PlaygroundConfig
             .Variant("Extended", v => v.Set(nameof(MudFab.Label), "Create").Set(nameof(MudFab.Color), Color.Secondary));
 
         options.For<MudButtonGroup>()
-            .Slot(nameof(MudButtonGroup.ChildContent), DemoFragments.ButtonGroupButtons)
+            .Slot(nameof(MudButtonGroup.ChildContent), DemoFragments.ButtonGroupButtons, DemoFragmentSources.ButtonGroupButtons)
             .Variant("Outlined primary", v => v.Set(nameof(MudButtonGroup.Variant), Variant.Outlined).Set(nameof(MudButtonGroup.Color), Color.Primary))
             .Variant("Text", v => v.Set(nameof(MudButtonGroup.Variant), Variant.Text));
 
         options.For<MudAvatar>()
-            .Slot("ChildContent", b => b.AddContent(0, "PB"))
+            .Slot("ChildContent", b => b.AddContent(0, "PB"), "PB")
             .Parameter(nameof(MudAvatar.Color), Color.Primary)
             .Variant("Rounded", v => v.Set(nameof(MudAvatar.Rounded), true).Set(nameof(MudAvatar.Color), Color.Secondary))
             .Variant("Large", v => v.Set(nameof(MudAvatar.Size), Size.Large));
 
         options.For<MudAvatarGroup>()
-            .Slot("ChildContent", DemoFragments.Avatars)
+            .Slot("ChildContent", DemoFragments.Avatars, DemoFragmentSources.Avatars)
             .Variant("Max 2", v => v.Set(nameof(MudAvatarGroup.Max), 2));
 
         options.For<MudBadge>()
-            .Slot("ChildContent", DemoFragments.BadgeChild)
+            .Slot("ChildContent", DemoFragments.BadgeChild, DemoFragmentSources.BadgeChild)
             .Parameter(nameof(MudBadge.Content), 4)
             .Parameter(nameof(MudBadge.Color), Color.Primary)
             .Parameter(nameof(MudBadge.Overlap), true)
@@ -105,7 +105,7 @@ public static class PlaygroundConfig
             });
 
         options.For<MudCard>()
-            .Slot("ChildContent", DemoFragments.CardBody)
+            .Slot("ChildContent", DemoFragments.CardBody, DemoFragmentSources.CardBody)
             .Variant("Elevated", v => v.Set(nameof(MudCard.Elevation), 8))
             .Variant("Outlined", v => v.Set(nameof(MudCard.Outlined), true));
 
@@ -123,13 +123,13 @@ public static class PlaygroundConfig
             .Parameter(nameof(MudCheckBox<bool>.Color), Color.Primary);
 
         options.For<MudChip<string>>()
-            .Slot("ChildContent", b => b.AddContent(0, "Blazor"))
+            .Slot("ChildContent", b => b.AddContent(0, "Blazor"), "Blazor")
             .Variant("Primary", v => v.Set("Color", Color.Primary))
             .Variant("Outlined", v => v.Set("Variant", Variant.Outlined).Set("Color", Color.Secondary))
             .Variant("With icon", v => v.Set("Icon", Icons.Material.Filled.Face).Set("Color", Color.Info));
 
         options.For<MudChipSet<string>>()
-            .Slot("ChildContent", DemoFragments.Chips);
+            .Slot("ChildContent", DemoFragments.Chips, DemoFragmentSources.Chips);
 
         options.For<MudDatePicker>()
             .Parameter(nameof(MudDatePicker.Label), "Select a date")
@@ -143,15 +143,15 @@ public static class PlaygroundConfig
             .Variant("Static clock", v => v.Set(nameof(MudTimePicker.PickerVariant), PickerVariant.Static));
 
         options.For<MudExpansionPanels>()
-            .Slot("ChildContent", DemoFragments.ExpansionPanels);
+            .Slot("ChildContent", DemoFragments.ExpansionPanels, DemoFragmentSources.ExpansionPanels);
 
         options.For<MudField>()
             .Parameter(nameof(MudField.Label), "Field label")
-            .Slot("ChildContent", DemoFragments.FieldChild)
+            .Slot("ChildContent", DemoFragments.FieldChild, DemoFragmentSources.FieldChild)
             .Variant("Outlined", v => v.Set(nameof(MudField.Variant), Variant.Outlined));
 
         options.For<MudGrid>()
-            .Slot("ChildContent", DemoFragments.GridItems)
+            .Slot("ChildContent", DemoFragments.GridItems, DemoFragmentSources.GridItems)
             .Parameter(nameof(MudGrid.Spacing), 2);
 
         options.For<MudHighlighter>()
@@ -164,44 +164,46 @@ public static class PlaygroundConfig
             .Variant("Large secondary", v => v.Set(nameof(MudIcon.Size), Size.Large).Set(nameof(MudIcon.Color), Color.Secondary));
 
         options.For<MudImage>()
-            .Parameter(nameof(MudImage.Src), "https://picsum.photos/seed/playblazor/280/160")
+            // Self-contained data URI: the bench must not depend on an external image host.
+            .Parameter(nameof(MudImage.Src), "data:image/svg+xml," + Uri.EscapeDataString(
+                """<svg xmlns="http://www.w3.org/2000/svg" width="280" height="160"><rect width="280" height="160" fill="#6d4aff"/><circle cx="70" cy="55" r="28" fill="#a18bff"/><path d="M0 160 90 80l60 50 50-36 80 66z" fill="#4c30c4"/><text x="14" y="146" font-family="monospace" font-size="13" fill="#fff">playblazor.svg</text></svg>"""))
             .Parameter(nameof(MudImage.Alt), "Sample image")
             .Parameter(nameof(MudImage.Elevation), 4)
             .Variant("Rounded", v => v.Set(nameof(MudImage.Class), "rounded-lg"));
 
         options.For<MudLink>()
-            .Slot("ChildContent", b => b.AddContent(0, "Read the MudBlazor docs"))
+            .Slot("ChildContent", b => b.AddContent(0, "Read the MudBlazor docs"), "Read the MudBlazor docs")
             .Parameter(nameof(MudLink.Href), "https://mudblazor.com")
             .Variant("Secondary underline", v => v.Set(nameof(MudLink.Color), Color.Secondary).Set(nameof(MudLink.Underline), Underline.Always));
 
         options.For<MudList<string>>()
-            .Slot("ChildContent", DemoFragments.ListItems);
+            .Slot("ChildContent", DemoFragments.ListItems, DemoFragmentSources.ListItems);
 
         options.For<MudMenu>()
             .Parameter(nameof(MudMenu.Label), "Open menu")
             .Parameter(nameof(MudMenu.Variant), Variant.Filled)
             .Parameter(nameof(MudMenu.Color), Color.Primary)
-            .Slot("ChildContent", DemoFragments.MenuItems);
+            .Slot("ChildContent", DemoFragments.MenuItems, DemoFragmentSources.MenuItems);
 
         options.For<MudNavMenu>()
-            .Slot("ChildContent", DemoFragments.NavLinks);
+            .Slot("ChildContent", DemoFragments.NavLinks, DemoFragmentSources.NavLinks);
 
         // AppBar and Drawer default to Fixed=true — they'd render fixed OVER the workspace
         // chrome instead of inside the stage. Un-fix them and give them visible content.
         options.For<MudAppBar>()
             .Parameter(nameof(MudAppBar.Fixed), false)
-            .Slot(nameof(MudAppBar.ChildContent), b => b.AddContent(0, "My application"));
+            .Slot(nameof(MudAppBar.ChildContent), b => b.AddContent(0, "My application"), "My application");
 
         options.For<MudDrawer>()
             .Parameter(nameof(MudDrawer.Fixed), false)
-            .Slot(nameof(MudDrawer.ChildContent), DemoFragments.NavLinks)
+            .Slot(nameof(MudDrawer.ChildContent), DemoFragments.NavLinks, DemoFragmentSources.NavLinks)
             .Variant("Open", v => v.Set(nameof(MudDrawer.Open), true));
 
         options.For<MudNumericField<double>>()
             .Parameter("Label", "Amount");
 
         options.For<MudOverlay>()
-            .Slot("ChildContent", DemoFragments.OverlayChild)
+            .Slot("ChildContent", DemoFragments.OverlayChild, DemoFragmentSources.OverlayChild)
             .Variant("Visible dark", v => v.Set(nameof(MudOverlay.Visible), true)
                 .Set(nameof(MudOverlay.DarkBackground), true)
                 .Set(nameof(MudOverlay.Absolute), true));
@@ -212,12 +214,12 @@ public static class PlaygroundConfig
             .Variant("Rectangular", v => v.Set(nameof(MudPagination.Rectangular), true));
 
         options.For<MudPaper>()
-            .Slot("ChildContent", DemoFragments.PaperChild)
+            .Slot("ChildContent", DemoFragments.PaperChild, DemoFragmentSources.PaperChild)
             .Variant("Elevation 8", v => v.Set(nameof(MudPaper.Elevation), 8))
             .Variant("Outlined", v => v.Set(nameof(MudPaper.Outlined), true));
 
         options.For<MudPopover>()
-            .Slot("ChildContent", b => b.AddContent(0, "Popover content"))
+            .Slot("ChildContent", b => b.AddContent(0, "Popover content"), "Popover content")
             .Variant("Open", v => v.Set(nameof(MudPopover.Open), true));
 
         options.For<MudProgressCircular>()
@@ -232,19 +234,19 @@ public static class PlaygroundConfig
             .Variant("Striped", v => v.Set(nameof(MudProgressLinear.Striped), true).Set(nameof(MudProgressLinear.Size), Size.Large));
 
         options.For<MudRadioGroup<string>>()
-            .Slot("ChildContent", DemoFragments.Radios);
+            .Slot("ChildContent", DemoFragments.Radios, DemoFragmentSources.Radios);
 
         options.For<MudRating>()
             .Parameter(nameof(MudRating.SelectedValue), 3);
 
         options.For<MudSelect<string>>()
             .Parameter("Label", "Coffee")
-            .Slot("ChildContent", DemoFragments.SelectItems)
+            .Slot("ChildContent", DemoFragments.SelectItems, DemoFragmentSources.SelectItems)
             .Variant("Filled", v => v.Set("Variant", Variant.Filled))
             .Variant("Outlined", v => v.Set("Variant", Variant.Outlined));
 
         options.For<MudSimpleTable>()
-            .Slot("ChildContent", DemoFragments.SimpleTableContent)
+            .Slot("ChildContent", DemoFragments.SimpleTableContent, DemoFragmentSources.SimpleTableContent)
             .Variant("Striped hover", v => v.Set(nameof(MudSimpleTable.Striped), true).Set(nameof(MudSimpleTable.Hover), true))
             .Variant("Dense outlined", v => v.Set(nameof(MudSimpleTable.Dense), true).Set(nameof(MudSimpleTable.Outlined), true));
 
@@ -260,23 +262,23 @@ public static class PlaygroundConfig
             .Parameter("Color", Color.Primary);
 
         options.For<MudStack>()
-            .Slot("ChildContent", DemoFragments.StackItems)
+            .Slot("ChildContent", DemoFragments.StackItems, DemoFragmentSources.StackItems)
             .Variant("Row", v => v.Set(nameof(MudStack.Row), true));
 
         options.For<MudStepper>()
-            .Slot("ChildContent", DemoFragments.Steps);
+            .Slot("ChildContent", DemoFragments.Steps, DemoFragmentSources.Steps);
 
         options.For<MudSwitch<bool>>()
             .Parameter(nameof(MudSwitch<bool>.Label), "Notifications")
             .Parameter(nameof(MudSwitch<bool>.Color), Color.Primary);
 
         options.For<MudTabs>()
-            .Slot("ChildContent", DemoFragments.TabPanels)
+            .Slot("ChildContent", DemoFragments.TabPanels, DemoFragmentSources.TabPanels)
             .Variant("Rounded", v => v.Set(nameof(MudTabs.Rounded), true))
             .Variant("Centered", v => v.Set(nameof(MudTabs.Centered), true));
 
         options.For<MudText>()
-            .Slot("ChildContent", b => b.AddContent(0, "The quick brown fox jumps over the lazy dog"))
+            .Slot("ChildContent", b => b.AddContent(0, "The quick brown fox jumps over the lazy dog"), "The quick brown fox jumps over the lazy dog")
             .Variant("h4", v => v.Set(nameof(MudText.Typo), Typo.h4))
             .Variant("subtitle1", v => v.Set(nameof(MudText.Typo), Typo.subtitle1))
             .Variant("overline", v => v.Set(nameof(MudText.Typo), Typo.overline));
@@ -288,25 +290,25 @@ public static class PlaygroundConfig
             .Variant("With helper", v => v.Set("HelperText", "First and last name"));
 
         options.For<MudTimeline>()
-            .Slot("ChildContent", DemoFragments.TimelineItems);
+            .Slot("ChildContent", DemoFragments.TimelineItems, DemoFragmentSources.TimelineItems);
 
         options.For<MudToggleGroup<string>>()
-            .Slot("ChildContent", DemoFragments.ToggleItems)
+            .Slot("ChildContent", DemoFragments.ToggleItems, DemoFragmentSources.ToggleItems)
             .Parameter("Color", Color.Primary);
 
         options.For<MudToolBar>()
-            .Slot("ChildContent", DemoFragments.ToolBarContent);
+            .Slot("ChildContent", DemoFragments.ToolBarContent, DemoFragmentSources.ToolBarContent);
 
         options.For<MudTooltip>()
             .Parameter(nameof(MudTooltip.Text), "A helpful hint")
-            .Slot("ChildContent", DemoFragments.TooltipChild)
+            .Slot("ChildContent", DemoFragments.TooltipChild, DemoFragmentSources.TooltipChild)
             .Variant("Arrow", v => v.Set(nameof(MudTooltip.Arrow), true));
 
         options.For<MudTreeView<string>>()
-            .Slot("ChildContent", DemoFragments.TreeItems);
+            .Slot("ChildContent", DemoFragments.TreeItems, DemoFragmentSources.TreeItems);
 
         options.For<MudCarousel<string>>()
-            .Slot("ChildContent", DemoFragments.CarouselItems)
+            .Slot("ChildContent", DemoFragments.CarouselItems, DemoFragmentSources.CarouselItems)
             .Parameter("Style", "height:200px;width:100%")
             .Parameter(nameof(MudCarousel<string>.AutoCycle), false);
 
@@ -317,8 +319,12 @@ public static class PlaygroundConfig
 
         // The grid demo: sample data as a parameter preset, columns as a slot preset.
         options.For<MudDataGrid<Person>>()
-            .Parameter(nameof(MudDataGrid<Person>.Items), Person.Samples)
-            .Slot(nameof(MudDataGrid<Person>.Columns), columns =>
+            .Parameter(nameof(MudDataGrid<Person>.Items), Person.Samples, "@_people")
+            .Slot(nameof(MudDataGrid<Person>.Columns), source: """
+<PropertyColumn Property="x => x.Name" />
+<PropertyColumn Property="x => x.Role" />
+<PropertyColumn Property="x => x.Age" />
+""", content: columns =>
             {
                 AddColumn<string>(columns, 0, p => p.Name);
                 AddColumn<string>(columns, 2, p => p.Role);

@@ -263,7 +263,8 @@
 .pbw-signals-empty { font-family: var(--pbw-mono); font-size: 0.6875rem; color: var(--pbw-muted); margin: 0; line-height: 1.7; }
 .pbw-signal-list { list-style: none; margin: 0; padding: 0; }
 .pbw-signal {
-    display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left;
+    /* MudBlazor.min.css centers flex buttons — signal rows must read left-to-right. */
+    display: flex; align-items: center; justify-content: flex-start; gap: 0.6rem; width: 100%; text-align: left;
     font-family: var(--pbw-mono); font-size: 0.71875rem; background: transparent; border: 0;
     border-bottom: 1px solid var(--pbw-hair); padding: 0.28rem 0.1rem; cursor: pointer;
 }
@@ -312,6 +313,11 @@
 }
 
 *:focus-visible { outline: 2px solid var(--pbw-accent); outline-offset: 2px; }
+/* Between full width and the stacked layout, the absolutely-centered mode switch
+   collides with the panel pills — let it flow with the bar instead. */
+@media (max-width: 1120px) {
+    .pbw-modes { position: static; transform: none; margin-left: auto; }
+}
 @media (prefers-reduced-motion: reduce) {
     .pbw, .pbw *, .pbw ::deep * { transition: none !important; animation: none !important; }
 }
@@ -320,6 +326,8 @@
     .pbw-zone-right { width: auto; flex-direction: column; }
     .pbw-zone-bottom { height: auto; flex-direction: column; }
     .pbw ::deep .pbw-panel { max-height: 280px; }
+    /* Floating palettes make no sense on a stacked narrow layout — flow them inline. */
+    .pbw ::deep .pbw-panel-float { position: static !important; width: auto !important; height: auto !important; max-height: 280px !important; box-shadow: none; }
     .pbw-zgrip, .pbw ::deep .pbw-ph-grip { display: none; }
     .pbw-modes { position: static; transform: none; }
     .pbw-bar { flex-wrap: wrap; height: auto; padding: 0.5rem 1rem; gap: 0.5rem; }
