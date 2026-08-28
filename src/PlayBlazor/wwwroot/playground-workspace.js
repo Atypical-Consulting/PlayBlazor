@@ -37,12 +37,23 @@ export function init(dotnetRef) {
 
     on(document, "keydown", e => {
         const inField = /^(input|select|textarea)$/i.test(document.activeElement?.tagName ?? "");
+        // Arrow keys walk the graph tree when a node has focus (spec: ↑↓ walk, Enter selects).
+        if ((e.key === "ArrowDown" || e.key === "ArrowUp") && document.activeElement?.closest?.("[data-panel=graph]")) {
+            const nodes = [...document.querySelectorAll("[data-panel=graph] button.pbw-tnode")];
+            const index = nodes.indexOf(document.activeElement.closest("button.pbw-tnode"));
+            const next = nodes[index + (e.key === "ArrowDown" ? 1 : -1)];
+            if (next) {
+                e.preventDefault();
+                next.focus();
+            }
+            return;
+        }
         if (!inField && e.key >= "1" && e.key <= "4") {
             ctx.ref.invokeMethodAsync("OnKey", e.key);
         } else if (!inField && e.key === "/") {
             e.preventDefault();
             ctx.ref.invokeMethodAsync("OnKey", "/");
-            setTimeout(() => document.querySelector(".pbw-pfilter")?.focus(), 60);
+            focusFilter(6);
         } else if (e.key === "Escape" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
             ctx.ref.invokeMethodAsync("OnKey", e.key);
         }
@@ -79,16 +90,40 @@ function zoneHit(zone, x, y) {
     return x >= r.left - 20 && x <= r.right + 20 && y >= r.top - 20 && y <= r.bottom + 20;
 }
 
-function track(e, onMove, onUp) {
+function focusFilter(retries) {
+    const input = document.querySelector(".pbw-pfilter");
+    if (input && input.offsetParent !== null) {
+        input.focus();
+    } else if (retries > 0) {
+        // The panel may still be re-rendering (it was hidden or collapsed).
+        setTimeout(() => focusFilter(retries - 1), 80);
+    }
+}
+
+function track(e, onMove, onUp, onCancel) {
     e.preventDefault();
+    // Capture keeps pointerup coming even when the pointer leaves the window —
+    // without it, releasing outside strands the gesture (a ghost panel, stuck zones).
+    try { e.target.setPointerCapture?.(e.pointerId); } catch { /* detached target */ }
     const move = ev => onMove(ev);
-    const up = ev => {
+    const done = handler => ev => {
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
-        onUp(ev);
+        window.removeEventListener("pointercancel", cancel);
+        window.removeEventListener("keydown", key);
+        handler(ev);
+    };
+    const up = done(onUp);
+    const cancel = done(ev => (onCancel ?? onUp)(ev));
+    const key = ev => {
+        if (ev.key === "Escape") {
+            cancel(ev);
+        }
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", cancel);
+    window.addEventListener("keydown", key);
 }
 
 function startPanelDrag(e, panel) {
@@ -138,6 +173,10 @@ function startPanelDrag(e, panel) {
             const y = Math.max(52, Math.min(window.innerHeight - 40, ev.clientY - offY));
             ctx.ref.invokeMethodAsync("OnPanelDropped", id, null, 0, x, y);
         }
+    }, () => {
+        // Cancelled drag (Escape, pointer lost): clean the transients, change nothing.
+        zones().forEach(z => z.classList.remove("pbw-zone-droptarget", "pbw-zone-hot"));
+        ghost?.remove();
     });
 }
 

@@ -2,6 +2,11 @@
 <label class="pb-control pb-control-enum">
     <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
     <select value="@(Value?.ToString() ?? string.Empty)" @onchange="OnChanged">
+        @if (Parameter.IsNullable)
+        {
+            @* Without this option a null value silently displays as the first member. *@
+            <option value="">(null)</option>
+        }
         @foreach (var name in Enum.GetNames(EnumType))
         {
             <option value="@name">@name</option>
@@ -15,5 +20,6 @@
 
     private Type EnumType => Nullable.GetUnderlyingType(Parameter.Type) ?? Parameter.Type;
 
-    private Task OnChanged(ChangeEventArgs e) => ValueChanged.InvokeAsync(Enum.Parse(EnumType, (string)e.Value!));
+    private Task OnChanged(ChangeEventArgs e)
+        => ValueChanged.InvokeAsync((string?)e.Value is { Length: > 0 } name ? Enum.Parse(EnumType, name) : null);
 }

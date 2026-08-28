@@ -141,6 +141,32 @@ public class WorkspaceTests
     }
 
     [Test]
+    public void EnvironmentToggles_ReSyncTheUrl()
+    {
+        var cut = RenderWorkspace();
+        var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+
+        cut.Find(".pbw-env-btn").Click(); // dark
+
+        navigation.Uri.Should().NotBe(before, "the environment is part of the permalink");
+    }
+
+    [Test]
+    public void NullableEnum_OffersANullOption()
+    {
+        _context.Services.AddPlayBlazor();
+        var cut = _context.Render<PlayBlazor.Shell.ControlHost>(ps => ps
+            .Add(c => c.Parameter, new PlayBlazor.Model.ParameterDescriptor(
+                "Size", typeof(PlayBlazor.UnitTests.Fixtures.FixtureSize?),
+                PlayBlazor.Model.ControlKind.Enum, IsNullable: true,
+                DefaultValue: null, HasDefault: true, Summary: null)));
+
+        cut.FindAll("option")[0].TextContent.Should().Be("(null)");
+        cut.Find("select").GetAttribute("value").Should().BeNullOrEmpty();
+    }
+
+    [Test]
     public void Snippet_ShowsWhatTheHostContributes()
     {
         var cut = RenderWorkspace(options => options.For<GenericFixture<double>>()

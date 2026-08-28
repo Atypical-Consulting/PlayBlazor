@@ -44,7 +44,9 @@
             ? null
             : $"left:{F(f.X)}px;top:{F(f.Y)}px;"
               + (f.Width is { } w ? $"width:{F(w)}px;" : null)
-              + (f.Height is { } h ? $"height:{F(h)}px;" : null);
+              // The explicit height must beat the default max-height cap, or a restored
+              // tall float silently shrinks back to 62vh.
+              + (f.Height is { } h ? $"height:{F(h)}px;max-height:none;" : null);
 
     private static string F(double value)
         => value.ToString(System.Globalization.CultureInfo.InvariantCulture);

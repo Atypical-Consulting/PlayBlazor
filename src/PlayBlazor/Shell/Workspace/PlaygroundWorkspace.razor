@@ -32,6 +32,7 @@
             {
                 <button type="button" @key="panel.Id"
                         class="pbw-pill @(!_layout.IsHidden(panel.Id) ? "pbw-pill-on" : null)"
+                        aria-pressed="@(!_layout.IsHidden(panel.Id) ? "true" : "false")"
                         @onclick="() => TogglePanel(panel.Id)">@panel.Title</button>
             }
         </div>
@@ -63,11 +64,11 @@
             {
                 <div class="pbw-stage-toolbar">
                     <button type="button" class="pbw-env-btn @(_environment.Dark ? "pbw-env-on" : null)"
-                            title="Dark surface" @onclick="() => _environment.Dark = !_environment.Dark">&#9681;</button>
+                            title="Dark surface" aria-pressed="@(_environment.Dark ? "true" : "false")" @onclick="ToggleDark">&#9681;</button>
                     <button type="button" class="pbw-env-btn @(_environment.Rtl ? "pbw-env-on" : null)"
-                            title="Right-to-left" @onclick="() => _environment.Rtl = !_environment.Rtl">&#8646;</button>
+                            title="Right-to-left" aria-pressed="@(_environment.Rtl ? "true" : "false")" @onclick="ToggleRtl">&#8646;</button>
                     <button type="button" class="pbw-env-btn @(_environment.Checkerboard ? "pbw-env-on" : null)"
-                            title="Checkerboard surface" @onclick="() => _environment.Checkerboard = !_environment.Checkerboard">&#9638;</button>
+                            title="Checkerboard surface" aria-pressed="@(_environment.Checkerboard ? "true" : "false")" @onclick="ToggleChecker">&#9638;</button>
                     <select class="pbw-env-width" title="Viewport width" value="@(_environment.ViewportWidth?.ToString() ?? "")" @onchange="OnViewportChanged">
                         <option value="">Auto</option>
                         <option value="360">360</option>
@@ -259,7 +260,7 @@
             </Actions>
             <Body>
                 <div class="pbw-ptoolbar">
-                    <input class="pbw-pfilter" placeholder="Filter…" aria-label="Filter parameters"
+                    <input class="pbw-pfilter" placeholder="Filter… ( / )" title="Press / to focus" aria-label="Filter parameters"
                            value="@_paramFilter" @oninput="e => _paramFilter = (string?)e.Value ?? string.Empty" />
                     <button type="button" class="pbw-modchip @(_modifiedOnly ? "pbw-modchip-on" : null)"
                             title="Show only modified parameters"

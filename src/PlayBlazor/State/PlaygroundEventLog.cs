@@ -5,9 +5,12 @@ public sealed class PlaygroundEventLog
 {
     public const int Capacity = 50;
 
-    public sealed record Entry(DateTime Timestamp, string Name, string Payload, string? Detail);
+    /// <summary>Sequence keeps otherwise-identical entries distinct (record equality would
+    /// merge two same-millisecond clicks, unfolding both at once in the shell).</summary>
+    public sealed record Entry(DateTime Timestamp, string Name, string Payload, string? Detail, long Sequence = 0);
 
     private readonly List<Entry> _entries = [];
+    private long _nextSequence;
 
     public IReadOnlyList<Entry> Entries => _entries;
 
@@ -28,7 +31,7 @@ public sealed class PlaygroundEventLog
             _ => payload.ToString() ?? "(null)",
         };
 
-        _entries.Insert(0, new Entry(DateTime.Now, name, text, DescribeProperties(payload)));
+        _entries.Insert(0, new Entry(DateTime.Now, name, text, DescribeProperties(payload), _nextSequence++));
         if (_entries.Count > Capacity)
         {
             _entries.RemoveAt(_entries.Count - 1);

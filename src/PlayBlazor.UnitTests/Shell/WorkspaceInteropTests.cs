@@ -70,7 +70,36 @@ public class WorkspaceInteropTests
         await cut.Instance.OnFloatResized("signals", 480, 320);
 
         cut.Find("[data-panel=signals]").GetAttribute("style")
-            .Should().Contain("width:480px").And.Contain("height:320px");
+            .Should().Contain("width:480px").And.Contain("height:320px")
+            .And.Contain("max-height:none", "the explicit height must beat the 62vh cap");
+    }
+
+    [Test]
+    public async Task SlashKey_AlsoUncollapsesTheParametersPanel()
+    {
+        var cut = RenderWorkspace();
+        cut.Find("[data-panel=parameters] .pbw-ph-collapse").Click();
+        cut.Find("[data-panel=parameters]").ClassList.Should().Contain("pbw-panel-collapsed");
+
+        await cut.Instance.OnKey("/");
+
+        cut.Find("[data-panel=parameters]").ClassList.Should().NotContain("pbw-panel-collapsed");
+    }
+
+    [Test]
+    public void SwitchingComponentDuringPresentAutoplay_DoesNotKeepStaleVariants()
+    {
+        var cut = RenderWorkspace(options => options.For<BasicFixture>()
+            .Variant("One", v => v.Set("Dense", true))
+            .Variant("Two", v => v.Set("Outlined", false)));
+        cut.FindAll(".pbw-mode").First(m => m.TextContent == "Present").Click();
+        cut.FindAll(".pbw-film-chip").Should().HaveCount(2);
+
+        // EventFixture has no variants: the old autoplay must stop, not tick into an empty list.
+        cut.Find(".pbw-picker").Change(nameof(EventFixture));
+
+        cut.FindAll(".pbw-film-chip").Should().BeEmpty();
+        cut.Find(".pbw").ClassList.Should().Contain("pbw-present");
     }
 
     [Test]

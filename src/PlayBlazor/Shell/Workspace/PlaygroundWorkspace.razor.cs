@@ -175,6 +175,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
                         _layout.ToggleHidden(ParametersId);
                     }
 
+                    // A collapsed panel hides its body — the filter must be visible to focus.
+                    _collapsed.Remove(ParametersId);
+                    StateHasChanged();
                     break;
                 case "Escape" when _present:
                     SetPresent(false);
@@ -263,9 +266,17 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         _groupOpen.Clear();
         // A previous specimen's failure must not poison the next one.
         _errorBoundary?.Recover();
+        // Autoplay must not keep cycling the PREVIOUS component's variant list — with a
+        // different (or empty) list, the next tick would land out of range.
+        StopAutoplay();
         if (restorePermalink)
         {
             RestoreFromPermalink();
+        }
+
+        if (_present && Variants.Count > 0)
+        {
+            StartAutoplay();
         }
 
         SyncUrl();
@@ -676,5 +687,28 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     }
 
     private void OnViewportChanged(ChangeEventArgs e)
-        => _environment.ViewportWidth = int.TryParse((string?)e.Value, out var width) ? width : null;
+    {
+        _environment.ViewportWidth = int.TryParse((string?)e.Value, out var width) ? width : null;
+        SyncUrl();
+    }
+
+    /* The environment is part of the permalink — every toggle re-syncs the address bar. */
+
+    private void ToggleDark()
+    {
+        _environment.Dark = !_environment.Dark;
+        SyncUrl();
+    }
+
+    private void ToggleRtl()
+    {
+        _environment.Rtl = !_environment.Rtl;
+        SyncUrl();
+    }
+
+    private void ToggleChecker()
+    {
+        _environment.Checkerboard = !_environment.Checkerboard;
+        SyncUrl();
+    }
 }

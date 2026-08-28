@@ -67,6 +67,21 @@ public class EventLogTests
     }
 
     [Test]
+    public void Record_KeepsIdenticalEntriesDistinct()
+    {
+        var log = new PlaygroundEventLog();
+        var stamp = DateTime.Now;
+
+        log.Record("OnClick", 1);
+        log.Record("OnClick", 1);
+
+        // Same name, payload and (potentially) timestamp — the shell's unfold set relies
+        // on the two entries never comparing equal.
+        log.Entries.Should().OnlyHaveUniqueItems();
+        _ = stamp;
+    }
+
+    [Test]
     public void Record_RaisesRecordedWithTheRawPayload()
     {
         var log = new PlaygroundEventLog();
