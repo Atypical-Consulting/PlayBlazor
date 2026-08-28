@@ -18,6 +18,8 @@ public sealed class PlayBlazorOptions
 
     private readonly Dictionary<Type, List<Type>> _related = new();
 
+    private readonly Dictionary<Type, Type> _preferredClosings = new();
+
     /// <summary>
     /// Wraps the rendered specimen in the host's theme infrastructure (e.g. a theme provider
     /// honoring <see cref="PlaygroundEnvironment.Dark"/>). Null renders the specimen bare.
@@ -85,7 +87,29 @@ public sealed class PlayBlazorOptions
         => _excluded.Contains(Normalize(componentType));
 
     public ComponentOptionsBuilder<TComponent> For<TComponent>() where TComponent : IComponent
-        => new(this);
+    {
+        RememberClosing(typeof(TComponent));
+        return new(this);
+    }
+
+    private void RememberClosing(Type componentType)
+    {
+        if (componentType.IsConstructedGenericType)
+        {
+            _preferredClosings[componentType.GetGenericTypeDefinition()] = componentType;
+        }
+    }
+
+    /// <summary>
+    /// Discovery closes open generics with placeholder arguments (string, int). When the host
+    /// configured a specific closing (<c>For&lt;MudDataGrid&lt;Person&gt;&gt;()</c>), that closing
+    /// is the one worth playing — presets, scaffolds, variants and links all live on it.
+    /// </summary>
+    public Type ResolvePreferredClosing(Type discoveredType)
+        => discoveredType.IsConstructedGenericType
+           && _preferredClosings.TryGetValue(discoveredType.GetGenericTypeDefinition(), out var preferred)
+            ? preferred
+            : discoveredType;
 
     internal void AddSlotPreset(Type componentType, string parameterName, RenderFragment content)
         => _slotPresets[(Normalize(componentType), parameterName)] = content;

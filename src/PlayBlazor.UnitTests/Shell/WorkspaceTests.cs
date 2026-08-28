@@ -107,6 +107,20 @@ public class WorkspaceTests
     }
 
     [Test]
+    public void HostConfiguredGenericClosing_ReplacesTheDiscoveredPlaceholder()
+    {
+        // Discovery closes GenericFixture<TItem> with string; the host configured double.
+        var cut = RenderWorkspace(options =>
+            options.For<GenericFixture<double>>().Parameter(nameof(GenericFixture<double>.Value), 1.5));
+
+        cut.Find(".pbw-picker").Change(nameof(GenericFixture<double>));
+
+        cut.Find(".pbw-stage-name").TextContent.Should().Contain("GenericFixture");
+        cut.Find(".pbw-specimen-zone div").TextContent.Should().Contain("1.5",
+            "the Person-style host preset only binds on the host's own closing");
+    }
+
+    [Test]
     public void ResetLayout_RestoresHiddenPanels()
     {
         var cut = RenderWorkspace();

@@ -1,0 +1,81 @@
+.pbw-panel {
+    --pbw-accent: #6d4aff;
+    --pbw-ink: #1b1b22;
+    --pbw-muted: #6e6e7a;
+    --pbw-bg: #eeeef3;
+    --pbw-line: #e0e0ea;
+    --pbw-hair: #ececf3;
+    --pbw-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    background: #ffffff;
+    border: 1px solid var(--pbw-line);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 0;
+}
+.pbw-panel-collapsed { flex: 0 0 auto; }
+.pbw-panel-collapsed .pbw-panel-body { display: none; }
+.pbw-panel-float {
+    position: fixed;
+    z-index: 30;
+    width: 350px;
+    max-height: 62vh;
+    flex: none;
+    box-shadow: 0 22px 55px -18px rgba(20, 20, 35, 0.5);
+}
+.pbw-panel-dragging { opacity: 0.88; pointer-events: none; z-index: 50; }
+.pbw-panel-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.6rem;
+    border-bottom: 1px solid var(--pbw-hair);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+.pbw-panel-collapsed .pbw-panel-head { border-bottom: 0; }
+.pbw-panel-head:active { cursor: grabbing; }
+.pbw-ph-grip { color: #b9b9c9; font-size: 0.6875rem; }
+.pbw-ph-title {
+    font-family: var(--pbw-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.pbw-ph-badge {
+    font-style: normal;
+    font-family: var(--pbw-mono);
+    font-size: 0.625rem;
+    color: var(--pbw-muted);
+    background: var(--pbw-bg);
+    border-radius: 999px;
+    padding: 0.06rem 0.45rem;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pbw-ph-actions { margin-left: auto; display: flex; align-items: center; gap: 0.1rem; }
+.pbw-ph-actions button, .pbw-ph-actions ::deep button {
+    background: transparent;
+    border: 0;
+    color: #a5a5b8;
+    cursor: pointer;
+    font-size: 0.6875rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: 5px;
+}
+.pbw-ph-actions button:hover, .pbw-ph-actions ::deep button:hover {
+    color: var(--pbw-ink);
+    background: var(--pbw-bg);
+}
+.pbw-panel-body { flex: 1; min-height: 0; overflow: auto; padding: 0.6rem 0.7rem; }
+.pbw-rz { position: absolute; z-index: 4; touch-action: none; }
+.pbw-rz-r { top: 0; right: -4px; width: 8px; height: 100%; cursor: ew-resize; }
+.pbw-rz-b { left: 0; bottom: -4px; height: 8px; width: 100%; cursor: ns-resize; }
+.pbw-rz-c { right: -4px; bottom: -4px; width: 14px; height: 14px; cursor: nwse-resize; }

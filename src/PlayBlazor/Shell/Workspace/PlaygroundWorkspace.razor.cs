@@ -88,6 +88,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     {
         _components = Assemblies
             .SelectMany(assembly => Catalog.Discover(assembly))
+            .Select(c => Options.ResolvePreferredClosing(c.Type) is var preferred && preferred != c.Type
+                ? Catalog.Describe(preferred)
+                : c)
             .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
             .OrderBy(static c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
@@ -219,11 +222,16 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     /* ── Component selection ─────────────────────────── */
 
     private IEnumerable<IGrouping<string, ComponentDescriptor>> PickerGroups
-        => _components.GroupBy(static c => c.Category).OrderBy(static g => g.Key, StringComparer.Ordinal);
+        => _components
+            // A graph link can land on a component the picker curates out (a grid's column
+            // type, say) — it still needs an entry while it is the one being played.
+            .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
+            .GroupBy(static c => c.Category)
+            .OrderBy(static g => g.Key, StringComparer.Ordinal);
 
     private void OnPickerChanged(ChangeEventArgs e)
     {
-        if (_components.FirstOrDefault(c => c.DisplayName == (string?)e.Value) is { } match)
+        if (PickerGroups.SelectMany(static g => g).FirstOrDefault(c => c.DisplayName == (string?)e.Value) is { } match)
         {
             SelectComponent(match);
         }
@@ -439,10 +447,11 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         nodes.Add(new GraphNode(_selected.DisplayName, _selected, true, depth));
         foreach (var relatedType in Options.GetRelated(_selected.Type))
         {
-            if (_components.FirstOrDefault(c => c.Type == relatedType) is { } related)
-            {
-                nodes.Add(new GraphNode(related.DisplayName, related, false, depth + 1));
-            }
+            // Resolved through the catalog, not the curated list: a grid's column type is
+            // reachable through the graph even when the picker hides it.
+            var related = _components.FirstOrDefault(c => c.Type == relatedType)
+                          ?? Catalog.Describe(relatedType);
+            nodes.Add(new GraphNode(related.DisplayName, related, false, depth + 1));
         }
 
         return nodes;
