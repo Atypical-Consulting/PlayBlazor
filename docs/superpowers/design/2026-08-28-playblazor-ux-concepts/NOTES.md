@@ -85,6 +85,30 @@ happen in a single replace pass); E's Signals palette collided with Parameters a
 (max-height); D/E/F inherit the round-1 lesson of seeding a striking preset at load (D seeds via
 `pbMakeState` seed field).
 
+## Round 3 (2026-08-28, after the round-2 verdict)
+
+Verdict on round 2: good ideas in all three. **D** — interesting but "manque de possibilité de
+layout — nous sommes presque sur un mini IDE visuel mais pas de possibilité de déplacer les
+panels". **E** — could be integrated into D, strong for full screen. **F** — "l'idée d'un devtool
+pour composant Blazor est vraiment très impressionnante".
+
+**Concept G — Le Mini-IDE** commits to that reading: a real panel system in vanilla JS.
+- Four panels (Graph, Parameters, Razor, Signals) with headers you grab: drop on the bottom dock
+  or the right dock (insertion index follows the pointer, VS Code-style), or release anywhere to
+  float (E integrated). Zones show dashed drop-targets while dragging, collapse when empty, and
+  resize with grips (bottom height / right width).
+- Pills in the chrome summon/dismiss panels; ✕ closes; ▾ collapses; Reset layout restores the
+  default. Layout persists in localStorage (`pb-g-layout-v1`, try/catch-guarded).
+- F is a first-class panel: tree selection re-targets the Parameters panel (badge shows the node),
+  highlights the column in the specimen and the line in the razor. Column Title/Hidden stay wired.
+- Present mode kept from C/D (filmstrip HUD); Code mode dropped — Razor is a panel now.
+- Browser-verified: synthetic pointer drags docked Razor between Graph and Parameters and floated
+  Signals; reload restored the custom layout; Reset restored the default; search/Modified filter,
+  Present, and the node-aware sheet all pass.
+
+Sync: mockups uploaded to a Claude Design project via /design-sync (off-converter path — static
+HTML cards with `@dsCard` markers, `round2-model.js` inlined into self-contained copies).
+
 ## Implementation notes (whichever wins)
 
 - A's dock ≈ reorganizing `PlaygroundView.razor` grid areas + a resize JS interop; the

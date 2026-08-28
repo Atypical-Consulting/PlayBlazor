@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayBlazor — Concept G · Le Mini-IDE</title>
+<style>
+:root {
+    --accent: #6d4aff;
+    --accent-soft: #a18bff;
+    --ink: #1b1b22;
+    --muted: #6e6e7a;
+    --bg: #eeeef3;
+    --card: #ffffff;
+    --line: #e0e0ea;
+    --hair: #ececf3;
+    --chrome: #16161e;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --right-w: 330px;
+    --bottom-h: 235px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); transition: background 400ms ease; }
+body[data-mode="present"] { background: #0e0e15; }
+
+/* ── Chrome bar ──────────────────────────────────────── */
+.bar { flex: none; height: 48px; display: flex; align-items: center; gap: 0.75rem; padding: 0 1rem; background: var(--chrome); color: #e8e8f2; position: relative; z-index: 40; }
+.wordmark { font-family: var(--mono); font-weight: 700; font-size: 0.875rem; }
+.wordmark span { color: var(--accent-soft); margin-right: 0.2rem; }
+select.picker { font-family: var(--mono); font-size: 0.75rem; color: #e8e8f2; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 0.35rem 0.5rem; cursor: pointer; }
+.pills { display: flex; gap: 0.3rem; margin-left: 0.5rem; }
+.pill { font-family: var(--mono); font-size: 0.65rem; font-weight: 600; color: #9a9ab0; background: transparent; border: 1px solid #2b2b3a; border-radius: 999px; padding: 0.26rem 0.6rem; cursor: pointer; }
+.pill.on { color: var(--accent-soft); border-color: var(--accent); }
+.pill:hover { color: #e8e8f2; }
+.modes { position: absolute; left: 50%; transform: translateX(-50%); display: flex; background: rgba(255,255,255,.07); border-radius: 10px; padding: 3px; }
+.mode-btn { font-family: var(--mono); font-size: 0.75rem; font-weight: 600; color: #9a9ab0; background: transparent; border: 0; border-radius: 8px; padding: 0.38rem 1rem; cursor: pointer; }
+.mode-btn.active { color: #fff; background: var(--accent); }
+.bar-right { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; }
+.reset-btn { font-family: var(--mono); font-size: 0.65rem; color: #9a9ab0; background: transparent; border: 1px solid #2b2b3a; border-radius: 7px; padding: 0.3rem 0.6rem; cursor: pointer; }
+.reset-btn:hover { color: #e8e8f2; border-color: #9a9ab0; }
+.share-btn { font-family: var(--mono); font-size: 0.75rem; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; }
+
+/* ── Workspace grid ──────────────────────────────────── */
+.work {
+    flex: 1; min-height: 0; display: grid; gap: 0.625rem; padding: 0.625rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "stage right" "bottom right";
+}
+body[data-mode="present"] .work { padding: 0; grid-template-columns: 1fr; grid-template-rows: 1fr; grid-template-areas: "stage"; }
+body[data-mode="present"] .zone, body[data-mode="present"] .panel.float { display: none !important; }
+
+.stage {
+    grid-area: stage; position: relative; border-radius: 14px; min-height: 0;
+    background-color: #fafafc;
+    background-image: radial-gradient(circle, #d4d4e0 1px, transparent 1px);
+    background-size: 22px 22px;
+    border: 1px solid var(--line);
+    display: grid; place-items: center; overflow: auto;
+    transition: background-color 400ms ease;
+}
+body[data-mode="present"] .stage { border-radius: 0; border: 0; background-color: #0e0e15; background-image: radial-gradient(circle, #23232f 1px, transparent 1px); }
+.chips { position: absolute; top: 0.7rem; left: 0.8rem; display: flex; flex-wrap: wrap; gap: 0.375rem; align-items: center; z-index: 2; }
+.chips-label { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-right: 0.25rem; }
+.chip { font-family: var(--mono); font-size: 0.6875rem; font-weight: 600; color: #4a4a5c; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.7rem; cursor: pointer; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+body[data-mode="present"] .chips { display: none; }
+.specimen-zone { padding: 3.4rem 1.5rem 2rem; transition: transform 400ms ease; }
+body[data-mode="present"] .specimen-zone { transform: scale(1.25); }
+.stage-name { position: absolute; bottom: 0.7rem; left: 0.8rem; font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); }
+body[data-mode="present"] .stage-name { display: none; }
+
+/* ── Zones ───────────────────────────────────────────── */
+.zone { position: relative; min-width: 0; min-height: 0; display: flex; gap: 0.625rem; }
+.zone-bottom { grid-area: bottom; height: var(--bottom-h); flex-direction: row; }
+.zone-right { grid-area: right; width: var(--right-w); flex-direction: column; }
+.zone[data-empty="true"] { display: none; }
+.zone.droptarget::after {
+    content: ""; position: absolute; inset: -4px; border: 2px dashed var(--accent);
+    border-radius: 14px; background: rgba(109, 74, 255, 0.06); pointer-events: none; z-index: 5;
+}
+.zone.droptarget.hot::after { background: rgba(109, 74, 255, 0.16); border-style: solid; }
+.zgrip { position: absolute; z-index: 6; display: grid; place-items: center; }
+.zgrip::after { content: ""; border-radius: 999px; background: var(--line); }
+.zgrip:hover::after { background: var(--accent); }
+.zgrip-bottom { top: -9px; left: 0; right: 0; height: 14px; cursor: row-resize; }
+.zgrip-bottom::after { width: 44px; height: 4px; }
+.zgrip-right { left: -9px; top: 0; bottom: 0; width: 14px; cursor: col-resize; }
+.zgrip-right::after { width: 4px; height: 44px; }
+
+/* ── Panels ──────────────────────────────────────────── */
+.panel {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    display: flex; flex-direction: column; min-width: 0; min-height: 0;
+    flex: 1 1 0;
+}
+.panel.collapsed { flex: 0 0 auto; }
+.panel.collapsed .panel-body { display: none; }
+.panel.float {
+    position: fixed; z-index: 30; width: 350px; max-height: 62vh; flex: none;
+    box-shadow: 0 22px 55px -18px rgba(20, 20, 35, 0.5);
+}
+.panel.dragging { opacity: 0.88; pointer-events: none; z-index: 50; }
+.panel-head {
+    flex: none; display: flex; align-items: center; gap: 0.45rem;
+    padding: 0.42rem 0.6rem; border-bottom: 1px solid var(--hair);
+    cursor: grab; user-select: none;
+}
+.panel.collapsed .panel-head { border-bottom: 0; }
+.panel-head:active { cursor: grabbing; }
+.ph-grip { color: #b9b9c9; font-size: 0.6875rem; }
+.ph-title { font-family: var(--mono); font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.ph-badge { font-style: normal; font-family: var(--mono); font-size: 0.625rem; color: var(--muted); background: var(--bg); border-radius: 999px; padding: 0.06rem 0.45rem; }
+.ph-actions { margin-left: auto; display: flex; gap: 0.1rem; }
+.ph-actions button { background: transparent; border: 0; color: #a5a5b8; cursor: pointer; font-size: 0.6875rem; padding: 0.15rem 0.3rem; border-radius: 5px; }
+.ph-actions button:hover { color: var(--ink); background: var(--bg); }
+.panel-body { flex: 1; min-height: 0; overflow: auto; padding: 0.6rem 0.7rem; }
+
+/* Parameters panel */
+.p-toolbar { display: flex; gap: 0.375rem; margin-bottom: 0.5rem; }
+.p-search { flex: 1; min-width: 0; font-family: var(--mono); font-size: 0.6875rem; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 0.32rem 0.5rem; }
+.p-search:focus { border-color: var(--accent); outline: none; }
+.gchip { font-family: var(--mono); font-size: 0.625rem; font-weight: 600; color: var(--accent); background: transparent; border: 1px solid var(--accent-soft); border-radius: 999px; padding: 0.22rem 0.55rem; cursor: pointer; white-space: nowrap; }
+.gchip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.pgroup { margin-bottom: 0.2rem; }
+.pgroup > summary { list-style: none; cursor: pointer; user-select: none; font-family: var(--mono); font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; }
+.pgroup > summary::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+.pgroup > summary::before { content: "▸"; font-size: 0.5rem; transition: transform 150ms ease; }
+.pgroup[open] > summary::before { transform: rotate(90deg); }
+.prow { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.26rem 0; }
+.prow.hidden { display: none; }
+.prow-name { font-family: var(--mono); font-size: 0.71875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prow-name .dot { color: var(--accent); }
+.seg { display: inline-flex; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 2px; flex: none; }
+.seg button { font-family: var(--mono); font-size: 0.625rem; color: var(--muted); background: transparent; border: 0; border-radius: 5px; padding: 0.2rem 0.45rem; cursor: pointer; }
+.seg button.on { color: #fff; background: var(--accent); }
+select.ctl, input.ctl { font-family: var(--mono); font-size: 0.6875rem; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.24rem 0.4rem; max-width: 140px; }
+input.ctl { width: 96px; } input.ctl[type="number"] { width: 56px; }
+select.ctl:hover, input.ctl:hover { border-color: var(--accent); }
+.ctl-toggle { width: 32px; height: 17px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); position: relative; cursor: pointer; padding: 0; flex: none; }
+.ctl-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--muted); transition: transform 140ms ease, background 140ms ease; }
+.ctl-toggle.on { border-color: var(--accent); background: rgba(109, 74, 255, 0.12); }
+.ctl-toggle.on::after { transform: translateX(15px); background: var(--accent); }
+.wired { font-family: var(--mono); font-size: 0.65rem; color: #14996a; }
+.preset-badge { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+
+/* Graph panel */
+.tnode { display: flex; align-items: center; gap: 0.35rem; width: 100%; text-align: left; font-family: var(--mono); font-size: 0.71875rem; color: var(--ink); background: transparent; border: 0; border-radius: 7px; padding: 0.3rem 0.45rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tnode:hover { background: var(--bg); }
+.tnode.sel { background: rgba(109, 74, 255, 0.12); color: #4c30c4; font-weight: 600; }
+.tnode .tag-p { color: #9a9aae; }
+.tnode .tag-n { color: #5335d1; }
+.tnode .tag-a { color: #2b5fde; font-size: 0.65rem; }
+.tree-hint { font-family: var(--mono); font-size: 0.625rem; color: var(--muted); padding-top: 0.5rem; margin-top: 0.4rem; line-height: 1.7; border-top: 1px dashed var(--hair); }
+
+/* Razor panel */
+pre.code { margin: 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.75; white-space: pre; overflow-x: auto; }
+.code .ln { display: block; border-radius: 4px; padding: 0 0.3rem; margin: 0 -0.3rem; }
+.code .ln.hl { background: rgba(109, 74, 255, 0.1); box-shadow: inset 2px 0 0 var(--accent); }
+.tk-tag { color: #5335d1; font-weight: 600; }
+.tk-attr { color: #2b5fde; }
+.tk-val { color: #1b7f4d; }
+.tk-p { color: #9a9aae; }
+
+/* Signals panel */
+.evt-list { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 0.71875rem; }
+.evt-list li { display: flex; gap: 0.6rem; padding: 0.26rem 0; border-bottom: 1px solid var(--hair); }
+.evt-list li::before { content: "●"; color: #14996a; font-size: 0.5rem; align-self: center; }
+.evt-time { color: var(--muted); }
+.evt-name { color: var(--accent); font-weight: 600; }
+.evt-empty { color: var(--muted); font-family: var(--mono); font-size: 0.6875rem; margin: 0; padding: 0.2rem 0; }
+
+/* ── Present HUD ─────────────────────────────────────── */
+.hud { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%) translateY(150%); display: flex; align-items: center; gap: 0.875rem; background: rgba(24,24,34,.92); border: 1px solid #2b2b3a; border-radius: 999px; padding: 0.55rem 0.7rem 0.55rem 1.1rem; box-shadow: 0 18px 50px -12px rgba(0,0,0,.7); transition: transform 400ms ease, visibility 0s 400ms; z-index: 60; visibility: hidden; }
+body[data-mode="present"] .hud { transform: translateX(-50%) translateY(0); visibility: visible; transition: transform 400ms ease; }
+.hud-name { font-family: var(--mono); font-size: 0.8125rem; font-weight: 700; color: #fff; }
+.hud-name span { color: var(--accent-soft); }
+.film { display: flex; gap: 0.3rem; }
+.film button { font-family: var(--mono); font-size: 0.6875rem; color: #9a9ab0; background: transparent; border: 1px solid #2b2b3a; border-radius: 999px; padding: 0.28rem 0.65rem; cursor: pointer; position: relative; overflow: hidden; }
+.film button.active { color: #fff; border-color: var(--accent); }
+.film button.active::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--accent); transform-origin: left; transform: scaleX(0); animation: fill 4s linear forwards; }
+@keyframes fill { to { transform: scaleX(1); } }
+.hud-exit { font-family: var(--mono); font-size: 0.625rem; color: #6f6f8a; border-left: 1px solid #2b2b3a; padding-left: 0.75rem; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 860px) {
+    .work { grid-template-columns: 1fr; grid-template-rows: minmax(280px, 1fr) auto auto; grid-template-areas: "stage" "right" "bottom"; }
+    .zone-right { width: auto; flex-direction: column; }
+    .zone-bottom { height: auto; flex-direction: column; }
+    .panel { max-height: 280px; }
+    .zgrip, .ph-grip { display: none; }
+    .modes { position: static; transform: none; }
+    .bar { flex-wrap: wrap; height: auto; padding: 0.5rem 1rem; }
+    .bar-right .share-btn { display: none; }
+}
+</style>
+</head>
+<body data-mode="play">
+
+<header class="bar">
+    <div class="wordmark"><span>▶</span> PlayBlazor</div>
+    <select class="picker" id="picker" aria-label="Component">
+        <option>MudButton</option>
+        <option selected>MudDataGrid&lt;Person&gt;</option>
+    </select>
+    <div class="pills" id="pills"></div>
+    <div class="modes" role="tablist" aria-label="Workspace mode">
+        <button class="mode-btn active" data-mode="play">Play</button>
+        <button class="mode-btn" data-mode="present">Present</button>
+    </div>
+    <div class="bar-right">
+        <button class="reset-btn" id="reset-layout">Reset layout</button>
+        <button class="share-btn">Share ⤴</button>
+    </div>
+</header>
+
+<div class="work" id="work">
+    <section class="stage" aria-label="Stage">
+        <div class="chips" id="chips"></div>
+        <div class="specimen-zone" id="zone-spec"></div>
+        <div class="stage-name" id="stage-name"></div>
+    </section>
+
+    <div class="zone zone-bottom" id="zone-bottom" aria-label="Bottom dock">
+        <div class="zgrip zgrip-bottom" id="grip-bottom" title="Drag to resize"></div>
+    </div>
+    <div class="zone zone-right" id="zone-right" aria-label="Right dock">
+        <div class="zgrip zgrip-right" id="grip-right" title="Drag to resize"></div>
+    </div>
+</div>
+
+<!-- Panels (JS docks them into zones) -->
+<section class="panel" id="p-graph" data-title="Graph">
+    <header class="panel-head"><span class="ph-grip">⠿</span><span class="ph-title">Graph</span><em class="ph-badge">scaffold</em>
+        <span class="ph-actions"><button class="ph-collapse" aria-label="Collapse">▾</button><button class="ph-close" aria-label="Close">✕</button></span></header>
+    <div class="panel-body"><div id="tree"></div>
+        <div class="tree-hint">The host scaffold renders the played component inside its real parent graph — every node is inspectable.</div></div>
+</section>
+
+<section class="panel" id="p-params" data-title="Parameters">
+    <header class="panel-head"><span class="ph-grip">⠿</span><span class="ph-title">Parameters</span><em class="ph-badge" id="p-badge"></em>
+        <span class="ph-actions"><button class="ph-collapse" aria-label="Collapse">▾</button><button class="ph-close" aria-label="Close">✕</button></span></header>
+    <div class="panel-body">
+        <div class="p-toolbar">
+            <input class="p-search" id="p-search" placeholder="Filter…" aria-label="Filter parameters">
+            <button class="gchip" id="mod-chip">Modified · 0</button>
+        </div>
+        <div id="groups"></div>
+    </div>
+</section>
+
+<section class="panel" id="p-razor" data-title="Razor">
+    <header class="panel-head"><span class="ph-grip">⠿</span><span class="ph-title">Razor</span><em class="ph-badge">generated</em>
+        <span class="ph-actions"><button class="ph-copy" aria-label="Copy">⧉</button><button class="ph-collapse" aria-label="Collapse">▾</button><button class="ph-close" aria-label="Close">✕</button></span></header>
+    <div class="panel-body"><pre class="code" id="code"></pre></div>
+</section>
+
+<section class="panel" id="p-signals" data-title="Signals">
+    <header class="panel-head"><span class="ph-grip">⠿</span><span class="ph-title">Signals</span><em class="ph-badge" id="evt-count">0</em>
+        <span class="ph-actions"><button class="ph-collapse" aria-label="Collapse">▾</button><button class="ph-close" aria-label="Close">✕</button></span></header>
+    <div class="panel-body">
+        <ul class="evt-list" id="evt-list"></ul>
+        <p class="evt-empty" id="evt-empty">Actuate the specimen — every EventCallback lands here.</p>
+    </div>
+</section>
+
+<div class="hud">
+    <span class="hud-name" id="hud-name"></span>
+    <div class="film" id="film"></div>
+    <span class="hud-exit">esc to exit</span>
+</div>
+
+<script src="round2-model.js"></script>
+<script>
+pbInjectSpecimenCss();
+
+/* ── State ───────────────────────────────────────────── */
+let compKey = "MudDataGrid<Person>";
+const states = { "MudButton": pbMakeState("MudButton"), "MudDataGrid<Person>": pbMakeState("MudDataGrid<Person>") };
+function makeColState() {
+    const s = {};
+    for (const [n, , k, d] of PB_COMPONENTS["MudDataGrid<Person>"].columnParams)
+        if (k !== "event" && k !== "preset") s[n] = d;
+    return s;
+}
+const colStates = { "col-name": makeColState(), "col-age": makeColState(), "col-city": makeColState() };
+let selNode = "grid";
+let syncFns = [];
+
+function currentTree() {
+    return compKey === "MudButton"
+        ? [{ id: "root", label: "MudButton", tag: "MudButton", depth: 0 }]
+        : PB_COMPONENTS[compKey].tree;
+}
+function nodeParams(id) {
+    if (compKey === "MudButton") return { params: PB_COMPONENTS.MudButton.params, state: states.MudButton };
+    if (id === "grid" || id === "columns") return { params: PB_COMPONENTS[compKey].params, state: states[compKey] };
+    return { params: PB_COMPONENTS[compKey].columnParams, state: colStates[id] };
+}
+function columnsFromStates() {
+    return [["col-name", "Name"], ["col-age", "Age"], ["col-city", "City"]].map(([id, def]) => ({
+        label: colStates[id].Title || def, hidden: colStates[id].Hidden,
+    }));
+}
+function logEvent(name, args) {
+    document.getElementById("evt-empty").style.display = "none";
+    const n = document.getElementById("evt-count");
+    n.textContent = +n.textContent + 1;
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="evt-time">${new Date().toLocaleTimeString("en-GB")}</span><span class="evt-name">${name}</span><span style="color:var(--muted)">${args}</span>`;
+    document.getElementById("evt-list").prepend(li);
+}
+
+function render() {
+    const zone = document.getElementById("zone-spec");
+    zone.innerHTML = "";
+    if (compKey === "MudButton") {
+        const b = pbRenderButton(states.MudButton);
+        b.addEventListener("click", () => !states.MudButton.Disabled && logEvent("OnClick", "MouseEventArgs"));
+        zone.appendChild(b);
+    } else {
+        const node = currentTree().find(n => n.id === selNode);
+        zone.appendChild(pbRenderGrid(states[compKey], {
+            columns: columnsFromStates(),
+            highlightCol: node && node.col !== undefined ? node.col : null,
+            onRowClick: n => logEvent("RowClick", `{ Item = ${n} }`),
+        }));
+    }
+    document.getElementById("stage-name").textContent = `‹${compKey.replace("<Person>", "")} /› · scaffolded by the host · MudBlazor 8.x`;
+    const lines = pbSnippetLines(compKey, states[compKey]);
+    document.getElementById("code").innerHTML = lines
+        .map(l => `<span class="ln${l.node === selNode ? " hl" : ""}">${l.html}</span>`).join("");
+    syncFns.forEach(f => f());
+    const mods = pbModified(compKey, states[compKey]).length;
+    document.getElementById("mod-chip").textContent = `Modified · ${mods}`;
+}
+
+/* ── Graph panel ─────────────────────────────────────── */
+function buildTree() {
+    const host = document.getElementById("tree");
+    host.innerHTML = "";
+    for (const n of currentTree()) {
+        const b = document.createElement("button");
+        b.className = "tnode" + (n.id === selNode ? " sel" : "");
+        b.style.paddingLeft = 0.45 + n.depth * 0.85 + "rem";
+        const sp = n.tag.indexOf(" ");
+        const nm = sp < 0 ? n.tag : n.tag.slice(0, sp);
+        const rest = sp < 0 ? "" : n.tag.slice(sp)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/(\w+=)(")([^"]*?)(")/g, '<span class="tag-a">$1"$3"</span>');
+        b.innerHTML = `<span class="tag-p">&lt;</span><span class="tag-n">${nm}</span>${rest}<span class="tag-p">&gt;</span>`;
+        b.onclick = () => { selNode = n.id; buildTree(); buildParams(); render(); };
+        host.appendChild(b);
+    }
+}
+
+/* ── Parameters panel (node-aware) ───────────────────── */
+let modFilter = false;
+function buildParams() {
+    const { params, state } = nodeParams(selNode);
+    const node = currentTree().find(n => n.id === selNode);
+    document.getElementById("p-badge").textContent =
+        selNode.startsWith("col-") ? node.label : compKey.replace("<Person>", "");
+    const host = document.getElementById("groups");
+    host.innerHTML = ""; syncFns = [];
+    const groups = [];
+    for (const [, g] of params) if (!groups.includes(g)) groups.push(g);
+    for (const g of groups) {
+        const det = document.createElement("details");
+        det.className = "pgroup"; det.open = true;
+        det.innerHTML = `<summary>${g}</summary>`;
+        for (const [name, group, kind, def, options] of params) {
+            if (group !== g) continue;
+            const row = document.createElement("div");
+            row.className = "prow"; row.dataset.name = name.toLowerCase();
+            const label = document.createElement("span"); label.className = "prow-name";
+            syncFns.push(() => {
+                const mod = kind !== "event" && kind !== "slot" && kind !== "preset" && String(state[name]) !== String(def);
+                label.innerHTML = mod ? `${name} <span class="dot">●</span>` : name;
+                row.dataset.mod = mod;
+            });
+            let ctl;
+            if (kind === "enum" && options.length <= 3) {
+                ctl = document.createElement("div"); ctl.className = "seg";
+                for (const o of options) {
+                    const b = document.createElement("button"); b.textContent = o;
+                    b.onclick = () => { state[name] = o; clearChips(); render(); };
+                    ctl.appendChild(b);
+                }
+                syncFns.push(() => ctl.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.textContent === String(state[name]))));
+            } else if (kind === "enum") {
+                ctl = document.createElement("select"); ctl.className = "ctl";
+                for (const o of options) ctl.add(new Option(o, o));
+                ctl.onchange = () => { state[name] = ctl.value; clearChips(); render(); };
+                syncFns.push(() => ctl.value = state[name]);
+            } else if (kind === "bool") {
+                ctl = document.createElement("button"); ctl.className = "ctl-toggle"; ctl.setAttribute("aria-label", name);
+                ctl.onclick = () => { state[name] = !state[name]; clearChips(); render(); };
+                syncFns.push(() => ctl.classList.toggle("on", state[name]));
+            } else if (kind === "number") {
+                ctl = document.createElement("input"); ctl.className = "ctl"; ctl.type = "number"; ctl.value = state[name];
+                ctl.oninput = () => { state[name] = +ctl.value || 0; clearChips(); render(); };
+            } else if (kind === "string") {
+                ctl = document.createElement("input"); ctl.className = "ctl"; ctl.value = state[name]; ctl.placeholder = "—";
+                ctl.oninput = () => { state[name] = ctl.value; clearChips(); render(); };
+            } else if (kind === "preset" || kind === "slot") {
+                ctl = document.createElement("span"); ctl.className = "preset-badge"; ctl.textContent = "◇ " + def;
+            } else {
+                ctl = document.createElement("span"); ctl.className = "wired"; ctl.textContent = "⚡ wired";
+            }
+            row.append(label, ctl);
+            det.appendChild(row);
+        }
+        host.appendChild(det);
+    }
+    applyFilter();
+}
+function applyFilter() {
+    const q = document.getElementById("p-search").value.toLowerCase();
+    document.querySelectorAll(".prow").forEach(r => {
+        const ok = (!q || r.dataset.name.includes(q)) && (!modFilter || r.dataset.mod === "true");
+        r.classList.toggle("hidden", !ok);
+    });
+    document.querySelectorAll(".pgroup").forEach(det => {
+        const any = [...det.querySelectorAll(".prow")].some(r => !r.classList.contains("hidden"));
+        det.style.display = any ? "" : "none";
+        if (q || modFilter) det.open = true;
+    });
+}
+document.getElementById("p-search").oninput = applyFilter;
+document.getElementById("mod-chip").onclick = function () { modFilter = !modFilter; this.classList.toggle("active", modFilter); applyFilter(); };
+
+/* ── Presets + Present filmstrip ─────────────────────── */
+function buildPresets() {
+    const chips = document.getElementById("chips");
+    chips.innerHTML = `<span class="chips-label">Examples</span>`;
+    const film = document.getElementById("film");
+    film.innerHTML = "";
+    PB_COMPONENTS[compKey].presets.forEach(([label], i) => {
+        for (const [host, cls] of [[chips, "chip"], [film, ""]]) {
+            const b = document.createElement("button");
+            if (cls) b.className = cls;
+            b.dataset.preset = i; b.textContent = label;
+            b.onclick = () => { stopAuto(); applyPreset(i); };
+            host.appendChild(b);
+        }
+    });
+    document.getElementById("hud-name").innerHTML = `<span>‹</span>${compKey.replace("<Person>", "")}<span>/›</span>`;
+}
+function applyPreset(i) {
+    states[compKey] = Object.assign(pbMakeState(compKey), PB_COMPONENTS[compKey].presets[i][1]);
+    clearChips();
+    document.querySelectorAll(`[data-preset="${i}"]`).forEach(b => b.classList.add("active"));
+    buildParams(); render();
+}
+function clearChips() { document.querySelectorAll(".chip, .film button").forEach(b => b.classList.remove("active")); }
+
+/* ── Component switch ────────────────────────────────── */
+document.getElementById("picker").onchange = function () {
+    compKey = this.selectedIndex === 0 ? "MudButton" : "MudDataGrid<Person>";
+    selNode = compKey === "MudButton" ? "root" : "grid";
+    document.getElementById("p-search").value = "";
+    buildPresets(); buildTree(); buildParams(); render();
+};
+
+/* ── Layout engine: zones, drag-dock, float, persist ── */
+const PANELS = ["p-graph", "p-params", "p-razor", "p-signals"];
+const DEFAULT_LAYOUT = {
+    zones: { right: ["p-graph", "p-params"], bottom: ["p-razor", "p-signals"] },
+    floats: {}, hidden: [], sizes: { right: 330, bottom: 235 },
+};
+let layout = loadLayout();
+
+function loadLayout() {
+    try {
+        const raw = localStorage.getItem("pb-g-layout-v1");
+        if (raw) { const l = JSON.parse(raw); if (l && l.zones) return l; }
+    } catch (e) { /* private mode etc. */ }
+    return JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+}
+function persist() { try { localStorage.setItem("pb-g-layout-v1", JSON.stringify(layout)); } catch (e) {} }
+
+function applyLayout() {
+    const zr = document.getElementById("zone-right"), zb = document.getElementById("zone-bottom");
+    document.documentElement.style.setProperty("--right-w", layout.sizes.right + "px");
+    document.documentElement.style.setProperty("--bottom-h", layout.sizes.bottom + "px");
+    for (const id of PANELS) {
+        const p = document.getElementById(id);
+        p.classList.remove("float", "dragging");
+        p.style.left = p.style.top = p.style.width = "";
+        p.style.display = layout.hidden.includes(id) ? "none" : "";
+    }
+    for (const id of layout.zones.right) zr.appendChild(document.getElementById(id));
+    for (const id of layout.zones.bottom) zb.appendChild(document.getElementById(id));
+    for (const [id, pos] of Object.entries(layout.floats)) {
+        const p = document.getElementById(id);
+        document.body.appendChild(p);
+        p.classList.add("float");
+        p.style.left = pos.x + "px"; p.style.top = pos.y + "px";
+    }
+    refreshZones(); refreshPills(); persist();
+}
+function refreshZones() {
+    for (const [zid, key] of [["zone-right", "right"], ["zone-bottom", "bottom"]]) {
+        const visible = layout.zones[key].filter(id => !layout.hidden.includes(id));
+        document.getElementById(zid).dataset.empty = visible.length === 0;
+    }
+}
+function removeFromLayout(id) {
+    layout.zones.right = layout.zones.right.filter(x => x !== id);
+    layout.zones.bottom = layout.zones.bottom.filter(x => x !== id);
+    delete layout.floats[id];
+}
+
+/* Pills */
+function refreshPills() {
+    const host = document.getElementById("pills");
+    host.innerHTML = "";
+    for (const id of PANELS) {
+        const b = document.createElement("button");
+        b.className = "pill" + (layout.hidden.includes(id) ? "" : " on");
+        b.textContent = document.getElementById(id).dataset.title;
+        b.onclick = () => {
+            if (layout.hidden.includes(id)) layout.hidden = layout.hidden.filter(x => x !== id);
+            else layout.hidden.push(id);
+            applyLayout();
+        };
+        host.appendChild(b);
+    }
+}
+
+/* Drag to dock / float */
+function initPanel(panel) {
+    const head = panel.querySelector(".panel-head");
+    head.addEventListener("pointerdown", e => {
+        if (e.target.closest("button")) return;
+        e.preventDefault();
+        const startX = e.clientX, startY = e.clientY;
+        const r = panel.getBoundingClientRect();
+        const offX = Math.min(e.clientX - r.left, 320), offY = e.clientY - r.top;
+        let dragging = false;
+        const zones = [document.getElementById("zone-right"), document.getElementById("zone-bottom")];
+        function move(ev) {
+            if (!dragging) {
+                if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < 5) return;
+                dragging = true;
+                removeFromLayout(panel.id);
+                document.body.appendChild(panel);
+                panel.classList.add("float", "dragging");
+                panel.classList.remove("collapsed");
+                refreshZones();
+                zones.forEach(z => { z.dataset.empty = "false"; z.classList.add("droptarget"); });
+            }
+            panel.style.left = ev.clientX - offX + "px";
+            panel.style.top = ev.clientY - offY + "px";
+            zones.forEach(z => {
+                const zr = z.getBoundingClientRect();
+                z.classList.toggle("hot", ev.clientX >= zr.left - 20 && ev.clientX <= zr.right + 20 && ev.clientY >= zr.top - 20 && ev.clientY <= zr.bottom + 20);
+            });
+        }
+        function up(ev) {
+            window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+            if (!dragging) return;
+            panel.classList.remove("dragging");
+            zones.forEach(z => z.classList.remove("droptarget", "hot"));
+            const hit = zones.find(z => {
+                const zr = z.getBoundingClientRect();
+                return ev.clientX >= zr.left - 20 && ev.clientX <= zr.right + 20 && ev.clientY >= zr.top - 20 && ev.clientY <= zr.bottom + 20;
+            });
+            if (hit) {
+                const key = hit.id === "zone-right" ? "right" : "bottom";
+                const axis = key === "right" ? "y" : "x";
+                const ids = layout.zones[key];
+                let idx = ids.length;
+                for (let i = 0; i < ids.length; i++) {
+                    const pr = document.getElementById(ids[i]).getBoundingClientRect();
+                    const center = axis === "y" ? pr.top + pr.height / 2 : pr.left + pr.width / 2;
+                    if ((axis === "y" ? ev.clientY : ev.clientX) < center) { idx = i; break; }
+                }
+                ids.splice(idx, 0, panel.id);
+            } else {
+                layout.floats[panel.id] = { x: parseInt(panel.style.left), y: Math.max(52, parseInt(panel.style.top)) };
+            }
+            applyLayout();
+        }
+        window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+    });
+    panel.querySelector(".ph-collapse").onclick = () => panel.classList.toggle("collapsed");
+    panel.querySelector(".ph-close").onclick = () => { layout.hidden.push(panel.id); applyLayout(); };
+}
+PANELS.forEach(id => initPanel(document.getElementById(id)));
+
+/* Zone resize grips */
+document.getElementById("grip-bottom").addEventListener("pointerdown", e => {
+    e.preventDefault();
+    const startY = e.clientY, startH = layout.sizes.bottom;
+    const move = ev => { layout.sizes.bottom = Math.min(520, Math.max(120, startH + (startY - ev.clientY))); document.documentElement.style.setProperty("--bottom-h", layout.sizes.bottom + "px"); };
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); persist(); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+});
+document.getElementById("grip-right").addEventListener("pointerdown", e => {
+    e.preventDefault();
+    const startX = e.clientX, startW = layout.sizes.right;
+    const move = ev => { layout.sizes.right = Math.min(560, Math.max(240, startW + (startX - ev.clientX))); document.documentElement.style.setProperty("--right-w", layout.sizes.right + "px"); };
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); persist(); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+});
+document.getElementById("reset-layout").onclick = () => {
+    layout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+    applyLayout();
+};
+
+/* ── Modes + Present autoplay ────────────────────────── */
+let autoTimer = null, autoIdx = 0;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function startAuto() {
+    applyPreset(0); autoIdx = 0;
+    if (reduced) return;
+    autoTimer = setInterval(() => { autoIdx = (autoIdx + 1) % PB_COMPONENTS[compKey].presets.length; applyPreset(autoIdx); }, 4000);
+}
+function stopAuto() { clearInterval(autoTimer); autoTimer = null; }
+function setMode(m) {
+    document.body.dataset.mode = m;
+    document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === m));
+    if (m === "present") startAuto(); else stopAuto();
+}
+document.querySelectorAll(".mode-btn").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+window.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.body.dataset.mode === "present") setMode("play");
+    if (document.body.dataset.mode === "present" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+        stopAuto();
+        autoIdx = (autoIdx + (e.key === "ArrowRight" ? 1 : PB_COMPONENTS[compKey].presets.length - 1)) % PB_COMPONENTS[compKey].presets.length;
+        applyPreset(autoIdx);
+    }
+});
+
+applyLayout();
+buildPresets(); buildTree(); buildParams(); render();
+</script>
+</body>
+</html>
