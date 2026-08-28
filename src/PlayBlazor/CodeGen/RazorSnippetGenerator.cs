@@ -32,12 +32,12 @@ public static class RazorSnippetGenerator
     private readonly record struct Token(TokenKind Kind, string Text);
 
     public static string Generate(ComponentDescriptor component, PlaygroundState state, PlayBlazorOptions? options = null)
-        => string.Concat(Tokenize(component, state, options).Select(static t => t.Text));
+        => string.Concat(Compose(component, state, options).Select(static t => t.Text));
 
     public static MarkupString GenerateMarkup(ComponentDescriptor component, PlaygroundState state, PlayBlazorOptions? options = null)
     {
         var builder = new StringBuilder();
-        foreach (var token in Tokenize(component, state, options))
+        foreach (var token in Compose(component, state, options))
         {
             var encoded = WebUtility.HtmlEncode(token.Text);
             if (token.Kind == TokenKind.Punctuation)
@@ -64,6 +64,49 @@ public static class RazorSnippetGenerator
             TokenKind.Comment => "comment",
             _ => "punct",
         };
+
+    /// <summary>
+    /// The component snippet, wrapped in the host scaffold's razor when the host provided
+    /// its source — a copied scaffolded bench must include the parent it needs to run.
+    /// </summary>
+    private static List<Token> Compose(ComponentDescriptor component, PlaygroundState state, PlayBlazorOptions? options)
+    {
+        var inner = Tokenize(component, state, options);
+        if (options is null || !options.TryGetScaffoldSource(component.Type, out var template))
+        {
+            return inner;
+        }
+
+        var lines = Dedent(template);
+        var markerIndex = Array.FindIndex(lines, static l => l.Contains("{specimen}", StringComparison.Ordinal));
+        if (markerIndex < 0)
+        {
+            return inner;
+        }
+
+        var indent = lines[markerIndex][..(lines[markerIndex].Length - lines[markerIndex].TrimStart().Length)];
+        var tokens = new List<Token>();
+        for (var i = 0; i < markerIndex; i++)
+        {
+            AppendRazorLine(tokens, lines[i], i > 0);
+        }
+
+        // Re-indent the inner snippet to the marker's position.
+        tokens.Add(new Token(TokenKind.Punctuation, (markerIndex > 0 ? "\n" : string.Empty) + indent));
+        foreach (var token in inner)
+        {
+            tokens.Add(token.Kind == TokenKind.Punctuation
+                ? token with { Text = token.Text.Replace("\n", "\n" + indent) }
+                : token);
+        }
+
+        for (var i = markerIndex + 1; i < lines.Length; i++)
+        {
+            AppendRazorLine(tokens, lines[i], newLine: true);
+        }
+
+        return tokens;
+    }
 
     private static List<Token> Tokenize(ComponentDescriptor component, PlaygroundState state, PlayBlazorOptions? options)
     {
@@ -176,7 +219,7 @@ public static class RazorSnippetGenerator
             }
             else if (childContentSource is { Length: 1 })
             {
-                tokens.Add(new Token(TokenKind.ChildContent, childContentSource[0]));
+                AppendRazorLine(tokens, childContentSource[0], newLine: false, emitLead: false);
             }
             else
             {
@@ -252,18 +295,8 @@ public static class RazorSnippetGenerator
             return null;
         }
 
-        var lines = source.Replace("\r\n", "\n").Split('\n')
-            .SkipWhile(string.IsNullOrWhiteSpace)
-            .Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()
-            .ToArray();
-        if (lines.Length == 0)
-        {
-            return null;
-        }
-
-        var indent = lines.Where(static l => l.Trim().Length > 0)
-            .Min(static l => l.Length - l.TrimStart().Length);
-        return lines.Select(l => l.Length >= indent ? l[indent..] : l.TrimStart()).ToArray();
+        var lines = Dedent(source);
+        return lines.Length == 0 ? null : lines;
     }
 
     private static void AppendSourceLines(List<Token> tokens, string[]? lines, string indent)
@@ -271,8 +304,116 @@ public static class RazorSnippetGenerator
         foreach (var line in lines ?? [])
         {
             tokens.Add(new Token(TokenKind.Punctuation, "\n" + indent));
-            tokens.Add(new Token(TokenKind.ChildContent, line));
+            AppendRazorLine(tokens, line, newLine: false, emitLead: false);
         }
+    }
+
+    /// <summary>
+    /// Colorizes one line of host-provided razor with the same token kinds as generated
+    /// code — a light lexer (tags, attribute="value" pairs, text), not a razor parser.
+    /// </summary>
+    private static void AppendRazorLine(List<Token> tokens, string line, bool newLine, bool emitLead = true)
+    {
+        if (emitLead)
+        {
+            tokens.Add(new Token(TokenKind.Punctuation, newLine ? "\n" : string.Empty));
+        }
+
+        var i = 0;
+        while (i < line.Length)
+        {
+            var c = line[i];
+            if (c == '<')
+            {
+                var j = i + 1;
+                if (j < line.Length && line[j] == '/')
+                {
+                    j++;
+                }
+
+                var nameStart = j;
+                while (j < line.Length && (char.IsLetterOrDigit(line[j]) || line[j] is '.' or '_'))
+                {
+                    j++;
+                }
+
+                tokens.Add(new Token(TokenKind.Punctuation, line[i..nameStart]));
+                tokens.Add(new Token(TokenKind.Tag, line[nameStart..j]));
+                i = j;
+                // attributes until '>'
+                while (i < line.Length && line[i] != '>')
+                {
+                    if (char.IsLetter(line[i]))
+                    {
+                        var a = i;
+                        while (i < line.Length && (char.IsLetterOrDigit(line[i]) || line[i] is '-' or '_'))
+                        {
+                            i++;
+                        }
+
+                        if (i + 1 < line.Length && line[i] == '=' && line[i + 1] == '"')
+                        {
+                            var close = line.IndexOf('"', i + 2);
+                            close = close < 0 ? line.Length - 1 : close;
+                            tokens.Add(new Token(TokenKind.AttributeName, line[a..i]));
+                            tokens.Add(new Token(TokenKind.Punctuation, "=\""));
+                            tokens.Add(new Token(TokenKind.AttributeValue, line[(i + 2)..close]));
+                            tokens.Add(new Token(TokenKind.Punctuation, "\""));
+                            i = close + 1;
+                        }
+                        else
+                        {
+                            tokens.Add(new Token(TokenKind.AttributeName, line[a..i]));
+                        }
+                    }
+                    else
+                    {
+                        var p = i;
+                        while (i < line.Length && line[i] != '>' && !char.IsLetter(line[i]))
+                        {
+                            i++;
+                        }
+
+                        tokens.Add(new Token(TokenKind.Punctuation, line[p..i]));
+                    }
+                }
+
+                if (i < line.Length)
+                {
+                    tokens.Add(new Token(TokenKind.Punctuation, ">"));
+                    i++;
+                }
+            }
+            else
+            {
+                var t = i;
+                while (t < line.Length && line[t] != '<')
+                {
+                    t++;
+                }
+
+                var text = line[i..t];
+                tokens.Add(new Token(
+                    text.Trim().Length == 0 ? TokenKind.Punctuation : TokenKind.ChildContent, text));
+                i = t;
+            }
+        }
+    }
+
+    private static string[] Dedent(string source)
+    {
+        var lines = source.Replace("\r\n", "\n").Split('\n')
+            .SkipWhile(string.IsNullOrWhiteSpace)
+            .Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()
+            .ToArray();
+        if (lines.Length == 0)
+        {
+            return lines;
+        }
+
+        var indent = lines.Where(static l => l.Trim().Length > 0)
+            .Min(static l => l.Length - l.TrimStart().Length);
+        return lines.Select(l => l.Length >= indent ? l[indent..] : l.TrimStart()).ToArray();
     }
 
     private static string EscapeContent(string text)

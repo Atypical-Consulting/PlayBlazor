@@ -16,6 +16,8 @@ public sealed class PlayBlazorOptions
 
     private readonly Dictionary<Type, Func<RenderFragment, RenderFragment>> _scaffolds = new();
 
+    private readonly Dictionary<Type, string> _scaffoldSources = new();
+
     private readonly HashSet<Type> _excluded = [];
 
     private readonly Dictionary<Type, List<PlaygroundVariantDefinition>> _variants = new();
@@ -133,8 +135,19 @@ public sealed class PlayBlazorOptions
         }
     }
 
-    internal void AddScaffold(Type componentType, Func<RenderFragment, RenderFragment> scaffold)
-        => _scaffolds[componentType] = scaffold;
+    internal void AddScaffold(Type componentType, Func<RenderFragment, RenderFragment> scaffold, string? source)
+    {
+        _scaffolds[componentType] = scaffold;
+        if (source is not null)
+        {
+            _scaffoldSources[componentType] = source;
+        }
+    }
+
+    /// <summary>The razor text of the scaffold, with a <c>{specimen}</c> marker where the
+    /// played component sits — the generated code wraps the snippet in it.</summary>
+    public bool TryGetScaffoldSource(Type componentType, out string source)
+        => _scaffoldSources.TryGetValue(componentType, out source!);
 
     public bool TryGetSlotPreset(Type componentType, string parameterName, out RenderFragment fragment)
     {
@@ -203,9 +216,12 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     /// grid, a toggle item inside its group). The played specimen is passed in; return the
     /// surrounding markup with the specimen placed where it belongs.
     /// </summary>
-    public ComponentOptionsBuilder<TComponent> Scaffold(Func<RenderFragment, RenderFragment> scaffold)
+    /// <param name="scaffold">Wraps the played specimen in its required parent graph.</param>
+    /// <param name="source">The scaffold's razor text with a <c>{specimen}</c> marker — the
+    /// generated code panel wraps the component snippet in it, so what users copy runs.</param>
+    public ComponentOptionsBuilder<TComponent> Scaffold(Func<RenderFragment, RenderFragment> scaffold, string? source = null)
     {
-        _options.AddScaffold(typeof(TComponent), scaffold);
+        _options.AddScaffold(typeof(TComponent), scaffold, source);
         return this;
     }
 

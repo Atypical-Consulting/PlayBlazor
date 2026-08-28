@@ -1,0 +1,20 @@
+@namespace PlayBlazor.Shell
+<label class="pb-control pb-control-icon">
+    <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
+    <span class="pb-icon-pair">
+        @if (Value is string { Length: > 0 } markup && markup.TrimStart().StartsWith('<'))
+        {
+            @* MudBlazor icon strings ARE svg inner markup — preview them live. *@
+            <svg class="pb-icon-preview" viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)markup)</svg>
+        }
+        <input type="text" value="@(Value as string)" title="@(Value as string)" @onchange="OnChanged" />
+    </span>
+</label>
+@code {
+    [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+
+    private Task OnChanged(ChangeEventArgs e)
+        => ValueChanged.InvokeAsync((string?)e.Value is { Length: > 0 } text ? text : null);
+}

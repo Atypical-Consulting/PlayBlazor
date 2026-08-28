@@ -3,6 +3,7 @@
 <label class="pb-control pb-control-text">
     <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
     <input type="text" value="@ParameterValueConverter.Format(Parameter, Value)"
+           title="@ParameterValueConverter.Format(Parameter, Value)"
            maxlength="@(UnderlyingType == typeof(char) ? "1" : null)" @onchange="OnChanged" />
 </label>
 @code {

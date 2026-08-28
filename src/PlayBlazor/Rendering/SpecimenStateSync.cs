@@ -48,5 +48,5 @@ public static class SpecimenStateSync
 
     private static bool IsSyncable(ParameterDescriptor parameter)
         => parameter.Kind is ControlKind.Bool or ControlKind.Enum or ControlKind.Text
-            or ControlKind.Number or ControlKind.Date or ControlKind.Time or ControlKind.Color;
+            or ControlKind.Number or ControlKind.Date or ControlKind.Time or ControlKind.Color or ControlKind.Icon;
 }

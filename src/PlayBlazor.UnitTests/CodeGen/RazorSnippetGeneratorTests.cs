@@ -186,6 +186,38 @@ public class RazorSnippetGeneratorTests
     }
 
     [Test]
+    public void Generate_ScaffoldSource_WrapsTheSnippet_SoScaffoldedBenchesCopyComplete()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>().Scaffold(static specimen => specimen, """
+            <Parent Items="@_items">
+                {specimen}
+            </Parent>
+            """);
+        var state = new PlaygroundState();
+        state.Set("Dense", true);
+
+        RazorSnippetGenerator.Generate(_descriptor, state, options).Should().Be(
+            "<Parent Items=\"@_items\">\n" +
+            "    <BasicFixture Dense=\"true\" />\n" +
+            "</Parent>");
+    }
+
+    [Test]
+    public void Generate_SourceLines_AreColorizedLikeGeneratedCode()
+    {
+        var options = new PlayBlazorOptions();
+        options.For<BasicFixture>().Slot(nameof(BasicFixture.ChildContent), builder => { },
+            """<MudListItem Text="Inbox" />""");
+
+        var markup = RazorSnippetGenerator.GenerateMarkup(_descriptor, new PlaygroundState(), options).Value;
+
+        markup.Should().Contain("pb-tok-tag\">MudListItem")
+            .And.Contain("pb-tok-attr\">Text")
+            .And.Contain("pb-tok-val\">Inbox");
+    }
+
+    [Test]
     public void Generate_GenericClosing_BecomesTypeAttributes()
     {
         var descriptor = new ReflectionCatalogProvider().Describe(typeof(GenericFixture<int>));

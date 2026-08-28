@@ -363,7 +363,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private static bool IsDrivable(ParameterDescriptor parameter)
         => parameter.Kind is ControlKind.Bool or ControlKind.Enum or ControlKind.Text or ControlKind.Number
-               or ControlKind.Date or ControlKind.Time or ControlKind.Color
+               or ControlKind.Date or ControlKind.Time or ControlKind.Color or ControlKind.Icon
            || IsTextSlot(parameter);
 
     private IEnumerable<IGrouping<string, ParameterDescriptor>> ParameterGroups
@@ -530,7 +530,13 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         var depth = 0;
         if (Options.TryGetScaffold(_selected!.Type, out _))
         {
-            nodes.Add(new GraphNode(GraphNodeKind.Scaffold, "host scaffold", null, null, false, depth++));
+            // Name the wrapper when its source is known — "host scaffold" says nothing.
+            var label = Options.TryGetScaffoldSource(_selected.Type, out var template)
+                ? template.Replace("\r\n", "\n").Split('\n')
+                      .Select(static l => l.Trim())
+                      .FirstOrDefault(static l => l.Length > 0) ?? "host scaffold"
+                : "host scaffold";
+            nodes.Add(new GraphNode(GraphNodeKind.Scaffold, label, null, null, false, depth++));
         }
 
         nodes.Add(new GraphNode(

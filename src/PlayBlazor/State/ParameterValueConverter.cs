@@ -50,6 +50,7 @@ public static class ParameterValueConverter
                 ControlKind.Time => TimeSpan.Parse(text, CultureInfo.InvariantCulture),
                 ControlKind.Color => Activator.CreateInstance(type, text),
                 ControlKind.Slot => text,
+                ControlKind.Icon => ParseText(type, text),
                 ControlKind.Text => ParseText(type, text),
                 _ => null,
             };

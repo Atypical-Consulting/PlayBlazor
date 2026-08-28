@@ -185,6 +185,35 @@ public static class PlaygroundConfig
             .Parameter(nameof(MudMenu.Color), Color.Primary)
             .Slot("ChildContent", DemoFragments.MenuItems, DemoFragmentSources.MenuItems);
 
+        options.For<MudForm>()
+            .Slot("ChildContent", DemoFragments.FormFields, DemoFragmentSources.FormFields);
+
+        options.For<MudHidden>()
+            .Parameter(nameof(MudHidden.Breakpoint), Breakpoint.Xs)
+            .Slot("ChildContent", b => b.AddContent(0, "Visible unless the viewport matches the breakpoint."),
+                "Visible unless the viewport matches the breakpoint.")
+            .Variant("Inverted", v => v.Set(nameof(MudHidden.Invert), true));
+
+        options.For<MudScrollToTop>()
+            .Parameter(nameof(MudScrollToTop.Visible), true)
+            .Slot("ChildContent", b =>
+            {
+                b.OpenComponent<MudFab>(0);
+                b.AddComponentParameter(1, nameof(MudFab.StartIcon), Icons.Material.Filled.ArrowUpward);
+                b.AddComponentParameter(2, nameof(MudFab.Color), Color.Primary);
+                b.CloseComponent();
+            }, "<MudFab StartIcon=\"@Icons.Material.Filled.ArrowUpward\" Color=\"Color.Primary\" />");
+
+        options.For<MudElement>()
+            .Parameter(nameof(MudElement.HtmlTag), "blockquote")
+            .Slot("ChildContent", b => b.AddContent(0, "Renders any HTML tag you name."),
+                "Renders any HTML tag you name.");
+
+        options.For<MudContainer>()
+            .Parameter(nameof(MudContainer.MaxWidth), MaxWidth.Small)
+            .Slot("ChildContent", b => b.AddContent(0, "A centered, max-width content container."),
+                "A centered, max-width content container.");
+
         options.For<MudNavMenu>()
             .Slot("ChildContent", DemoFragments.NavLinks, DemoFragmentSources.NavLinks);
 
@@ -219,6 +248,7 @@ public static class PlaygroundConfig
             .Variant("Outlined", v => v.Set(nameof(MudPaper.Outlined), true));
 
         options.For<MudPopover>()
+            .Parameter(nameof(MudPopover.Open), true)
             .Slot("ChildContent", b => b.AddContent(0, "Popover content"), "Popover content")
             .Variant("Open", v => v.Set(nameof(MudPopover.Open), true));
 
@@ -347,7 +377,14 @@ public static class PlaygroundConfig
                     AddColumn<int>(columns, 1, p => p.Age);
                 }));
                 builder.CloseComponent();
-            })
+            }, source: """
+                <MudDataGrid T="Person" Items="@_people">
+                    <Columns>
+                        {specimen}
+                        <PropertyColumn Property="x => x.Age" />
+                    </Columns>
+                </MudDataGrid>
+                """)
             .Related<MudDataGrid<Person>>();
 
         // Providers make no sense as playground specimens (defense in depth next to the filter).
@@ -357,11 +394,16 @@ public static class PlaygroundConfig
             .Exclude<MudSnackbarProvider>();
 
         // Demonstrates the theme hook: the host wraps every specimen and can react to the environment.
+        // The dark toggle must theme the SPECIMEN, not just tint the stage: a real
+        // MudThemeProvider flips MudBlazor's palette with the environment.
         options.ThemeWrapper = context => builder =>
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", context.Environment.Dark ? "demo-specimen demo-specimen-dark" : "demo-specimen");
-            builder.AddContent(2, context.Content);
+            builder.OpenComponent<MudThemeProvider>(2);
+            builder.AddComponentParameter(3, nameof(MudThemeProvider.IsDarkMode), context.Environment.Dark);
+            builder.CloseComponent();
+            builder.AddContent(4, context.Content);
             builder.CloseElement();
         };
     }

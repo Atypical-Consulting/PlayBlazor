@@ -16,23 +16,24 @@
 
     <header class="pbw-bar">
         <span class="pbw-wordmark"><span>&#9654;</span> PlayBlazor</span>
-        <select class="pbw-picker" value="@_selected.DisplayName" @onchange="OnPickerChanged" aria-label="Component">
-            @foreach (var group in PickerGroups)
+        @* A searchable input beats a 65-entry native select: type to filter, pick, done. *@
+        <input class="pbw-picker" list="pbw-components" value="@_selected.DisplayName"
+               @onchange="OnPickerChanged" aria-label="Component" placeholder="Component…" />
+        <datalist id="pbw-components">
+            @foreach (var component in PickerGroups.SelectMany(static g => g))
             {
-                <optgroup label="@group.Key">
-                    @foreach (var component in group)
-                    {
-                        <option value="@component.DisplayName">@component.DisplayName</option>
-                    }
-                </optgroup>
+                <option value="@component.DisplayName">@component.Category</option>
             }
-        </select>
+        </datalist>
         <div class="pbw-pills">
-            @foreach (var panel in Panels)
+            @for (var i = 0; i < Panels.Length; i++)
             {
+                var panel = Panels[i];
+                var shortcut = i + 1;
                 <button type="button" @key="panel.Id"
                         class="pbw-pill @(!_layout.IsHidden(panel.Id) ? "pbw-pill-on" : null)"
                         aria-pressed="@(!_layout.IsHidden(panel.Id) ? "true" : "false")"
+                        title="@($"{panel.Title} panel — press {shortcut} to toggle")"
                         @onclick="() => TogglePanel(panel.Id)">@panel.Title</button>
             }
         </div>
@@ -335,13 +336,17 @@
             <Body>
                 @if (_eventLog.Entries.Count == 0)
                 {
-                    <p class="pbw-signals-empty">
-                        Actuate the specimen — every EventCallback lands here.
-                        @if (EventParameters.Any())
-                        {
-                            <span> Listening to @string.Join(", ", EventParameters.Select(e => e.Name)).</span>
-                        }
-                    </p>
+                    @if (EventParameters.Any())
+                    {
+                        <p class="pbw-signals-empty">
+                            Actuate the specimen — every EventCallback lands here.
+                            Listening to @string.Join(", ", EventParameters.Select(e => e.Name)).
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="pbw-signals-empty">This component exposes no events.</p>
+                    }
                 }
                 else
                 {

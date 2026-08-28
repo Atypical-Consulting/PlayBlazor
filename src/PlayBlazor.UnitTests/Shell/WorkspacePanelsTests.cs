@@ -107,6 +107,15 @@ public class WorkspacePanelsTests
     }
 
     [Test]
+    public void Signals_OnAnEventlessComponent_SayThereAreNoEvents()
+    {
+        var cut = RenderWorkspace();
+        cut.Find(".pbw-picker").Change(nameof(RichTypesFixture));
+
+        cut.Find(".pbw-signals-empty").TextContent.Should().Contain("no events");
+    }
+
+    [Test]
     public void Signals_WithPlainPayload_HaveNoFold()
     {
         var cut = RenderWorkspace();

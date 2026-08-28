@@ -7,6 +7,11 @@ namespace PlayBlazor.DemoHost;
 /// </summary>
 public static class DemoFragmentSources
 {
+    public const string FormFields = """
+<MudTextField T="string" Label="Name" Required="true" RequiredError="Name is required" />
+<MudTextField T="string" Label="Email" Required="true" InputType="InputType.Email" />
+""";
+
     public const string SelectItems = """
 <MudSelectItem T="string" Value="@("Espresso")">Espresso</MudSelectItem>
 <MudSelectItem T="string" Value="@("Cappuccino")">Cappuccino</MudSelectItem>

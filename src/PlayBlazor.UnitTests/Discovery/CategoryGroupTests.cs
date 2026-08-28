@@ -21,6 +21,15 @@ public class CategoryGroupTests
     }
 
     [Test]
+    public void StringIconParameters_GetTheIconKind()
+    {
+        var descriptor = _provider.Describe(typeof(MudButton));
+
+        descriptor.Parameters.Single(p => p.Name == nameof(MudButton.StartIcon))
+            .Kind.Should().Be(PlayBlazor.Model.ControlKind.Icon);
+    }
+
+    [Test]
     public void ParameterWithoutCategory_FallsBackToGeneral()
     {
         var descriptor = _provider.Describe(typeof(BasicFixture));

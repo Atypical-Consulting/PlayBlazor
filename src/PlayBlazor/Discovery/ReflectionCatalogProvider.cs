@@ -72,6 +72,13 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
             }
 
             var (kind, isNullable) = ControlKindResolver.Resolve(property.PropertyType);
+            if (kind == ControlKind.Text && property.PropertyType == typeof(string)
+                && property.Name.EndsWith("Icon", StringComparison.Ordinal))
+            {
+                // Icon strings (SVG markup in MudBlazor) deserve a preview, not a blob field.
+                kind = ControlKind.Icon;
+            }
+
             if (!isNullable && !property.PropertyType.IsValueType)
             {
                 // Nullable<T> is visible on the type; reference-type `string?` only on the property.

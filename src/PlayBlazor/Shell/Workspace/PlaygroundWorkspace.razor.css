@@ -206,6 +206,8 @@
     background: var(--pbw-bg); border: 1px solid var(--pbw-line); border-radius: 6px; padding: 0.2rem 0.35rem;
 }
 .pbw-prow ::deep .pb-color-pair { display: flex; align-items: center; gap: 0.4rem; }
+.pbw-prow ::deep .pb-icon-pair { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
+.pbw-prow ::deep .pb-icon-preview { width: 18px; height: 18px; flex: none; fill: var(--pbw-ink); opacity: 0.85; }
 .pbw-prow ::deep input[type="color"] { width: 34px; height: 22px; border: 1px solid var(--pbw-line); border-radius: 5px; background: var(--pbw-bg); padding: 1px; }
 .pbw-prow ::deep .pb-color-hex { font-family: var(--pbw-mono); font-size: 0.625rem; color: var(--pbw-muted); }
 .pbw-prow-reset { background: transparent; border: 0; color: var(--pbw-muted); cursor: pointer; font-size: 0.8125rem; padding: 0 0.2rem; }

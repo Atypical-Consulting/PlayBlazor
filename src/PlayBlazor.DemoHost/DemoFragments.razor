@@ -1,6 +1,11 @@
 @namespace PlayBlazor.DemoHost
 @* Static example fragments used as slot presets — official-docs-flavored content. *@
 @code {
+    public static RenderFragment FormFields => @<text>
+        <MudTextField T="string" Label="Name" Required="true" RequiredError="Name is required" />
+        <MudTextField T="string" Label="Email" Required="true" InputType="InputType.Email" />
+    </text>;
+
     public static RenderFragment SelectItems => @<text>
         <MudSelectItem T="string" Value="@("Espresso")">Espresso</MudSelectItem>
         <MudSelectItem T="string" Value="@("Cappuccino")">Cappuccino</MudSelectItem>
