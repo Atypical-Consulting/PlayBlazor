@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayBlazor — Concept B · La Fiche technique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --paper: #faf9f5;
+    --sheet: #ffffff;
+    --ink: #17171d;
+    --pencil: #8a8578;
+    --faint: #e7e4db;
+    --accent: #6d4aff;
+    --accent-ink: #4c30c4;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --disp: "Archivo", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    background: var(--paper);
+    background-image: linear-gradient(var(--faint) 1px, transparent 1px), linear-gradient(90deg, var(--faint) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: var(--disp);
+    padding: 2.5rem 1rem 4rem;
+}
+.sheet {
+    position: relative;
+    max-width: 1060px; margin: 0 auto;
+    background: var(--sheet);
+    border: 1px solid var(--ink);
+    box-shadow: 8px 8px 0 rgba(23, 23, 29, 0.08);
+}
+/* crop marks */
+.sheet::before, .sheet::after {
+    content: ""; position: absolute; width: 14px; height: 14px; pointer-events: none;
+}
+.sheet::before { top: -10px; left: -10px; border-top: 1.5px solid var(--ink); border-left: 1.5px solid var(--ink); }
+.sheet::after { bottom: -10px; right: -10px; border-bottom: 1.5px solid var(--ink); border-right: 1.5px solid var(--ink); }
+
+/* ── Masthead ────────────────────────────────────────── */
+.masthead {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+    padding: 0.8rem 1.75rem; border-bottom: 1px solid var(--ink);
+    font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.masthead .lib { color: var(--accent-ink); font-weight: 600; }
+.title-block { padding: 1.75rem 1.75rem 1.4rem; border-bottom: 1px solid var(--ink); position: relative; }
+h1 {
+    margin: 0; font-family: var(--disp); font-weight: 800;
+    font-size: clamp(2.4rem, 6vw, 4rem); letter-spacing: -0.03em; line-height: 0.95;
+}
+.subtitle { margin: 0.6rem 0 0; font-size: 1rem; color: #4c4c58; max-width: 46ch; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+.meta-chip {
+    font-family: var(--mono); font-size: 0.6875rem;
+    border: 1px solid var(--ink); padding: 0.25rem 0.6rem;
+}
+.meta-chip b { font-weight: 600; color: var(--accent-ink); }
+.stamp {
+    position: absolute; top: 1.5rem; right: 1.75rem;
+    font-family: var(--mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.2em;
+    color: var(--accent-ink); border: 2px solid var(--accent-ink); border-radius: 4px;
+    padding: 0.4rem 0.8rem; transform: rotate(4deg); opacity: 0.85;
+}
+
+/* ── Application notes (examples) ────────────────────── */
+.appnotes { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; padding: 0.8rem 1.75rem; border-bottom: 1px solid var(--ink); }
+.appnotes-label { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--pencil); margin-right: 0.5rem; }
+.note-chip {
+    font-family: var(--mono); font-size: 0.75rem; font-weight: 500;
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--faint); border-radius: 999px;
+    padding: 0.32rem 0.75rem; cursor: pointer;
+}
+.note-chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+.note-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ── Figure + characteristics ────────────────────────── */
+.body-grid { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); position: relative; }
+#leader-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+#leader-svg path { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+#leader-svg circle { fill: var(--accent); }
+
+.figure { padding: 2rem 1.5rem 1.5rem; border-right: 1px solid var(--ink); display: flex; flex-direction: column; }
+.specimen-frame {
+    position: relative; flex: 1; min-height: 260px;
+    border: 1px solid var(--ink);
+    background-image: radial-gradient(circle, #dddad1 1px, transparent 1px);
+    background-size: 18px 18px;
+    display: grid; place-items: center;
+    transition: box-shadow 150ms ease;
+}
+.specimen-frame.lit { box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.22); }
+.specimen-frame .tick { position: absolute; background: var(--ink); }
+.tick.t1 { top: -1px; left: 24px; width: 1px; height: 8px; }
+.tick.t2 { top: -1px; right: 24px; width: 1px; height: 8px; }
+.tick.t3 { bottom: -1px; left: 24px; width: 1px; height: 8px; }
+.tick.t4 { bottom: -1px; right: 24px; width: 1px; height: 8px; }
+.dim {
+    display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
+    font-family: var(--mono); font-size: 0.6875rem; color: var(--pencil);
+}
+.dim .rule { flex: 1; height: 1px; background: var(--pencil); position: relative; }
+.dim .rule::before, .dim .rule::after { content: ""; position: absolute; top: -3px; width: 1px; height: 7px; background: var(--pencil); }
+.dim .rule::before { left: 0; } .dim .rule::after { right: 0; }
+.figcap { margin-top: 0.9rem; font-family: var(--mono); font-size: 0.6875rem; color: var(--pencil); }
+.figcap b { color: var(--ink); font-weight: 600; }
+
+.mud-btn {
+    font-family: system-ui, sans-serif; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.02em; border-radius: 4px; border: 1px solid transparent; cursor: pointer;
+}
+.mud-btn:disabled { background: rgba(0,0,0,0.12) !important; color: rgba(0,0,0,0.32) !important; border-color: transparent !important; box-shadow: none !important; cursor: default; }
+
+/* Characteristics table */
+.chars { padding: 1.5rem 1.75rem 1.75rem; }
+.chars h2, .lower h2 {
+    margin: 0 0 0.9rem; font-family: var(--mono); font-size: 0.6875rem; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink);
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.chars h2::after, .lower h2::after { content: ""; flex: 1; height: 1px; background: var(--ink); }
+table.spec { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.75rem; }
+table.spec th {
+    text-align: left; font-weight: 500; font-size: 0.625rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--pencil);
+    padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--ink);
+}
+table.spec td { padding: 0.42rem 0.5rem; border-bottom: 1px solid var(--faint); vertical-align: middle; }
+table.spec tr.p-row { cursor: default; }
+table.spec tr.p-row:hover td, table.spec tr.p-row:focus-within td { background: rgba(109, 74, 255, 0.06); }
+td.p-name { font-weight: 600; }
+td.p-name .modified { color: var(--accent-ink); }
+.type-tag { font-size: 0.625rem; border: 1px solid var(--faint); border-radius: 3px; padding: 0.1rem 0.35rem; color: var(--pencil); white-space: nowrap; }
+td.p-default { color: var(--pencil); }
+td.p-yours { text-align: right; }
+select.ctl, input.ctl {
+    font-family: var(--mono); font-size: 0.75rem; color: var(--ink);
+    background: var(--sheet); border: 1px solid var(--faint); border-radius: 4px;
+    padding: 0.25rem 0.4rem; max-width: 130px;
+}
+select.ctl:hover, input.ctl:hover { border-color: var(--accent); }
+.ctl-toggle {
+    width: 32px; height: 17px; border-radius: 999px; border: 1px solid var(--pencil);
+    background: var(--sheet); position: relative; cursor: pointer; padding: 0; vertical-align: middle;
+}
+.ctl-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--pencil); transition: transform 140ms ease, background 140ms ease; }
+.ctl-toggle.on { border-color: var(--accent); background: rgba(109, 74, 255, 0.12); }
+.ctl-toggle.on::after { transform: translateX(15px); background: var(--accent); }
+.evt-mark { color: var(--accent-ink); font-size: 0.6875rem; }
+
+.handling { margin-top: 1.1rem; border: 1px dashed var(--pencil); padding: 0.65rem 0.8rem; font-family: var(--mono); font-size: 0.6875rem; color: #55524a; line-height: 1.6; }
+.handling b { color: var(--ink); letter-spacing: 0.1em; }
+
+/* ── Lower: circuit + signal log ─────────────────────── */
+.lower { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); border-top: 1px solid var(--ink); }
+.circuit { padding: 1.5rem 1.75rem 1.75rem; border-right: 1px solid var(--ink); }
+.circuit-head { display: flex; align-items: center; justify-content: space-between; }
+.copy-btn {
+    font-family: var(--mono); font-size: 0.6875rem; color: var(--ink);
+    background: transparent; border: 1px solid var(--ink); padding: 0.25rem 0.7rem; cursor: pointer;
+}
+.copy-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+pre.code {
+    margin: 0.4rem 0 0; padding: 1rem; background: #f6f4ee; border: 1px solid var(--faint);
+    font-family: var(--mono); font-size: 0.8125rem; line-height: 1.7;
+    white-space: pre-wrap; word-break: break-word;
+}
+.tk-tag { color: var(--accent-ink); font-weight: 600; }
+.tk-attr { color: #2b5fde; }
+.tk-val { color: #1b7f4d; }
+.tk-p { color: var(--pencil); }
+.siglog { padding: 1.5rem 1.75rem 1.75rem; }
+table.sig { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.71875rem; }
+table.sig td { padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--faint); }
+td.sig-t { color: var(--pencil); white-space: nowrap; }
+td.sig-n { color: var(--accent-ink); font-weight: 600; }
+.sig-empty { font-family: var(--mono); font-size: 0.71875rem; color: var(--pencil); margin: 0.4rem 0 0; line-height: 1.7; }
+
+/* ── Sheet footer ────────────────────────────────────── */
+.sheet-foot {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between;
+    padding: 0.7rem 1.75rem; border-top: 1px solid var(--ink);
+    font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--pencil);
+}
+.sheet-foot a { color: var(--accent-ink); text-decoration: none; font-weight: 600; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 860px) {
+    .body-grid, .lower { grid-template-columns: 1fr; }
+    .figure, .circuit { border-right: 0; border-bottom: 1px solid var(--ink); }
+    #leader-svg { display: none; }
+    .stamp { position: static; display: inline-block; margin-top: 1rem; transform: rotate(-2deg); }
+}
+</style>
+</head>
+<body>
+
+<article class="sheet">
+    <div class="masthead">
+        <span><span class="lib">▶ PlayBlazor</span> · Part library</span>
+        <span>MudBlazor 8.x · Buttons</span>
+        <span>PB-DS-MUDBUTTON</span>
+    </div>
+
+    <header class="title-block">
+        <h1>MudButton</h1>
+        <p class="subtitle">General-purpose action component. Renders a Material button with themable variant, color and size.</p>
+        <div class="meta-row">
+            <span class="meta-chip"><b>12</b> parameters</span>
+            <span class="meta-chip"><b>1</b> event</span>
+            <span class="meta-chip"><b>1</b> content slot</span>
+            <span class="meta-chip">discovered by reflection — <b>no story file</b></span>
+        </div>
+        <div class="stamp">LIVE SPECIMEN</div>
+    </header>
+
+    <div class="appnotes">
+        <span class="appnotes-label">Application notes</span>
+        <button class="note-chip" data-preset="filled">Filled primary</button>
+        <button class="note-chip" data-preset="outlined">Outlined</button>
+        <button class="note-chip" data-preset="text">Text</button>
+        <button class="note-chip" data-preset="disabled">Disabled</button>
+    </div>
+
+    <div class="body-grid">
+        <svg id="leader-svg" aria-hidden="true"></svg>
+        <figure class="figure" style="margin:0">
+            <div class="specimen-frame" id="frame">
+                <span class="tick t1"></span><span class="tick t2"></span><span class="tick t3"></span><span class="tick t4"></span>
+                <button class="mud-btn" id="specimen">Click me</button>
+            </div>
+            <div class="dim"><span class="rule"></span><span id="dim-w">— px</span><span class="rule"></span></div>
+            <figcaption class="figcap"><b>fig. 1</b> — live specimen, scale 1:1, interactive. Width is measured on the rendered element and follows your changes.</figcaption>
+        </figure>
+
+        <section class="chars">
+            <h2>Characteristics</h2>
+            <table class="spec">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th style="text-align:right">Yours</th></tr></thead>
+                <tbody id="rows"></tbody>
+            </table>
+            <div class="handling"><b>HANDLING NOTES</b> — Render failures are contained by the bench's error boundary and recover automatically when you change a value. Every <span style="color:var(--accent-ink)">EventCallback</span> is wired to the signal log below.</div>
+        </section>
+    </div>
+
+    <div class="lower">
+        <section class="circuit">
+            <h2 class="circuit-head" style="margin-bottom:0"><span style="display:flex;align-items:center;gap:.75rem;flex:1">Reference circuit<span style="content:'';flex:1;height:1px;background:var(--ink)"></span></span><button class="copy-btn">Copy razor</button></h2>
+            <pre class="code" id="code"></pre>
+        </section>
+        <section class="siglog">
+            <h2>Signal log</h2>
+            <table class="sig"><tbody id="sig-rows"></tbody></table>
+            <p class="sig-empty" id="sig-empty">No signal yet — actuate the specimen (fig. 1).</p>
+        </section>
+    </div>
+
+    <footer class="sheet-foot">
+        <span>Sheet 1 of 1 · generated by PlayBlazor — nothing on this page is hand-written</span>
+        <a href="#">Share this configuration ⤴</a>
+    </footer>
+</article>
+
+<script>
+const COLORS = { Default: "#8e8e9a", Primary: "#594ae2", Secondary: "#ff4081", Tertiary: "#1ec8a5", Info: "#2196f3", Success: "#00c853", Warning: "#ff9800", Error: "#f44336", Dark: "#424242" };
+const SIZES = { Small: [".375rem .625rem", ".75rem"], Medium: [".5rem 1rem", ".875rem"], Large: [".7rem 1.4rem", ".9375rem"] };
+const DEFAULTS = { Variant: "Text", Color: "Default", Size: "Medium", Disabled: false, Ripple: true, DropShadow: true, ChildContent: "Click me" };
+const state = { ...DEFAULTS };
+const PARAMS = [
+    { name: "Variant", type: "Variant", kind: "select", options: ["Text", "Filled", "Outlined"] },
+    { name: "Color", type: "Color", kind: "select", options: Object.keys(COLORS) },
+    { name: "Size", type: "Size", kind: "select", options: ["Small", "Medium", "Large"] },
+    { name: "Disabled", type: "bool", kind: "toggle" },
+    { name: "Ripple", type: "bool", kind: "toggle" },
+    { name: "DropShadow", type: "bool", kind: "toggle" },
+    { name: "ChildContent", type: "RenderFragment", kind: "text" },
+    { name: "OnClick", type: "EventCallback", kind: "event" },
+];
+
+const specimen = document.getElementById("specimen");
+
+function render() {
+    const c = COLORS[state.Color];
+    const [pad, fs] = SIZES[state.Size];
+    specimen.textContent = state.ChildContent;
+    specimen.disabled = state.Disabled;
+    specimen.style.padding = pad;
+    specimen.style.fontSize = fs;
+    if (state.Variant === "Filled") {
+        specimen.style.background = c; specimen.style.color = "#fff"; specimen.style.borderColor = "transparent";
+        specimen.style.boxShadow = state.DropShadow && !state.Disabled ? "0 3px 8px -2px rgba(0,0,0,.35)" : "none";
+    } else if (state.Variant === "Outlined") {
+        specimen.style.background = "transparent"; specimen.style.color = c; specimen.style.borderColor = c; specimen.style.boxShadow = "none";
+    } else {
+        specimen.style.background = "transparent"; specimen.style.color = c; specimen.style.borderColor = "transparent"; specimen.style.boxShadow = "none";
+    }
+    document.getElementById("dim-w").textContent = Math.round(specimen.getBoundingClientRect().width) + " px";
+    renderCode();
+    syncRows();
+}
+
+function renderCode() {
+    const attrs = [];
+    if (state.Variant !== DEFAULTS.Variant) attrs.push(["Variant", `Variant.${state.Variant}`]);
+    if (state.Color !== DEFAULTS.Color) attrs.push(["Color", `Color.${state.Color}`]);
+    if (state.Size !== DEFAULTS.Size) attrs.push(["Size", `Size.${state.Size}`]);
+    for (const b of ["Disabled", "Ripple", "DropShadow"])
+        if (state[b] !== DEFAULTS[b]) attrs.push([b, state[b] ? "true" : "false"]);
+    let html = `<span class="tk-p">&lt;</span><span class="tk-tag">MudButton</span>`;
+    for (const [n, v] of attrs) html += ` <span class="tk-attr">${n}</span><span class="tk-p">=</span><span class="tk-val">"${v}"</span>`;
+    html += `<span class="tk-p">&gt;</span>${state.ChildContent}<span class="tk-p">&lt;/</span><span class="tk-tag">MudButton</span><span class="tk-p">&gt;</span>`;
+    document.getElementById("code").innerHTML = html;
+}
+
+const syncFns = [];
+function syncRows() { syncFns.forEach(f => f()); }
+
+function buildRows() {
+    const tbody = document.getElementById("rows");
+    for (const p of PARAMS) {
+        const tr = document.createElement("tr");
+        tr.className = "p-row";
+        const nameTd = document.createElement("td"); nameTd.className = "p-name";
+        const typeTd = document.createElement("td"); typeTd.innerHTML = `<span class="type-tag">${p.type}</span>`;
+        const defTd = document.createElement("td"); defTd.className = "p-default";
+        defTd.textContent = p.kind === "event" ? "—" : p.kind === "text" ? "(empty)" : String(DEFAULTS[p.name]);
+        const yoursTd = document.createElement("td"); yoursTd.className = "p-yours";
+        if (p.kind === "select") {
+            const s = document.createElement("select"); s.className = "ctl";
+            for (const o of p.options) s.add(new Option(o, o));
+            s.onchange = () => { state[p.name] = s.value; clearNotes(); render(); };
+            syncFns.push(() => s.value = state[p.name]);
+            yoursTd.appendChild(s);
+        } else if (p.kind === "toggle") {
+            const t = document.createElement("button"); t.className = "ctl-toggle"; t.setAttribute("aria-label", p.name);
+            t.onclick = () => { state[p.name] = !state[p.name]; clearNotes(); render(); };
+            syncFns.push(() => t.classList.toggle("on", state[p.name]));
+            yoursTd.appendChild(t);
+        } else if (p.kind === "text") {
+            const i = document.createElement("input"); i.className = "ctl"; i.value = state[p.name];
+            i.oninput = () => { state[p.name] = i.value || "Click me"; render(); };
+            yoursTd.appendChild(i);
+        } else {
+            yoursTd.innerHTML = `<span class="evt-mark">⚡ wired ⤵</span>`;
+        }
+        syncFns.push(() => {
+            const mod = p.kind !== "event" && String(state[p.name]) !== String(DEFAULTS[p.name]);
+            nameTd.innerHTML = mod ? `<span class="modified">${p.name} ●</span>` : p.name;
+        });
+        tr.append(nameTd, typeTd, defTd, yoursTd);
+        tr.addEventListener("mouseenter", () => drawLeader(tr));
+        tr.addEventListener("mouseleave", clearLeader);
+        tbody.appendChild(tr);
+    }
+}
+
+/* Leader lines: hovered row → specimen frame */
+const svg = document.getElementById("leader-svg");
+const frame = document.getElementById("frame");
+function drawLeader(row) {
+    const host = svg.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    const f = frame.getBoundingClientRect();
+    const x1 = r.left - host.left - 6;
+    const y1 = r.top + r.height / 2 - host.top;
+    const x2 = f.right - host.left;
+    const y2 = f.top + f.height / 2 - host.top;
+    const midX = x2 + (x1 - x2) * 0.45;
+    svg.innerHTML =
+        `<path d="M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2 + 4} ${y2}" />` +
+        `<circle cx="${x1}" cy="${y1}" r="3"/><circle cx="${x2 + 4}" cy="${y2}" r="3"/>`;
+    frame.classList.add("lit");
+}
+function clearLeader() { svg.innerHTML = ""; frame.classList.remove("lit"); }
+
+/* Application notes */
+const PRESETS = {
+    filled: { Variant: "Filled", Color: "Primary" },
+    outlined: { Variant: "Outlined", Color: "Secondary" },
+    text: { Variant: "Text", Color: "Primary" },
+    disabled: { Variant: "Filled", Color: "Primary", Disabled: true },
+};
+function clearNotes() { document.querySelectorAll(".note-chip").forEach(b => b.classList.remove("active")); }
+document.querySelectorAll(".note-chip").forEach(b => b.onclick = () => {
+    Object.assign(state, DEFAULTS, PRESETS[b.dataset.preset]);
+    clearNotes(); b.classList.add("active"); render();
+});
+
+/* Signal log */
+specimen.addEventListener("click", e => {
+    if (state.Disabled) return;
+    document.getElementById("sig-empty").style.display = "none";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="sig-t">${new Date().toLocaleTimeString("en-GB")}</td><td class="sig-n">OnClick</td><td>MouseEventArgs { Detail = ${e.detail} }</td>`;
+    document.getElementById("sig-rows").prepend(tr);
+});
+
+buildRows();
+render();
+document.querySelector('[data-preset="filled"]').click();
+window.addEventListener("resize", clearLeader);
+</script>
+</body>
+</html>

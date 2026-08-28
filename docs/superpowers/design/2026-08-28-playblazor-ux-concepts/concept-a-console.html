@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayBlazor — Concept A · La Console</title>
+<style>
+:root {
+    --bakelite: #13131a;
+    --panel: #1b1b25;
+    --panel-2: #22222e;
+    --line: #2b2b3a;
+    --stage: #f6f6f9;
+    --ink: #e8e8f2;
+    --muted: #8b8b9e;
+    --accent: #6d4aff;
+    --accent-soft: #a18bff;
+    --signal: #3ddc97;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --dock-h: 236px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+    margin: 0;
+    background: var(--bakelite);
+    color: var(--ink);
+    font-family: var(--sans);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── Top bar ─────────────────────────────────────────── */
+.bar {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    height: 46px;
+    padding: 0 0.875rem;
+    border-bottom: 1px solid var(--line);
+    flex: none;
+}
+.wordmark { font-family: var(--mono); font-weight: 700; font-size: 0.875rem; letter-spacing: -0.02em; }
+.wordmark span { color: var(--accent); margin-right: 0.2rem; }
+.crumb { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.crumb strong { color: var(--ink); font-weight: 600; }
+.crumb .sep { margin: 0 0.4rem; opacity: 0.5; }
+.bar-spacer { flex: 1; }
+.env { display: flex; align-items: center; gap: 0.375rem; }
+.env-btn {
+    font-family: var(--mono); font-size: 0.6875rem;
+    color: var(--muted); background: transparent;
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 0.3rem 0.55rem; cursor: pointer;
+}
+.env-btn:hover { color: var(--ink); border-color: var(--muted); }
+.env-btn[aria-pressed="true"] { color: var(--accent-soft); border-color: var(--accent); background: rgba(109, 74, 255, 0.12); }
+.env-share { color: #fff; background: var(--accent); border-color: var(--accent); font-weight: 600; }
+.env-share:hover { color: #fff; filter: brightness(1.1); }
+.kbd-hint { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 0.2rem 0.4rem; cursor: pointer; }
+.kbd-hint:hover { color: var(--ink); }
+
+/* ── Shell: rail + main ──────────────────────────────── */
+.shell { display: flex; flex: 1; min-height: 0; }
+
+.rail {
+    width: 52px; flex: none;
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 0.625rem; gap: 0.25rem;
+    position: relative;
+}
+.rail-btn {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: grid; place-items: center;
+    background: transparent; border: 0; cursor: pointer;
+    color: var(--muted);
+}
+.rail-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.rail-btn:hover, .rail-group:focus-within .rail-btn { color: var(--ink); background: var(--panel-2); }
+.rail-btn.active { color: var(--accent-soft); background: rgba(109, 74, 255, 0.14); }
+
+/* Flyout component tree (hover / focus) */
+.rail-group { position: relative; }
+.flyout {
+    position: absolute; left: 46px; top: -6px; z-index: 30;
+    width: 248px; max-height: 70vh; overflow: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.8);
+    padding: 0.5rem;
+    display: none;
+}
+.rail-group:hover .flyout, .rail-group:focus-within .flyout { display: block; }
+.flyout-search {
+    width: 100%; font-family: var(--mono); font-size: 0.75rem;
+    color: var(--ink); background: var(--bakelite);
+    border: 1px solid var(--line); border-radius: 7px;
+    padding: 0.45rem 0.6rem; margin-bottom: 0.5rem;
+}
+.flyout-group { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 0.5rem 0.25rem; }
+.flyout a {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-family: var(--mono); font-size: 0.75rem; color: var(--ink);
+    text-decoration: none; padding: 0.32rem 0.5rem; border-radius: 7px;
+}
+.flyout a:hover { background: var(--panel-2); }
+.flyout a.current { color: var(--accent-soft); background: rgba(109, 74, 255, 0.14); }
+.flyout a svg { width: 14px; height: 14px; fill: var(--accent); opacity: 0.75; flex: none; }
+
+/* ── Stage ───────────────────────────────────────────── */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.stage {
+    flex: 1; min-height: 0; position: relative;
+    margin: 0.875rem; margin-bottom: 0; border-radius: 14px;
+    background-color: var(--stage);
+    background-image: radial-gradient(circle, #c9c9d6 1px, transparent 1px);
+    background-size: 22px 22px;
+    display: grid; place-items: center;
+    transition: background-color 200ms ease;
+}
+.stage.dark { background-color: #1e1e28; background-image: radial-gradient(circle, #343444 1px, transparent 1px); }
+.stage.rtl { direction: rtl; }
+.presets {
+    position: absolute; top: 0.75rem; left: 0.875rem; right: 0.875rem;
+    display: flex; flex-wrap: wrap; gap: 0.375rem; align-items: center;
+}
+.presets-label { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9b9bb0; margin-right: 0.25rem; }
+.stage.dark .presets-label { color: #6f6f8a; }
+.preset {
+    font-family: var(--mono); font-size: 0.6875rem; font-weight: 600;
+    color: #4a4a5c; background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #d9d9e4; border-radius: 999px;
+    padding: 0.3rem 0.7rem; cursor: pointer;
+}
+.stage.dark .preset { color: #b9b9cf; background: rgba(30, 30, 40, 0.85); border-color: #3a3a4e; }
+.preset:hover { border-color: var(--accent); color: var(--accent); }
+.preset.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.specimen-wrap { max-width: 100%; padding: 3rem 1.5rem; display: grid; place-items: center; transition: max-width 300ms ease; }
+.stage-meta {
+    position: absolute; bottom: 0.75rem; left: 0.875rem;
+    font-family: var(--mono); font-size: 0.6875rem; color: #9b9bb0;
+}
+.stage.dark .stage-meta { color: #6f6f8a; }
+.stage-width {
+    position: absolute; bottom: 0.75rem; right: 0.875rem;
+    font-family: var(--mono); font-size: 0.6875rem; color: #9b9bb0;
+}
+
+/* Fake MudButton */
+.mud-btn {
+    font-family: var(--sans); font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.02em; border-radius: 4px; border: 1px solid transparent;
+    cursor: pointer; transition: box-shadow 150ms ease, filter 150ms ease;
+    position: relative; overflow: hidden;
+}
+.mud-btn:active { filter: brightness(0.92); }
+.mud-btn:disabled { background: rgba(0,0,0,0.12) !important; color: rgba(0,0,0,0.32) !important; border-color: transparent !important; box-shadow: none !important; cursor: default; }
+.stage.dark .mud-btn:disabled { background: rgba(255,255,255,0.12) !important; color: rgba(255,255,255,0.3) !important; }
+.ripple {
+    position: absolute; border-radius: 50%; transform: scale(0);
+    background: rgba(255, 255, 255, 0.45); animation: ripple 500ms ease-out; pointer-events: none;
+}
+@keyframes ripple { to { transform: scale(3.2); opacity: 0; } }
+
+/* ── Dock ────────────────────────────────────────────── */
+.dock {
+    flex: none; height: var(--dock-h); min-height: 130px;
+    margin: 0.875rem; margin-top: 0.625rem;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    display: flex; flex-direction: column; position: relative;
+}
+.dock-grip {
+    position: absolute; top: -8px; left: 0; right: 0; height: 14px;
+    cursor: row-resize; display: grid; place-items: center;
+}
+.dock-grip::after { content: ""; width: 44px; height: 4px; border-radius: 999px; background: var(--line); }
+.dock-grip:hover::after { background: var(--accent); }
+.dock-tabs {
+    display: flex; align-items: center; gap: 0.25rem;
+    padding: 0.5rem 0.75rem 0; flex: none;
+}
+.dock-tab {
+    font-family: var(--mono); font-size: 0.75rem; font-weight: 600;
+    color: var(--muted); background: transparent; border: 0;
+    padding: 0.45rem 0.7rem; border-radius: 8px 8px 0 0; cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+.dock-tab:hover { color: var(--ink); }
+.dock-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+.dock-tab em { font-style: normal; font-size: 0.625rem; color: var(--muted); background: var(--panel-2); border-radius: 999px; padding: 0.08rem 0.4rem; margin-left: 0.3rem; }
+.dock-tab .blip { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); margin-left: 0.35rem; opacity: 0; }
+.dock-tab .blip.on { opacity: 1; }
+.dock-hint { margin-left: auto; font-family: var(--mono); font-size: 0.625rem; color: var(--muted); padding-right: 0.25rem; }
+.dock-body { flex: 1; min-height: 0; overflow: auto; padding: 0.75rem; border-top: 1px solid var(--line); }
+.pane { display: none; }
+.pane.active { display: block; }
+
+/* Instrument bank */
+.bank { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.cell {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 0.5rem 0.625rem; min-width: 130px;
+}
+.cell-label { font-family: var(--mono); font-size: 0.5625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; display: flex; justify-content: space-between; gap: 0.5rem; }
+.cell-label .type { opacity: 0.6; text-transform: none; letter-spacing: 0; }
+.seg { display: inline-flex; background: var(--bakelite); border: 1px solid var(--line); border-radius: 7px; padding: 2px; }
+.seg button {
+    font-family: var(--mono); font-size: 0.6875rem; color: var(--muted);
+    background: transparent; border: 0; border-radius: 5px;
+    padding: 0.22rem 0.5rem; cursor: pointer;
+}
+.seg button:hover { color: var(--ink); }
+.seg button.on { color: #fff; background: var(--accent); }
+select.instr {
+    font-family: var(--mono); font-size: 0.6875rem; color: var(--ink);
+    background: var(--bakelite); border: 1px solid var(--line); border-radius: 7px;
+    padding: 0.3rem 0.4rem; cursor: pointer;
+}
+.toggle { position: relative; width: 34px; height: 18px; background: var(--bakelite); border: 1px solid var(--line); border-radius: 999px; cursor: pointer; padding: 0; }
+.toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); transition: transform 150ms ease, background 150ms ease; }
+.toggle.on { background: rgba(109, 74, 255, 0.35); border-color: var(--accent); }
+.toggle.on::after { transform: translateX(16px); background: var(--accent-soft); }
+input.instr {
+    font-family: var(--mono); font-size: 0.6875rem; color: var(--ink);
+    background: var(--bakelite); border: 1px solid var(--line); border-radius: 7px;
+    padding: 0.3rem 0.45rem; width: 110px;
+}
+.wired { font-family: var(--mono); font-size: 0.6875rem; color: var(--signal); }
+
+/* Code pane */
+.code {
+    font-family: var(--mono); font-size: 0.8125rem; line-height: 1.65;
+    white-space: pre-wrap; word-break: break-word; margin: 0;
+}
+.tk-tag { color: var(--accent-soft); }
+.tk-attr { color: #79b8ff; }
+.tk-val { color: #7ee0a3; }
+.tk-p { color: var(--muted); }
+.code-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.code-head span { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.copy-btn { font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.6rem; cursor: pointer; }
+.copy-btn:hover { color: var(--ink); border-color: var(--muted); }
+
+/* Events pane */
+.evt-list { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 0.75rem; }
+.evt-list li { display: flex; gap: 0.75rem; padding: 0.3rem 0.25rem; border-bottom: 1px solid var(--line); }
+.evt-list li::before { content: "●"; color: var(--signal); font-size: 0.5625rem; align-self: center; }
+.evt-time { color: var(--muted); flex: none; }
+.evt-name { color: var(--accent-soft); font-weight: 600; }
+.evt-args { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evt-empty { color: var(--muted); font-family: var(--mono); font-size: 0.75rem; padding: 0.5rem 0.25rem; }
+
+/* ── Command palette ─────────────────────────────────── */
+.palette-veil {
+    position: fixed; inset: 0; z-index: 50; background: rgba(10, 10, 16, 0.6);
+    display: none; align-items: flex-start; justify-content: center; padding-top: 14vh;
+}
+.palette-veil.open { display: flex; }
+.palette {
+    width: min(480px, 90vw); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9); overflow: hidden;
+}
+.palette input {
+    width: 100%; font-family: var(--mono); font-size: 0.875rem; color: var(--ink);
+    background: transparent; border: 0; border-bottom: 1px solid var(--line);
+    padding: 0.8rem 1rem; outline: none;
+}
+.palette-list { max-height: 40vh; overflow: auto; padding: 0.4rem; }
+.palette-list button {
+    display: flex; width: 100%; align-items: center; gap: 0.6rem; text-align: left;
+    font-family: var(--mono); font-size: 0.8125rem; color: var(--ink);
+    background: transparent; border: 0; border-radius: 8px; padding: 0.45rem 0.6rem; cursor: pointer;
+}
+.palette-list button:hover, .palette-list button.sel { background: rgba(109, 74, 255, 0.16); }
+.palette-list .cat { margin-left: auto; font-size: 0.625rem; color: var(--muted); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}
+@media (max-width: 760px) {
+    .rail { display: none; }
+    .crumb { display: none; }
+    .bank { flex-direction: column; }
+    .cell { min-width: 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+    <div class="wordmark"><span>▶</span> PlayBlazor</div>
+    <nav class="crumb">MudBlazor <span class="sep">/</span> <strong>MudButton</strong></nav>
+    <button class="kbd-hint" id="open-palette">⌘K — jump to a component</button>
+    <div class="bar-spacer"></div>
+    <div class="env">
+        <button class="env-btn" id="env-dark" aria-pressed="false">dark</button>
+        <button class="env-btn" id="env-rtl" aria-pressed="false">rtl</button>
+        <select class="env-btn" id="env-width" aria-label="Viewport width">
+            <option value="">fluid</option>
+            <option value="480">480</option>
+            <option value="768">768</option>
+            <option value="1024">1024</option>
+        </select>
+        <button class="env-btn env-share">Share ⤴</button>
+    </div>
+</header>
+
+<div class="shell">
+    <aside class="rail" aria-label="Libraries">
+        <div class="rail-group">
+            <button class="rail-btn active" aria-label="Components">
+                <svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Zm-8 9v6l8 5 8-5v-6l-8 4-8-4Z"/></svg>
+            </button>
+            <div class="flyout">
+                <input class="flyout-search" placeholder="Filter 65 components…">
+                <div class="flyout-group">MudBlazor</div>
+                <a href="#"><svg viewBox="0 0 24 24"><path d="M12 5.99 19.53 19H4.47L12 5.99M12 2 1 21h22L12 2Z"/></svg>MudAlert</a>
+                <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>MudAvatar</a>
+                <a href="#" class="current"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="2"/></svg>MudButton</a>
+                <a href="#"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>MudCard</a>
+                <a href="#"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2Z"/></svg>MudCheckBox</a>
+                <div class="flyout-group">MudBlazor.Charts</div>
+                <a href="#"><svg viewBox="0 0 24 24"><path d="M5 9h3v11H5V9Zm6-5h3v16h-3V4Zm6 8h3v8h-3v-8Z"/></svg>MudChart&lt;T&gt;</a>
+            </div>
+        </div>
+        <button class="rail-btn" aria-label="Search"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5Zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z"/></svg></button>
+        <button class="rail-btn" aria-label="Pinned"><svg viewBox="0 0 24 24"><path d="M12 17.3 6.2 21l1.5-6.6L2.5 9.9l6.7-.6L12 3l2.8 6.3 6.7.6-5.2 4.5L17.8 21 12 17.3Z"/></svg></button>
+    </aside>
+
+    <main class="main">
+        <section class="stage" id="stage" aria-label="Stage">
+            <div class="presets">
+                <span class="presets-label">Examples</span>
+                <button class="preset" data-preset="filled">Filled primary</button>
+                <button class="preset" data-preset="outlined">Outlined</button>
+                <button class="preset" data-preset="text">Text</button>
+                <button class="preset" data-preset="disabled">Disabled</button>
+            </div>
+            <div class="specimen-wrap" id="specimen-wrap">
+                <button class="mud-btn" id="specimen">Click me</button>
+            </div>
+            <div class="stage-meta">‹MudButton /› · 12 parameters · MudBlazor 8.x</div>
+            <div class="stage-width" id="stage-width">fluid</div>
+        </section>
+
+        <section class="dock" id="dock" aria-label="Inspector dock">
+            <div class="dock-grip" id="grip" title="Drag to resize"></div>
+            <div class="dock-tabs" role="tablist">
+                <button class="dock-tab active" data-pane="params" role="tab">Parameters <em>12</em></button>
+                <button class="dock-tab" data-pane="code" role="tab">Code</button>
+                <button class="dock-tab" data-pane="events" role="tab">Events <em id="evt-count">0</em><span class="blip" id="evt-blip"></span></button>
+                <span class="dock-hint">drag the handle to resize · tabs never steal the stage</span>
+            </div>
+            <div class="dock-body">
+                <div class="pane pane-params active" role="tabpanel">
+                    <div class="bank" id="bank"></div>
+                </div>
+                <div class="pane pane-code" role="tabpanel">
+                    <div class="code-head"><span>Generated razor</span><button class="copy-btn">Copy</button></div>
+                    <pre class="code" id="code"></pre>
+                </div>
+                <div class="pane pane-events" role="tabpanel">
+                    <ul class="evt-list" id="evt-list"></ul>
+                    <p class="evt-empty" id="evt-empty">No events yet — click the specimen. Every EventCallback is wired automatically.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div class="palette-veil" id="palette-veil">
+    <div class="palette" role="dialog" aria-label="Jump to component">
+        <input id="palette-input" placeholder="Jump to a component…">
+        <div class="palette-list" id="palette-list"></div>
+    </div>
+</div>
+
+<script>
+const COLORS = { Default: "#8e8e9a", Primary: "#594ae2", Secondary: "#ff4081", Tertiary: "#1ec8a5", Info: "#2196f3", Success: "#00c853", Warning: "#ff9800", Error: "#f44336", Dark: "#424242" };
+const SIZES = { Small: [".375rem .625rem", ".75rem"], Medium: [".5rem 1rem", ".875rem"], Large: [".7rem 1.4rem", ".9375rem"] };
+const DEFAULTS = { Variant: "Text", Color: "Default", Size: "Medium", Disabled: false, Ripple: true, DropShadow: true, FullWidth: false, ChildContent: "Click me" };
+const state = { ...DEFAULTS };
+
+const PARAMS = [
+    { name: "Variant", type: "enum", kind: "seg", options: ["Text", "Filled", "Outlined"] },
+    { name: "Color", type: "enum", kind: "select", options: Object.keys(COLORS) },
+    { name: "Size", type: "enum", kind: "seg", options: ["Small", "Medium", "Large"] },
+    { name: "Disabled", type: "bool", kind: "toggle" },
+    { name: "Ripple", type: "bool", kind: "toggle" },
+    { name: "DropShadow", type: "bool", kind: "toggle" },
+    { name: "FullWidth", type: "bool", kind: "toggle" },
+    { name: "ChildContent", type: "RenderFragment", kind: "text" },
+    { name: "OnClick", type: "EventCallback", kind: "event" },
+];
+
+const specimen = document.getElementById("specimen");
+const code = document.getElementById("code");
+const bank = document.getElementById("bank");
+
+function render() {
+    const c = COLORS[state.Color];
+    const [pad, fs] = SIZES[state.Size];
+    specimen.textContent = state.ChildContent;
+    specimen.disabled = state.Disabled;
+    specimen.style.padding = pad;
+    specimen.style.fontSize = fs;
+    specimen.style.width = state.FullWidth ? "100%" : "";
+    if (state.Variant === "Filled") {
+        specimen.style.background = c; specimen.style.color = "#fff"; specimen.style.borderColor = "transparent";
+        specimen.style.boxShadow = state.DropShadow && !state.Disabled ? "0 3px 8px -2px rgba(0,0,0,.4)" : "none";
+    } else if (state.Variant === "Outlined") {
+        specimen.style.background = "transparent"; specimen.style.color = c; specimen.style.borderColor = c; specimen.style.boxShadow = "none";
+    } else {
+        specimen.style.background = "transparent"; specimen.style.color = c; specimen.style.borderColor = "transparent"; specimen.style.boxShadow = "none";
+    }
+    renderCode();
+    document.querySelectorAll(".cell").forEach(el => el.dispatchEvent(new CustomEvent("sync")));
+}
+
+function renderCode() {
+    const attrs = [];
+    if (state.Variant !== DEFAULTS.Variant) attrs.push(["Variant", `Variant.${state.Variant}`]);
+    if (state.Color !== DEFAULTS.Color) attrs.push(["Color", `Color.${state.Color}`]);
+    if (state.Size !== DEFAULTS.Size) attrs.push(["Size", `Size.${state.Size}`]);
+    for (const b of ["Disabled", "Ripple", "DropShadow", "FullWidth"])
+        if (state[b] !== DEFAULTS[b]) attrs.push([b, state[b] ? "true" : "false"]);
+    let html = `<span class="tk-p">&lt;</span><span class="tk-tag">MudButton</span>`;
+    for (const [n, v] of attrs) html += ` <span class="tk-attr">${n}</span><span class="tk-p">=</span><span class="tk-val">"${v}"</span>`;
+    html += `<span class="tk-p">&gt;</span>${state.ChildContent}<span class="tk-p">&lt;/</span><span class="tk-tag">MudButton</span><span class="tk-p">&gt;</span>`;
+    code.innerHTML = html;
+}
+
+function buildBank() {
+    for (const p of PARAMS) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.innerHTML = `<div class="cell-label"><span>${p.name}</span><span class="type">${p.type}</span></div>`;
+        if (p.kind === "seg") {
+            const seg = document.createElement("div"); seg.className = "seg";
+            for (const o of p.options) {
+                const b = document.createElement("button"); b.textContent = o;
+                b.onclick = () => { state[p.name] = o; clearPresets(); render(); };
+                seg.appendChild(b);
+            }
+            cell.addEventListener("sync", () => seg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.textContent === state[p.name])));
+            cell.appendChild(seg);
+        } else if (p.kind === "select") {
+            const s = document.createElement("select"); s.className = "instr";
+            for (const o of p.options) s.add(new Option(o, o));
+            s.onchange = () => { state[p.name] = s.value; clearPresets(); render(); };
+            cell.addEventListener("sync", () => s.value = state[p.name]);
+            cell.appendChild(s);
+        } else if (p.kind === "toggle") {
+            const t = document.createElement("button"); t.className = "toggle"; t.setAttribute("aria-label", p.name);
+            t.onclick = () => { state[p.name] = !state[p.name]; clearPresets(); render(); };
+            cell.addEventListener("sync", () => t.classList.toggle("on", state[p.name]));
+            cell.appendChild(t);
+        } else if (p.kind === "text") {
+            const i = document.createElement("input"); i.className = "instr"; i.value = state[p.name];
+            i.oninput = () => { state[p.name] = i.value || "Click me"; render(); };
+            cell.appendChild(i);
+        } else {
+            cell.insertAdjacentHTML("beforeend", `<span class="wired">⚡ wired — see Events</span>`);
+        }
+        bank.appendChild(cell);
+    }
+}
+
+/* Presets */
+const PRESETS = {
+    filled: { Variant: "Filled", Color: "Primary" },
+    outlined: { Variant: "Outlined", Color: "Secondary" },
+    text: { Variant: "Text", Color: "Primary" },
+    disabled: { Variant: "Filled", Color: "Primary", Disabled: true },
+};
+function clearPresets() { document.querySelectorAll(".preset").forEach(b => b.classList.remove("active")); }
+document.querySelectorAll(".preset").forEach(b => b.onclick = () => {
+    Object.assign(state, DEFAULTS, PRESETS[b.dataset.preset]);
+    clearPresets(); b.classList.add("active"); render();
+});
+
+/* Events */
+let evtCount = 0;
+specimen.addEventListener("click", e => {
+    if (state.Disabled) return;
+    if (state.Ripple) {
+        const r = document.createElement("span"); r.className = "ripple";
+        const d = Math.max(specimen.clientWidth, specimen.clientHeight);
+        r.style.width = r.style.height = d + "px";
+        r.style.left = e.offsetX - d / 2 + "px"; r.style.top = e.offsetY - d / 2 + "px";
+        specimen.appendChild(r); setTimeout(() => r.remove(), 500);
+    }
+    evtCount++;
+    document.getElementById("evt-count").textContent = evtCount;
+    document.getElementById("evt-empty").style.display = "none";
+    const blip = document.getElementById("evt-blip");
+    blip.classList.add("on"); setTimeout(() => blip.classList.remove("on"), 600);
+    const li = document.createElement("li");
+    const t = new Date().toLocaleTimeString("en-GB");
+    li.innerHTML = `<span class="evt-time">${t}</span><span class="evt-name">OnClick</span><span class="evt-args">MouseEventArgs { Detail = ${e.detail} }</span>`;
+    document.getElementById("evt-list").prepend(li);
+});
+
+/* Dock tabs + resize */
+document.querySelectorAll(".dock-tab").forEach(t => t.onclick = () => {
+    document.querySelectorAll(".dock-tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".pane").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    document.querySelector(".pane-" + t.dataset.pane).classList.add("active");
+});
+const grip = document.getElementById("grip");
+grip.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    const startY = e.clientY, startH = document.getElementById("dock").offsetHeight;
+    function move(ev) {
+        const h = Math.min(480, Math.max(130, startH + (startY - ev.clientY)));
+        document.documentElement.style.setProperty("--dock-h", h + "px");
+    }
+    function up() { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); }
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+});
+
+/* Environment */
+document.getElementById("env-dark").onclick = function () {
+    const on = this.getAttribute("aria-pressed") !== "true";
+    this.setAttribute("aria-pressed", on);
+    document.getElementById("stage").classList.toggle("dark", on);
+};
+document.getElementById("env-rtl").onclick = function () {
+    const on = this.getAttribute("aria-pressed") !== "true";
+    this.setAttribute("aria-pressed", on);
+    document.getElementById("stage").classList.toggle("rtl", on);
+};
+document.getElementById("env-width").onchange = function () {
+    document.getElementById("specimen-wrap").style.maxWidth = this.value ? this.value + "px" : "";
+    document.getElementById("specimen-wrap").style.width = this.value ? "100%" : "";
+    document.getElementById("stage-width").textContent = this.value ? this.value + " px" : "fluid";
+};
+
+/* Command palette */
+const COMPONENTS = ["MudAlert", "MudAutocomplete", "MudAvatar", "MudBadge", "MudBreadcrumbs", "MudButton", "MudCard", "MudCarousel", "MudCheckBox", "MudChip", "MudDataGrid<Person>", "MudDatePicker", "MudDivider", "MudChart<int>", "MudTimeSeriesChart"];
+const veil = document.getElementById("palette-veil");
+const pin = document.getElementById("palette-input");
+function fillPalette(q = "") {
+    const list = document.getElementById("palette-list");
+    list.innerHTML = "";
+    COMPONENTS.filter(c => c.toLowerCase().includes(q.toLowerCase())).forEach((c, i) => {
+        const b = document.createElement("button");
+        if (i === 0) b.classList.add("sel");
+        b.innerHTML = `${c}<span class="cat">${c.includes("Chart") ? "MudBlazor.Charts" : "MudBlazor"}</span>`;
+        b.onclick = closePalette;
+        list.appendChild(b);
+    });
+}
+function openPalette() { veil.classList.add("open"); pin.value = ""; fillPalette(); pin.focus(); }
+function closePalette() { veil.classList.remove("open"); }
+document.getElementById("open-palette").onclick = openPalette;
+pin.oninput = () => fillPalette(pin.value);
+veil.onclick = e => { if (e.target === veil) closePalette(); };
+window.addEventListener("keydown", e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); veil.classList.contains("open") ? closePalette() : openPalette(); }
+    if (e.key === "Escape") closePalette();
+});
+
+buildBank();
+render();
+document.querySelector('[data-preset="filled"]').click();
+</script>
+</body>
+</html>

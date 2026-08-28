@@ -1,0 +1,72 @@
+# PlayBlazor UX concepts — design notes (2026-08-28)
+
+Brief: « improve the ux, the page organization, the chrome, the use of space — make me
+dream with strong concepts, first in HTML/CSS/JS, before real implementation ».
+
+## Problems in the current shell these concepts attack
+
+1. **Vertical stack wastes wide screens** — stage → code → events pile up; params scroll in a
+   narrow right column while the stage sits half-empty.
+2. **Scattered chrome** — env toolbar on the stage, Share/Reset in the params header, search in
+   the nav: three homes for global actions.
+3. **65-item nav is scanned, not searched** — groups + search help, but jumping is slow.
+
+## Shared DNA (kept from the validated identity)
+
+Violet `#6D4AFF`, mono = API voice, dot-grid stage, MudBlazor theme colors reserved for the
+specimen itself (`#594AE2` primary…) so the chrome never competes with the component.
+
+## Concept A — La Console (instrument cockpit)
+
+- Dark bakelite chrome; the stage is the single lit island.
+- Bottom **dock** (tabs Parameters / Code / Events, drag-to-resize) = one home for everything
+  secondary; the stage never shrinks below the fold.
+- Parameters as a **horizontal instrument bank** (segmented switches, physical toggles) — reads
+  like a mixing desk, wraps instead of scrolling.
+- Icon rail with hover flyout + **⌘K palette** replaces the permanent sidebar.
+- Risk check: not the "black + acid green" default — accent stays violet, green is only the
+  event signal tick.
+
+## Concept B — La Fiche technique (datasheet)
+
+- The component as an electronic **part**: masthead with part number, huge Archivo 800 title,
+  "LIVE SPECIMEN" stamp, crop marks.
+- Framed specimen "fig. 1" with **live width measurement** under it (updates with Size).
+- Parameters = **Characteristics table** (Parameter / Type / Default / Yours) — the
+  default-vs-modified story becomes explicit, ● marks touched rows.
+- **Signature: SVG leader lines** from the hovered row to the specimen frame.
+- Code = "Reference circuit", events = "Signal log", handling notes = the ErrorBoundary story.
+- Risk check: not the cream-serif-terracotta default — grotesque + mono, datasheet apparatus
+  (leader lines, fig. captions, dimension rules), violet identity kept.
+
+## Concept C — Le Studio (organization by task)
+
+- One shell, **three modes**: Play (stage 7 / params 5 + code drawer), Code (editor in majesty,
+  v2 round-trip teaser with fake caret), Present (full-bleed dark, specimen ×1.7, floating HUD
+  with auto-advancing example **filmstrip**, ← → keys, esc exits).
+- The CSS grid **morphs** between modes (grid-template transition).
+- Present is the shareable "demo reel" — the mode a library author would screen-record.
+
+## Quality floor in all three
+
+Responsive to ~mobile, `:focus-visible`, `prefers-reduced-motion` kills transitions/autoplay,
+semantic buttons/tabs. All state is live JS: presets seed state, controls re-render the fake
+MudButton, the snippet regenerates with defaults omitted (same rule as RazorSnippetGenerator).
+
+## What I deliberately did NOT do
+
+- No rebrand — Philippe validated the atelier identity; the risk budget went into layout.
+- No new landing concept — the brief targets the working surface (explorer).
+- Concept B's Google Fonts link (Archivo, IBM Plex Mono) has full system fallbacks; A and C are
+  100 % offline.
+
+## Implementation notes (whichever wins)
+
+- A's dock ≈ reorganizing `PlaygroundView.razor` grid areas + a resize JS interop; the
+  instrument bank is a restyle of existing controls.
+- B's table maps 1:1 to `ParameterDescriptor` (Name/Type/Default/Yours) — the leader lines need
+  one small JS interop for geometry.
+- C's modes are a `data-mode` attribute + CSS on the existing layout; Present reuses the
+  variants system as filmstrip.
+- Blendable: C's mode switcher can host A's dock in Play mode and B's characteristics table as
+  the params presentation.
