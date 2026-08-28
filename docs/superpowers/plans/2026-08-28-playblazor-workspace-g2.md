@@ -105,6 +105,31 @@ vanilla JS module as RCL static web asset, System.Text.Json source-gen.
 - [ ] Browser pass: MudButton + MudDataGrid<Person> through all panels/modes; permalink from landing tile; console clean.
 - [ ] Update memory + NOTES; commit `feat(playblazor): present mode polish + G v2 verification`.
 
+## Execution journal (2026-08-28)
+
+All four tasks executed inline, TDD, four commits: `df9e5c098` (A), `6460e960a` (B),
+`82ba22ab7` (C), `ee60f03ab` (closing preference + fixes). Suite 130 → **174 green**.
+
+Deviations from the plan:
+- **bUnit SetupVoid gotcha**: post-await assertions (toasts) need `.SetVoidResult()` —
+  without it the interop Task never completes and the continuation never runs.
+- **Razor nested-quotes**: component attribute values can't carry string literals
+  (`Collapsed="x.Contains("graph")"`), fixed with panel-id consts.
+- **Scoped-CSS boundary**: `.pbw-panel` chrome had to move into WorkspacePanel.razor.css;
+  cross-component selectors from the workspace need `::deep` (`.pbw-present ::deep
+  .pbw-panel-float`, responsive rules).
+- **Unplanned but necessary — preferred generic closings**: discovery closes generics with
+  string/int, so the picker served MudDataGrid<string> (empty stage, no variants, no
+  Related). `For<T>()` on a constructed generic now records the host's closing and the
+  workspace substitutes it. New test HostConfiguredGenericClosing_ReplacesTheDiscoveredPlaceholder.
+- Graph Related targets resolve via the catalog (curated-out components stay reachable);
+  the picker temporarily lists an off-catalog selection.
+- EventLog cap 100 → 50 (spec): existing tests used the constant, nothing broke.
+- Signals unfold needed a payload with properties — new DetailEventFixture; string payloads
+  are deliberately fold-less (pbw-signal-flat).
+- dotnet watch corrupted the WASM boot once after hot-reload restarts (known trap) —
+  clean relaunch fixed it, as documented.
+
 ## Self-Review
 - Spec coverage: chrome bar ✓ (picker=select per spec), panels ✓, drag/float/resize/dblclick ✓,
   keyboard ✓, persistence ✓ (`pb-workspace-v1` — v2 mockup key not reused: different schema),
