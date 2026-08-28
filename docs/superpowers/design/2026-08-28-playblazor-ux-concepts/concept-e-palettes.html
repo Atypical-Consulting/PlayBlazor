@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayBlazor — Concept E · Palettes</title>
+<style>
+:root {
+    --accent: #6d4aff;
+    --accent-soft: #a18bff;
+    --ink: #1b1b22;
+    --muted: #6e6e7a;
+    --panel: #191922;
+    --panel-2: #21212c;
+    --panel-line: #2d2d3c;
+    --panel-ink: #e8e8f2;
+    --panel-muted: #8b8b9e;
+    --line: #e3e3ec;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; overflow: hidden; font-family: var(--sans); color: var(--ink); }
+
+/* ── Slim chrome ─────────────────────────────────────── */
+.bar {
+    position: fixed; top: 0; left: 0; right: 0; height: 44px; z-index: 30;
+    display: flex; align-items: center; gap: 0.875rem; padding: 0 0.875rem;
+    background: rgba(22, 22, 30, 0.94); color: #e8e8f2;
+    border-bottom: 1px solid #2b2b3a;
+}
+.wordmark { font-family: var(--mono); font-weight: 700; font-size: 0.8125rem; }
+.wordmark span { color: var(--accent-soft); margin-right: 0.2rem; }
+select.picker {
+    font-family: var(--mono); font-size: 0.71875rem; color: #e8e8f2;
+    background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px; padding: 0.3rem 0.5rem; cursor: pointer;
+}
+.bar-hint { font-family: var(--mono); font-size: 0.625rem; color: #7a7a92; }
+.bar-right { margin-left: auto; display: flex; gap: 0.4rem; }
+.pal-pill {
+    font-family: var(--mono); font-size: 0.6875rem; font-weight: 600;
+    color: #9a9ab0; background: transparent; border: 1px solid #2b2b3a;
+    border-radius: 999px; padding: 0.28rem 0.7rem; cursor: pointer;
+}
+.pal-pill.on { color: var(--accent-soft); border-color: var(--accent); }
+.share-btn { font-family: var(--mono); font-size: 0.71875rem; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 7px; padding: 0.32rem 0.7rem; cursor: pointer; }
+
+/* ── Canvas ──────────────────────────────────────────── */
+.canvas {
+    position: fixed; inset: 44px 0 0 0;
+    background-color: #f7f7fa;
+    background-image: radial-gradient(circle, #d4d4e0 1px, transparent 1px);
+    background-size: 22px 22px;
+    display: grid; place-items: center; overflow: auto;
+}
+.chips { position: fixed; top: 56px; left: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.375rem; align-items: center; z-index: 5; }
+.chips-label { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-right: 0.25rem; }
+.chip {
+    font-family: var(--mono); font-size: 0.6875rem; font-weight: 600;
+    color: #4a4a5c; background: #fff; border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.3rem 0.7rem; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.specimen-zone { padding: 4rem 2rem; }
+.canvas-name { position: fixed; bottom: 0.75rem; left: 0.875rem; font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); }
+
+/* ── Floating palettes ───────────────────────────────── */
+.pal {
+    position: fixed; z-index: 20;
+    background: var(--panel); color: var(--panel-ink);
+    border: 1px solid var(--panel-line); border-radius: 12px;
+    box-shadow: 0 20px 50px -18px rgba(10, 10, 20, 0.65);
+    display: flex; flex-direction: column;
+    min-width: 220px;
+}
+.pal.collapsed .pal-body { display: none; }
+.pal-head {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.65rem; cursor: grab; user-select: none;
+    border-bottom: 1px solid var(--panel-line);
+}
+.pal.collapsed .pal-head { border-bottom: 0; }
+.pal-head:active { cursor: grabbing; }
+.pal-grip { color: #55556a; font-size: 0.6875rem; letter-spacing: 0.1em; }
+.pal-title { font-family: var(--mono); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.pal-count { font-family: var(--mono); font-size: 0.625rem; color: var(--panel-muted); background: var(--panel-2); border-radius: 999px; padding: 0.08rem 0.45rem; }
+.pal-fold { margin-left: auto; background: transparent; border: 0; color: var(--panel-muted); cursor: pointer; font-size: 0.75rem; padding: 0.1rem 0.3rem; }
+.pal-fold:hover { color: var(--panel-ink); }
+.pal-body { overflow: auto; }
+
+/* Parameters palette */
+#pal-params { top: 64px; right: 16px; width: 316px; }
+#pal-params .pal-body { max-height: calc(100vh - 225px); padding: 0.5rem 0.65rem 0.75rem; }
+.p-search {
+    width: 100%; font-family: var(--mono); font-size: 0.71875rem; color: var(--panel-ink);
+    background: var(--panel-2); border: 1px solid var(--panel-line); border-radius: 7px;
+    padding: 0.4rem 0.55rem; margin-bottom: 0.5rem;
+}
+.p-search:focus { border-color: var(--accent); outline: none; }
+.pgroup { margin-bottom: 0.25rem; }
+.pgroup > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    font-family: var(--mono); font-size: 0.5625rem; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--panel-muted);
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0;
+}
+.pgroup > summary::after { content: ""; flex: 1; height: 1px; background: var(--panel-line); }
+.pgroup > summary::before { content: "▸"; font-size: 0.5rem; transition: transform 150ms ease; }
+.pgroup[open] > summary::before { transform: rotate(90deg); }
+.prow { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.28rem 0; }
+.prow.hidden { display: none; }
+.prow-name { font-family: var(--mono); font-size: 0.71875rem; }
+.prow-name .dot { color: var(--accent-soft); }
+select.ctl, input.ctl {
+    font-family: var(--mono); font-size: 0.6875rem; color: var(--panel-ink);
+    background: var(--panel-2); border: 1px solid var(--panel-line); border-radius: 6px;
+    padding: 0.24rem 0.4rem; max-width: 128px;
+}
+input.ctl { width: 100px; }
+input.ctl[type="number"] { width: 58px; }
+.ctl-toggle { width: 32px; height: 17px; border-radius: 999px; border: 1px solid var(--panel-line); background: var(--panel-2); position: relative; cursor: pointer; padding: 0; flex: none; }
+.ctl-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--panel-muted); transition: transform 140ms ease, background 140ms ease; }
+.ctl-toggle.on { border-color: var(--accent); background: rgba(109, 74, 255, 0.25); }
+.ctl-toggle.on::after { transform: translateX(15px); background: var(--accent-soft); }
+.wired { font-family: var(--mono); font-size: 0.65rem; color: #3ddc97; }
+.preset-badge { font-family: var(--mono); font-size: 0.65rem; color: var(--panel-muted); }
+
+/* Razor palette */
+#pal-code { bottom: 16px; left: 16px; width: min(560px, 60vw); }
+#pal-code .pal-body { padding: 0.65rem 0.8rem; max-height: 40vh; }
+pre.code { margin: 0; font-family: var(--mono); font-size: 0.78125rem; line-height: 1.7; white-space: pre; overflow-x: auto; }
+.tk-tag { color: var(--accent-soft); }
+.tk-attr { color: #79b8ff; }
+.tk-val { color: #7ee0a3; }
+.tk-p { color: #77778c; }
+.copy-btn { font-family: var(--mono); font-size: 0.625rem; color: var(--panel-muted); background: var(--panel-2); border: 1px solid var(--panel-line); border-radius: 6px; padding: 0.2rem 0.55rem; cursor: pointer; }
+.copy-btn:hover { color: var(--panel-ink); }
+
+/* Signals palette */
+#pal-signals { bottom: 16px; right: 16px; width: 300px; }
+#pal-signals .pal-body { max-height: 30vh; padding: 0.4rem 0.65rem 0.6rem; }
+.evt-list { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 0.6875rem; }
+.evt-list li { display: flex; gap: 0.5rem; padding: 0.26rem 0; border-bottom: 1px solid var(--panel-line); }
+.evt-list li::before { content: "●"; color: #3ddc97; font-size: 0.5rem; align-self: center; }
+.evt-time { color: var(--panel-muted); }
+.evt-name { color: var(--accent-soft); font-weight: 600; }
+.evt-empty { color: var(--panel-muted); font-family: var(--mono); font-size: 0.6875rem; padding: 0.3rem 0; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 760px) {
+    #pal-params { right: 8px; width: 280px; }
+    #pal-code { left: 8px; width: calc(100vw - 16px); }
+    #pal-signals { display: none; }
+    .bar-hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+    <div class="wordmark"><span>▶</span> PlayBlazor</div>
+    <select class="picker" id="picker" aria-label="Component">
+        <option>MudButton</option>
+        <option>MudDataGrid&lt;Person&gt;</option>
+    </select>
+    <span class="bar-hint">the canvas is the app — panels float, drag them by their title bar</span>
+    <div class="bar-right">
+        <button class="pal-pill on" data-pal="pal-params">Parameters</button>
+        <button class="pal-pill on" data-pal="pal-code">Razor</button>
+        <button class="pal-pill on" data-pal="pal-signals">Signals</button>
+        <button class="share-btn">Share ⤴</button>
+    </div>
+</header>
+
+<main class="canvas" aria-label="Stage">
+    <div class="chips" id="chips"></div>
+    <div class="specimen-zone" id="zone"></div>
+    <div class="canvas-name" id="canvas-name"></div>
+</main>
+
+<section class="pal" id="pal-params" aria-label="Parameters palette">
+    <div class="pal-head"><span class="pal-grip">⠿</span><span class="pal-title">Parameters</span><span class="pal-count" id="p-count"></span><button class="pal-fold" aria-label="Collapse">▾</button></div>
+    <div class="pal-body">
+        <input class="p-search" id="p-search" placeholder="Filter parameters…" aria-label="Filter parameters">
+        <div id="groups"></div>
+    </div>
+</section>
+
+<section class="pal collapsed" id="pal-signals" aria-label="Signals palette">
+    <div class="pal-head"><span class="pal-grip">⠿</span><span class="pal-title">Signals</span><span class="pal-count" id="evt-count">0</span><button class="pal-fold" aria-label="Collapse">▾</button></div>
+    <div class="pal-body">
+        <ul class="evt-list" id="evt-list"></ul>
+        <p class="evt-empty" id="evt-empty">Actuate the specimen — every EventCallback lands here.</p>
+    </div>
+</section>
+
+<section class="pal" id="pal-code" aria-label="Razor palette">
+    <div class="pal-head"><span class="pal-grip">⠿</span><span class="pal-title">Razor</span><button class="copy-btn" style="margin-left:auto">Copy</button><button class="pal-fold" aria-label="Collapse">▾</button></div>
+    <div class="pal-body"><pre class="code" id="code"></pre></div>
+</section>
+
+<script src="round2-model.js"></script>
+<script>
+pbInjectSpecimenCss();
+
+let compKey = "MudButton";
+const states = { "MudButton": pbMakeState("MudButton"), "MudDataGrid<Person>": pbMakeState("MudDataGrid<Person>") };
+let syncFns = [];
+
+function logEvent(name, args) {
+    document.getElementById("evt-empty").style.display = "none";
+    const n = document.getElementById("evt-count");
+    n.textContent = +n.textContent + 1;
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="evt-time">${new Date().toLocaleTimeString("en-GB")}</span><span class="evt-name">${name}</span>`;
+    document.getElementById("evt-list").prepend(li);
+    document.getElementById("pal-signals").classList.remove("collapsed");
+}
+
+function render() {
+    const state = states[compKey];
+    const zone = document.getElementById("zone");
+    zone.innerHTML = "";
+    if (compKey === "MudButton") {
+        const b = pbRenderButton(state);
+        b.addEventListener("click", () => !state.Disabled && logEvent("OnClick", ""));
+        zone.appendChild(b);
+    } else {
+        zone.appendChild(pbRenderGrid(state, { onRowClick: n => logEvent("RowClick", n) }));
+    }
+    document.getElementById("canvas-name").textContent = `‹${compKey.replace("<Person>", "")} /› · ${PB_COMPONENTS[compKey].params.length} parameters · MudBlazor 8.x`;
+    document.getElementById("code").innerHTML = pbSnippetLines(compKey, state).map(l => l.html).join("\n");
+    syncFns.forEach(f => f());
+}
+
+/* ── Parameter rows grouped in accordions ────────────── */
+function buildParams() {
+    const host = document.getElementById("groups");
+    host.innerHTML = ""; syncFns = [];
+    const state = states[compKey];
+    for (const g of pbGroups(compKey)) {
+        const det = document.createElement("details");
+        det.className = "pgroup"; det.open = true;
+        det.innerHTML = `<summary>${g}</summary>`;
+        for (const [name, group, kind, def, options] of PB_COMPONENTS[compKey].params) {
+            if (group !== g) continue;
+            const row = document.createElement("div");
+            row.className = "prow"; row.dataset.name = name.toLowerCase();
+            const label = document.createElement("span"); label.className = "prow-name";
+            syncFns.push(() => {
+                const mod = kind !== "event" && kind !== "slot" && kind !== "preset" && String(state[name]) !== String(def);
+                label.innerHTML = mod ? `${name} <span class="dot">●</span>` : name;
+            });
+            let ctl;
+            if (kind === "enum") {
+                ctl = document.createElement("select"); ctl.className = "ctl";
+                for (const o of options) ctl.add(new Option(o, o));
+                ctl.onchange = () => { state[name] = ctl.value; clearChips(); render(); };
+                syncFns.push(() => ctl.value = state[name]);
+            } else if (kind === "bool") {
+                ctl = document.createElement("button"); ctl.className = "ctl-toggle"; ctl.setAttribute("aria-label", name);
+                ctl.onclick = () => { state[name] = !state[name]; clearChips(); render(); };
+                syncFns.push(() => ctl.classList.toggle("on", state[name]));
+            } else if (kind === "number") {
+                ctl = document.createElement("input"); ctl.className = "ctl"; ctl.type = "number"; ctl.value = state[name];
+                ctl.oninput = () => { state[name] = +ctl.value || 0; clearChips(); render(); };
+            } else if (kind === "string") {
+                ctl = document.createElement("input"); ctl.className = "ctl"; ctl.value = state[name]; ctl.placeholder = "—";
+                ctl.oninput = () => { state[name] = ctl.value; clearChips(); render(); };
+            } else if (kind === "preset" || kind === "slot") {
+                ctl = document.createElement("span"); ctl.className = "preset-badge"; ctl.textContent = "◇ " + def;
+            } else {
+                ctl = document.createElement("span"); ctl.className = "wired"; ctl.textContent = "⚡ wired";
+            }
+            row.append(label, ctl);
+            det.appendChild(row);
+        }
+        host.appendChild(det);
+    }
+    document.getElementById("p-count").textContent = PB_COMPONENTS[compKey].params.length;
+}
+document.getElementById("p-search").oninput = function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll(".prow").forEach(r => r.classList.toggle("hidden", !!q && !r.dataset.name.includes(q)));
+    document.querySelectorAll(".pgroup").forEach(det => {
+        const any = [...det.querySelectorAll(".prow")].some(r => !r.classList.contains("hidden"));
+        det.style.display = any ? "" : "none";
+        if (q) det.open = true;
+    });
+};
+
+/* ── Presets ─────────────────────────────────────────── */
+function buildPresets() {
+    const chips = document.getElementById("chips");
+    chips.innerHTML = `<span class="chips-label">Examples</span>`;
+    PB_COMPONENTS[compKey].presets.forEach(([label, values], i) => {
+        const b = document.createElement("button");
+        b.className = "chip"; b.dataset.preset = i; b.textContent = label;
+        b.onclick = () => {
+            states[compKey] = Object.assign(pbMakeState(compKey), values);
+            clearChips(); b.classList.add("active"); buildParams(); render();
+        };
+        chips.appendChild(b);
+    });
+}
+function clearChips() { document.querySelectorAll(".chip").forEach(b => b.classList.remove("active")); }
+
+/* ── Component switch ────────────────────────────────── */
+document.getElementById("picker").onchange = function () {
+    compKey = this.selectedIndex === 0 ? "MudButton" : "MudDataGrid<Person>";
+    document.getElementById("p-search").value = "";
+    buildPresets(); buildParams(); render();
+};
+
+/* ── Palette dragging / folding / pills ──────────────── */
+document.querySelectorAll(".pal").forEach(pal => {
+    const head = pal.querySelector(".pal-head");
+    head.addEventListener("pointerdown", e => {
+        if (e.target.closest("button")) return;
+        e.preventDefault();
+        const r = pal.getBoundingClientRect();
+        pal.style.left = r.left + "px"; pal.style.top = r.top + "px";
+        pal.style.right = "auto"; pal.style.bottom = "auto";
+        const dx = e.clientX - r.left, dy = e.clientY - r.top;
+        const move = ev => {
+            pal.style.left = Math.max(0, Math.min(innerWidth - 80, ev.clientX - dx)) + "px";
+            pal.style.top = Math.max(44, Math.min(innerHeight - 40, ev.clientY - dy)) + "px";
+        };
+        const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+        window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+    });
+    pal.querySelector(".pal-fold").onclick = () => pal.classList.toggle("collapsed");
+});
+document.querySelectorAll(".pal-pill").forEach(p => p.onclick = () => {
+    const pal = document.getElementById(p.dataset.pal);
+    const hidden = pal.style.display === "none";
+    pal.style.display = hidden ? "" : "none";
+    p.classList.toggle("on", hidden);
+});
+
+buildPresets(); buildParams(); render();
+</script>
+</body>
+</html>

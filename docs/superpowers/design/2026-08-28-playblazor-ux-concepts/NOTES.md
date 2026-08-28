@@ -60,6 +60,31 @@ MudButton, the snippet regenerates with defaults omitted (same rule as RazorSnip
 - Concept B's Google Fonts link (Archivo, IBM Plex Mono) has full system fallbacks; A and C are
   100 % offline.
 
+## Round 2 (2026-08-28, after Philippe's verdict)
+
+Verdict on round 1: **A** — the instrument controls (segments, switches) and the grip are keepers,
+"sage mais pas mal du tout". **B** — assumed aesthetic, but breaks at scale: a DataGrid needs
+space, and 50 characteristics would destroy the layout. **C** — more modern than A, extensible.
+
+Round-2 rule derived from the B critique: **every concept must survive the stress case**. All
+three pages share `round2-model.js` (two components: MudButton 9 params, MudDataGrid<Person>
+37 params in 12 groups; live-wired specimen: Dense/Striped/Bordered/Hover/Elevation/FixedHeader/
+Loading/MultiSelection actually re-render; multi-line razor with `<Columns>` block).
+
+- **Concept D — L'Établi** (C × A): mode shell + instrument dock, plus the scale apparatus —
+  parameter search, group chips, "Modified · n" filter. The safe, implementable synthesis.
+- **Concept E — Palettes**: full-bleed canvas, floating draggable/collapsible dark palettes
+  (Parameters / Razor / Signals), top-bar pills to summon them. Best specimen space of all.
+- **Concept F — L'Inspecteur**: devtools metaphor. Scaffold graph as a selectable tree; a node
+  selection shows *its* parameters (column params: Title/Hidden are wired to the specimen),
+  highlights its column in the grid and its line in the razor. Directly UX-ifies the
+  Scaffold/composition-graph feature.
+
+Fixed during review: F's tree markup regex was re-matching its own injected spans (attr wrap must
+happen in a single replace pass); E's Signals palette collided with Parameters at load
+(max-height); D/E/F inherit the round-1 lesson of seeding a striking preset at load (D seeds via
+`pbMakeState` seed field).
+
 ## Implementation notes (whichever wins)
 
 - A's dock ≈ reorganizing `PlaygroundView.razor` grid areas + a resize JS interop; the

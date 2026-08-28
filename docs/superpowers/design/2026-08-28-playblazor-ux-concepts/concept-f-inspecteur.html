@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayBlazor — Concept F · L'Inspecteur</title>
+<style>
+:root {
+    --accent: #6d4aff;
+    --accent-soft: #a18bff;
+    --ink: #1b1b22;
+    --muted: #6e6e7a;
+    --bg: #f2f2f6;
+    --card: #ffffff;
+    --line: #e3e3ec;
+    --hair: #ececf3;
+    --chrome: #16161e;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --tools-h: 320px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+
+/* ── Chrome ──────────────────────────────────────────── */
+.bar { flex: none; height: 46px; display: flex; align-items: center; gap: 1rem; padding: 0 1rem; background: var(--chrome); color: #e8e8f2; }
+.wordmark { font-family: var(--mono); font-weight: 700; font-size: 0.875rem; }
+.wordmark span { color: var(--accent-soft); margin-right: 0.2rem; }
+select.picker { font-family: var(--mono); font-size: 0.75rem; color: #e8e8f2; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 0.35rem 0.5rem; cursor: pointer; }
+.bar-hint { font-family: var(--mono); font-size: 0.625rem; color: #7a7a92; }
+.share-btn { margin-left: auto; font-family: var(--mono); font-size: 0.75rem; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; }
+
+/* ── Stage ───────────────────────────────────────────── */
+.stage {
+    flex: 1; min-height: 0; position: relative; margin: 0.875rem; margin-bottom: 0.625rem;
+    border-radius: 14px; border: 1px solid var(--line);
+    background-color: #fafafc;
+    background-image: radial-gradient(circle, #d4d4e0 1px, transparent 1px);
+    background-size: 22px 22px;
+    display: grid; place-items: center; overflow: auto;
+}
+.chips { position: absolute; top: 0.75rem; left: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.375rem; align-items: center; z-index: 2; }
+.chips-label { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-right: 0.25rem; }
+.chip { font-family: var(--mono); font-size: 0.6875rem; font-weight: 600; color: #4a4a5c; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 0.3rem 0.7rem; cursor: pointer; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.specimen-zone { padding: 3.5rem 1.5rem 2rem; }
+.stage-name { position: absolute; bottom: 0.75rem; left: 0.875rem; font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); }
+
+/* ── DevTools panel ──────────────────────────────────── */
+.tools {
+    flex: none; height: var(--tools-h); min-height: 180px; position: relative;
+    margin: 0 0.875rem 0.875rem; background: var(--card);
+    border: 1px solid var(--line); border-radius: 14px;
+    display: grid; grid-template-columns: 250px minmax(0, 1fr) 360px;
+    overflow: hidden;
+}
+.tools-grip { position: absolute; top: -8px; left: 0; right: 0; height: 14px; cursor: row-resize; display: grid; place-items: center; z-index: 3; }
+.tools-grip::after { content: ""; width: 44px; height: 4px; border-radius: 999px; background: var(--line); }
+.tools-grip:hover::after { background: var(--accent); }
+.tcol { min-height: 0; display: flex; flex-direction: column; }
+.tcol + .tcol { border-left: 1px solid var(--line); }
+.tcol-head {
+    flex: none; display: flex; align-items: center; gap: 0.5rem;
+    font-family: var(--mono); font-size: 0.625rem; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+    padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--line);
+}
+.tcol-body { flex: 1; min-height: 0; overflow: auto; }
+
+/* Component tree */
+.tree { padding: 0.4rem; }
+.tnode {
+    display: flex; align-items: center; gap: 0.4rem; width: 100%; text-align: left;
+    font-family: var(--mono); font-size: 0.75rem; color: var(--ink);
+    background: transparent; border: 0; border-radius: 7px;
+    padding: 0.32rem 0.5rem; cursor: pointer; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.tnode:hover { background: var(--bg); }
+.tnode.sel { background: rgba(109, 74, 255, 0.12); color: #4c30c4; font-weight: 600; }
+.tnode .tag-p { color: #9a9aae; }
+.tnode .tag-n { color: #5335d1; }
+.tnode.sel .tag-n { color: #4c30c4; }
+.tnode .tag-a { color: #2b5fde; font-size: 0.6875rem; }
+.tree-hint { font-family: var(--mono); font-size: 0.625rem; color: var(--muted); padding: 0.6rem 0.8rem; line-height: 1.7; border-top: 1px dashed var(--line); }
+
+/* Parameter sheet */
+.p-search { font-family: var(--mono); font-size: 0.6875rem; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.5rem; width: 150px; margin-left: auto; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.p-search:focus { border-color: var(--accent); outline: none; }
+.sheet { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.75rem; }
+.sheet td { padding: 0.4rem 0.8rem; border-bottom: 1px solid var(--hair); vertical-align: middle; }
+.sheet tr:hover td { background: #fafafc; }
+.sheet tr.hidden { display: none; }
+td.s-name { color: #4c30c4; font-weight: 500; white-space: nowrap; width: 1%; }
+td.s-name .dot { color: var(--accent); }
+td.s-group { color: #b3b3c2; font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; width: 1%; }
+td.s-ctl { text-align: right; }
+select.ctl, input.ctl { font-family: var(--mono); font-size: 0.71875rem; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 0.24rem 0.4rem; max-width: 150px; }
+input.ctl { width: 110px; } input.ctl[type="number"] { width: 60px; }
+select.ctl:hover, input.ctl:hover { border-color: var(--accent); }
+.ctl-toggle { width: 32px; height: 17px; border-radius: 999px; border: 1px solid var(--line); background: #fff; position: relative; cursor: pointer; padding: 0; }
+.ctl-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--muted); transition: transform 140ms ease, background 140ms ease; }
+.ctl-toggle.on { border-color: var(--accent); background: rgba(109, 74, 255, 0.12); }
+.ctl-toggle.on::after { transform: translateX(15px); background: var(--accent); }
+.wired { font-family: var(--mono); font-size: 0.6875rem; color: #14996a; }
+.preset-badge { font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); }
+
+/* Side: code / events tabs */
+.side-tabs { display: flex; gap: 0.25rem; margin-left: auto; }
+.side-tab { font-family: var(--mono); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 0.2rem 0.4rem; cursor: pointer; }
+.side-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+.pane { display: none; padding: 0.75rem 0.9rem; }
+.pane.active { display: block; }
+pre.code { margin: 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.75; white-space: pre; overflow-x: auto; }
+.code .ln { display: block; border-radius: 4px; padding: 0 0.3rem; margin: 0 -0.3rem; }
+.code .ln.hl { background: rgba(109, 74, 255, 0.1); box-shadow: inset 2px 0 0 var(--accent); }
+.tk-tag { color: #5335d1; font-weight: 600; }
+.tk-attr { color: #2b5fde; }
+.tk-val { color: #1b7f4d; }
+.tk-p { color: #9a9aae; }
+.evt-list { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 0.71875rem; }
+.evt-list li { display: flex; gap: 0.6rem; padding: 0.28rem 0; border-bottom: 1px solid var(--hair); }
+.evt-list li::before { content: "●"; color: #14996a; font-size: 0.5rem; align-self: center; }
+.evt-time { color: var(--muted); }
+.evt-name { color: var(--accent); font-weight: 600; }
+.evt-empty { color: var(--muted); font-family: var(--mono); font-size: 0.71875rem; margin: 0; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 980px) {
+    .tools { grid-template-columns: 200px minmax(0, 1fr); }
+    .tcol-side { display: none; }
+    .bar-hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+    <div class="wordmark"><span>▶</span> PlayBlazor</div>
+    <select class="picker" id="picker" aria-label="Component">
+        <option>MudButton</option>
+        <option selected>MudDataGrid&lt;Person&gt;</option>
+    </select>
+    <span class="bar-hint">devtools for components — select a node of the scaffold graph, inspect its parameters</span>
+    <button class="share-btn">Share ⤴</button>
+</header>
+
+<section class="stage" aria-label="Stage">
+    <div class="chips" id="chips"></div>
+    <div class="specimen-zone" id="zone"></div>
+    <div class="stage-name" id="stage-name"></div>
+</section>
+
+<section class="tools" aria-label="Inspector">
+    <div class="tools-grip" id="grip" title="Drag to resize"></div>
+    <div class="tcol">
+        <div class="tcol-head">Component graph</div>
+        <div class="tcol-body"><div class="tree" id="tree"></div>
+            <div class="tree-hint">The host scaffold renders the played component inside its real parent graph. Every node is inspectable.</div>
+        </div>
+    </div>
+    <div class="tcol">
+        <div class="tcol-head"><span id="sheet-title">Parameters</span><input class="p-search" id="p-search" placeholder="Filter…" aria-label="Filter parameters"></div>
+        <div class="tcol-body"><table class="sheet"><tbody id="sheet"></tbody></table></div>
+    </div>
+    <div class="tcol tcol-side">
+        <div class="tcol-head">Output
+            <div class="side-tabs">
+                <button class="side-tab active" data-pane="code">Razor</button>
+                <button class="side-tab" data-pane="events">Events <span id="evt-count">0</span></button>
+            </div>
+        </div>
+        <div class="tcol-body">
+            <div class="pane pane-code active"><pre class="code" id="code"></pre></div>
+            <div class="pane pane-events">
+                <ul class="evt-list" id="evt-list"></ul>
+                <p class="evt-empty" id="evt-empty">Actuate the specimen — RowClick and friends land here.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="round2-model.js"></script>
+<script>
+pbInjectSpecimenCss();
+
+let compKey = "MudDataGrid<Person>";
+const states = { "MudButton": pbMakeState("MudButton"), "MudDataGrid<Person>": pbMakeState("MudDataGrid<Person>") };
+function makeColState() {
+    const s = {};
+    for (const [n, , k, d] of PB_COMPONENTS["MudDataGrid<Person>"].columnParams)
+        if (k !== "event" && k !== "preset") s[n] = d;
+    return s;
+}
+const colStates = { "col-name": makeColState(), "col-age": makeColState(), "col-city": makeColState() };
+let selNode = "grid";
+let syncFns = [];
+
+function currentTree() {
+    return compKey === "MudButton"
+        ? [{ id: "root", label: "MudButton", tag: "MudButton", depth: 0 }]
+        : PB_COMPONENTS[compKey].tree;
+}
+function nodeParams(id) {
+    if (compKey === "MudButton") return { params: PB_COMPONENTS.MudButton.params, state: states.MudButton };
+    if (id === "grid" || id === "columns") return { params: PB_COMPONENTS[compKey].params, state: states[compKey] };
+    return { params: PB_COMPONENTS[compKey].columnParams, state: colStates[id] };
+}
+
+function logEvent(name, args) {
+    document.getElementById("evt-empty").style.display = "none";
+    const n = document.getElementById("evt-count");
+    n.textContent = +n.textContent + 1;
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="evt-time">${new Date().toLocaleTimeString("en-GB")}</span><span class="evt-name">${name}</span><span style="color:var(--muted)">${args}</span>`;
+    document.getElementById("evt-list").prepend(li);
+}
+
+function columnsFromStates() {
+    return [["col-name", "Name"], ["col-age", "Age"], ["col-city", "City"]].map(([id, def]) => ({
+        label: colStates[id].Title || def,
+        hidden: colStates[id].Hidden,
+    }));
+}
+
+function render() {
+    const zone = document.getElementById("zone");
+    zone.innerHTML = "";
+    if (compKey === "MudButton") {
+        const b = pbRenderButton(states.MudButton);
+        b.addEventListener("click", () => !states.MudButton.Disabled && logEvent("OnClick", "MouseEventArgs"));
+        zone.appendChild(b);
+    } else {
+        const node = currentTree().find(n => n.id === selNode);
+        zone.appendChild(pbRenderGrid(states[compKey], {
+            columns: columnsFromStates(),
+            highlightCol: node && node.col !== undefined ? node.col : null,
+            onRowClick: n => logEvent("RowClick", `{ Item = ${n} }`),
+        }));
+    }
+    document.getElementById("stage-name").textContent = `‹${compKey.replace("<Person>", "")} /› · scaffolded by the host · MudBlazor 8.x`;
+    const lines = pbSnippetLines(compKey, states[compKey]);
+    document.getElementById("code").innerHTML = lines
+        .map(l => `<span class="ln${l.node === selNode ? " hl" : ""}">${l.html}</span>`)
+        .join("");
+    syncFns.forEach(f => f());
+}
+
+/* ── Tree ────────────────────────────────────────────── */
+function buildTree() {
+    const host = document.getElementById("tree");
+    host.innerHTML = "";
+    for (const n of currentTree()) {
+        const b = document.createElement("button");
+        b.className = "tnode" + (n.id === selNode ? " sel" : "");
+        b.style.paddingLeft = 0.5 + n.depth * 0.9 + "rem";
+        const sp = n.tag.indexOf(" ");
+        const nm = sp < 0 ? n.tag : n.tag.slice(0, sp);
+        const rest = sp < 0 ? "" : n.tag.slice(sp)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/(\w+=)(&quot;|")([^"]*?)(&quot;|")/g, '<span class="tag-a">$1"$3"</span>');
+        b.innerHTML = `<span class="tag-p">&lt;</span><span class="tag-n">${nm}</span>${rest}<span class="tag-p">&gt;</span>`;
+        b.onclick = () => { selNode = n.id; buildTree(); buildSheet(); render(); };
+        if (n.col !== undefined) {
+            b.addEventListener("mouseenter", () => { if (selNode !== n.id) { const s = selNode; selNode = n.id; render(); selNode = s; } });
+            b.addEventListener("mouseleave", render);
+        }
+        host.appendChild(b);
+    }
+}
+
+/* ── Parameter sheet ─────────────────────────────────── */
+function buildSheet() {
+    const { params, state } = nodeParams(selNode);
+    const node = currentTree().find(n => n.id === selNode);
+    document.getElementById("sheet-title").textContent =
+        (selNode.startsWith("col-") ? "PropertyColumn · " + node.label.split("· ")[1] : compKey.replace("<Person>", "")) + " — " + params.length + " parameters";
+    const tbody = document.getElementById("sheet");
+    tbody.innerHTML = ""; syncFns = syncFns.filter(f => f.keep);
+    for (const [name, group, kind, def, options] of params) {
+        const tr = document.createElement("tr");
+        tr.dataset.name = name.toLowerCase();
+        const nameTd = document.createElement("td"); nameTd.className = "s-name";
+        const groupTd = document.createElement("td"); groupTd.className = "s-group"; groupTd.textContent = group;
+        const ctlTd = document.createElement("td"); ctlTd.className = "s-ctl";
+        const sync = () => {
+            const mod = kind !== "event" && kind !== "slot" && kind !== "preset" && String(state[name]) !== String(def);
+            nameTd.innerHTML = name + (mod ? ' <span class="dot">●</span>' : "");
+        };
+        syncFns.push(sync); sync();
+        let ctl;
+        if (kind === "enum") {
+            ctl = document.createElement("select"); ctl.className = "ctl";
+            for (const o of options) ctl.add(new Option(o, o));
+            ctl.value = state[name];
+            ctl.onchange = () => { state[name] = ctl.value; clearChips(); render(); };
+        } else if (kind === "bool") {
+            ctl = document.createElement("button"); ctl.className = "ctl-toggle" + (state[name] ? " on" : ""); ctl.setAttribute("aria-label", name);
+            ctl.onclick = () => { state[name] = !state[name]; ctl.classList.toggle("on", state[name]); clearChips(); render(); };
+        } else if (kind === "number") {
+            ctl = document.createElement("input"); ctl.className = "ctl"; ctl.type = "number"; ctl.value = state[name];
+            ctl.oninput = () => { state[name] = +ctl.value || 0; clearChips(); render(); };
+        } else if (kind === "string") {
+            ctl = document.createElement("input"); ctl.className = "ctl"; ctl.value = state[name]; ctl.placeholder = "—";
+            ctl.oninput = () => { state[name] = ctl.value; clearChips(); render(); };
+        } else if (kind === "preset" || kind === "slot") {
+            ctl = document.createElement("span"); ctl.className = "preset-badge"; ctl.textContent = "◇ " + def;
+        } else {
+            ctl = document.createElement("span"); ctl.className = "wired"; ctl.textContent = "⚡ wired";
+        }
+        ctlTd.appendChild(ctl);
+        tr.append(nameTd, groupTd, ctlTd);
+        tbody.appendChild(tr);
+    }
+    applySearch();
+}
+function applySearch() {
+    const q = document.getElementById("p-search").value.toLowerCase();
+    document.querySelectorAll(".sheet tr").forEach(r => r.classList.toggle("hidden", !!q && !r.dataset.name.includes(q)));
+}
+document.getElementById("p-search").oninput = applySearch;
+
+/* ── Presets ─────────────────────────────────────────── */
+function buildPresets() {
+    const chips = document.getElementById("chips");
+    chips.innerHTML = `<span class="chips-label">Examples</span>`;
+    PB_COMPONENTS[compKey].presets.forEach(([label, values], i) => {
+        const b = document.createElement("button");
+        b.className = "chip"; b.dataset.preset = i; b.textContent = label;
+        b.onclick = () => {
+            states[compKey] = Object.assign(pbMakeState(compKey), values);
+            clearChips(); b.classList.add("active"); buildSheet(); render();
+        };
+        chips.appendChild(b);
+    });
+}
+function clearChips() { document.querySelectorAll(".chip").forEach(b => b.classList.remove("active")); }
+
+/* ── Component switch, grip, side tabs ───────────────── */
+document.getElementById("picker").onchange = function () {
+    compKey = this.selectedIndex === 0 ? "MudButton" : "MudDataGrid<Person>";
+    selNode = compKey === "MudButton" ? "root" : "grid";
+    document.getElementById("p-search").value = "";
+    buildPresets(); buildTree(); buildSheet(); render();
+};
+document.getElementById("grip").addEventListener("pointerdown", e => {
+    e.preventDefault();
+    const startY = e.clientY, startH = document.querySelector(".tools").offsetHeight;
+    const move = ev => document.documentElement.style.setProperty("--tools-h", Math.min(560, Math.max(180, startH + (startY - ev.clientY))) + "px");
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+});
+document.querySelectorAll(".side-tab").forEach(t => t.onclick = () => {
+    document.querySelectorAll(".side-tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".pane").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    document.querySelector(".pane-" + t.dataset.pane).classList.add("active");
+});
+
+buildPresets(); buildTree(); buildSheet(); render();
+</script>
+</body>
+</html>
