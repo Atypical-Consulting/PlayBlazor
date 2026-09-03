@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# Publishes the Blazor WebAssembly demo to GitHub Pages.
+# One-time setup: repository Settings → Pages → Source = "GitHub Actions".
+
+name: Deploy demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'demo/**'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - '.github/workflows/deploy-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      - name: Publish the demo
+        run: dotnet publish demo/PlayBlazor.DemoHost/PlayBlazor.DemoHost.csproj -c Release -o publish
+
+      # The site is served from https://atypical-consulting.github.io/PlayBlazor/, not from a
+      # domain root, so every asset URL Blazor resolves — _framework, _content, the scoped CSS —
+      # has to be rooted at that prefix.
+      - name: Rewrite the base href for the project subpath
+        run: sed -i 's|<base href="/" />|<base href="/PlayBlazor/" />|' publish/wwwroot/index.html
+
+      # sed reports success when it matches nothing, which would ship a site whose every asset
+      # 404s and whose failure only shows up in a browser. Fail the build here instead.
+      - name: Verify the base href was rewritten
+        run: |
+          grep -q '<base href="/PlayBlazor/" />' publish/wwwroot/index.html \
+            || { echo "::error::base href was not rewritten — did index.html change shape?"; exit 1; }
+
+      # Pages serves 404.html for any path it holds no file for. The demo routes /explorer on the
+      # client, and a PlayBlazor permalink IS a deep link, so an unknown path must return the app
+      # shell and let the Blazor router take it from there.
+      - name: Install the SPA fallback
+        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+
+      # Belt and braces: the Pages artifact is served as-is today, but should this ever be served
+      # through Jekyll it would strip _framework/ and _content/ for starting with an underscore.
+      - name: Disable Jekyll processing
+        run: touch publish/wwwroot/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d3.outputs.page_url || steps.d2.outputs.page_url || steps.d1.outputs.page_url }}
+    steps:
+      # Pages' deployment API intermittently returns "Deployment failed, try again later" — a
+      # backend hiccup unrelated to the build, which clears on a plain re-run. Try up to 3 times;
+      # the first two tolerate failure so a transient miss doesn't fail the job, and only the last
+      # attempt can.
+      - name: Deploy to GitHub Pages (attempt 1)
+        id: d1
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Deploy to GitHub Pages (attempt 2)
+        id: d2
+        if: steps.d1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Deploy to GitHub Pages (attempt 3)
+        id: d3
+        if: steps.d1.outcome == 'failure' && steps.d2.outcome == 'failure'
+        uses: actions/deploy-pages@v5
