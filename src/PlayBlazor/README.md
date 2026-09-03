@@ -53,6 +53,26 @@ builder.Services.AddPlayBlazor(options =>
 });
 ```
 
+## Publishing a playground (trimming)
+
+PlayBlazor finds components by reflection, and the IL trimmer only keeps what your code
+references statically. A trimmed publish — Blazor WebAssembly does this in Release by default —
+strips the parameterless constructors and `[Parameter]` properties of every component you never
+spell out in markup. The bench then reports *"could not be instantiated"* and lists the four
+base parameters alone, while the handful of components you happen to use directly still work,
+which makes it look like a per-component bug rather than a build setting.
+
+Root the assembly you are exploring:
+
+```xml
+<ItemGroup>
+  <TrimmerRootAssembly Include="MudBlazor" />
+</ItemGroup>
+```
+
+The framework stays trimmed; only the explored library is kept whole. `<PublishTrimmed>false</PublishTrimmed>`
+is the blunter alternative.
+
 A `Debug.Assert` failing inside a component lifecycle terminates the process in Debug builds;
 the playground converts assertion failures into error-boundary-visible exceptions by default
 (`options.GuardDebugAsserts = false` opts out; Release builds compile asserts out anyway).

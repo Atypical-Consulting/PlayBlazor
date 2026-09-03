@@ -37,6 +37,11 @@ that print a report instead of asserting; run them on demand when auditing a com
 
 ## Traps learned the hard way
 
+- **The IL trimmer decapitates reflection.** A Release WASM publish strips constructors and
+  `[Parameter]` properties from every component not referenced statically, so benches report
+  "could not be instantiated" with four base parameters — but only for components the demo does
+  not spell out in markup, which reads like a per-component bug. `demo/` roots the explored
+  assembly with `<TrimmerRootAssembly Include="MudBlazor" />`. Any consumer needs the same.
 - **Static web assets + `dotnet watch`** — any change to a `wwwroot` asset corrupts the manifest;
   CSS/JS then serve without a Content-Type behind `nosniff`, and the page boots blank. Restart the
   server after touching assets, never rely on hot reload for them.
