@@ -72,5 +72,6 @@ The shell has **zero UI dependencies** — system fonts, scoped CSS, no JS beyon
 
 - **v2** — edit the snippet itself; parsed back into the controls (no arbitrary compilation).
 - **v3** — full in-browser REPL (Roslyn).
-- Extraction into a standalone repository once stabilized — MudBlazor is the incubation
-  host and first demo library, not a dependency.
+
+MudBlazor is the demo library this playground is pointed at, not a dependency: the package
+references nothing but `Microsoft.AspNetCore.Components.Web`.
