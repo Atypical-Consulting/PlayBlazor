@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MudBlazor\MudBlazor.csproj" />
-    <ProjectReference Include="..\PlayBlazor\PlayBlazor.csproj" />
+    <ProjectReference Include="..\..\src\PlayBlazor\PlayBlazor.csproj" />
   </ItemGroup>
 
 </Project>
