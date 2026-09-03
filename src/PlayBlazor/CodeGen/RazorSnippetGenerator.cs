@@ -31,9 +31,18 @@ public static class RazorSnippetGenerator
 
     private readonly record struct Token(TokenKind Kind, string Text);
 
+    /// <summary>The snippet as plain text, for the clipboard.</summary>
+    /// <param name="component">The played component's descriptor.</param>
+    /// <param name="state">The current values; only non-default parameters are emitted.</param>
+    /// <param name="options">Host presets, scaffolds and slot sources. Omit them for the bare component.</param>
     public static string Generate(ComponentDescriptor component, PlaygroundState state, PlayBlazorOptions? options = null)
         => string.Concat(Compose(component, state, options).Select(static t => t.Text));
 
+    /// <summary>The same snippet as syntax-highlighted markup, for display.</summary>
+    /// <param name="component">The played component's descriptor.</param>
+    /// <param name="state">The current values; only non-default parameters are emitted.</param>
+    /// <param name="options">Host presets, scaffolds and slot sources. Omit them for the bare component.</param>
+    /// <returns>Markup whose text content is identical to <see cref="Generate" />'s output.</returns>
     public static MarkupString GenerateMarkup(ComponentDescriptor component, PlaygroundState state, PlayBlazorOptions? options = null)
     {
         var builder = new StringBuilder();

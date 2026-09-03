@@ -9,6 +9,8 @@ namespace PlayBlazor.Shell.Workspace;
 /// </summary>
 public static class ParameterSignature
 {
+    /// <summary>Formats one parameter as its C# declaration, initializer included when a default was captured.</summary>
+    /// <param name="parameter">The parameter to render.</param>
     public static string Format(ParameterDescriptor parameter)
     {
         var typeName = TypeName(parameter.Type);

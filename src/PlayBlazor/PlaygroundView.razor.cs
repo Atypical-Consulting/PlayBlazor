@@ -31,6 +31,10 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
+    /// <summary>
+    /// The component to play. Must be a closed type — <c>typeof(MudSelect&lt;string&gt;)</c>, never an
+    /// open generic. Assigning a different type resets the state and reloads from the permalink.
+    /// </summary>
     [Parameter, EditorRequired]
     public Type Component { get; set; } = default!;
 
@@ -50,6 +54,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private IEnumerable<ParameterDescriptor> Events
         => _descriptor.Parameters.Where(static p => p.Kind is ControlKind.Event);
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _state.Changed += OnStateChanged;
@@ -76,6 +81,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
                || message.Contains("within a", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (_descriptor?.Type != Component)
@@ -121,6 +127,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         await Js.InvokeVoidAsync("navigator.clipboard.writeText", uri);
     }
 
+    /// <summary>Unsubscribes from the playground state and event log.</summary>
     public void Dispose()
     {
         _state.Changed -= OnStateChanged;

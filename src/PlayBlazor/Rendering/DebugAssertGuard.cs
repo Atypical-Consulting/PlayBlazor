@@ -13,6 +13,10 @@ public static class DebugAssertGuard
 {
     private static bool _installed;
 
+    /// <summary>
+    /// Removes the process-killing default trace listener, once per process. Any listener the host
+    /// registered itself is left in place. Calling it repeatedly is safe.
+    /// </summary>
     public static void Install()
     {
         if (_installed)

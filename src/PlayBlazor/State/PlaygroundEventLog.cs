@@ -3,6 +3,7 @@ namespace PlayBlazor.State;
 /// <summary>Rolling log of intercepted component events, newest first.</summary>
 public sealed class PlaygroundEventLog
 {
+    /// <summary>How many entries are kept; recording past it drops the oldest.</summary>
     public const int Capacity = 50;
 
     /// <summary>Sequence keeps otherwise-identical entries distinct (record equality would
@@ -12,14 +13,22 @@ public sealed class PlaygroundEventLog
     private readonly List<Entry> _entries = [];
     private long _nextSequence;
 
+    /// <summary>The recorded entries, newest first, capped at <see cref="Capacity" />.</summary>
     public IReadOnlyList<Entry> Entries => _entries;
 
+    /// <summary>Raised whenever the entry list changes, for re-rendering.</summary>
     public event Action? Changed;
 
     /// <summary>Raised for every intercepted event, payload included — the shell uses it to
     /// flow <c>XxxChanged</c> events back into the <c>Xxx</c> parameter.</summary>
     public event Action<string, object?>? Recorded;
 
+    /// <summary>Records one intercepted component event.</summary>
+    /// <param name="name">The callback's parameter name, e.g. <c>OnClick</c> or <c>ValueChanged</c>.</param>
+    /// <param name="payload">
+    /// The callback argument. Rendered readably: collections show their first items, an empty
+    /// <see cref="EventArgs" /> shows nothing, anything else uses <c>ToString</c>.
+    /// </param>
     public void Record(string name, object? payload)
     {
         var text = payload switch
@@ -94,6 +103,7 @@ public sealed class PlaygroundEventLog
         return lines.Count == 0 ? null : string.Join('\n', lines);
     }
 
+    /// <summary>Empties the log.</summary>
     public void Clear()
     {
         if (_entries.Count == 0)

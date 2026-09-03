@@ -62,13 +62,6 @@
   <PropertyGroup>
     <!-- IDE0073: File header -->
     <NoWarn>$(NoWarn);IDE0073</NoWarn>
-    <!-- CS1591: Missing XML comment on a public member.
-         The documentation file is still generated - PlayBlazor reads XML doc summaries at runtime
-         to build its parameter tooltips, so the package must ship one. 174 public members inherited
-         from the incubation are not documented yet; suppressed rather than gated so the extraction
-         does not smuggle in a 174-member documentation pass. TODO: document the public surface and
-         drop this suppression. -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <!-- Output paths -->

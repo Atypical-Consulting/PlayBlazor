@@ -13,6 +13,15 @@ public static class SpecimenStateSync
 {
     private const string Suffix = "Changed";
 
+    /// <summary>Writes an intercepted change event back into the playground state, when it matches a drivable parameter.</summary>
+    /// <param name="component">The played component's descriptor.</param>
+    /// <param name="state">The state to update.</param>
+    /// <param name="eventName">The intercepted callback name; only <c>XxxChanged</c> is considered.</param>
+    /// <param name="payload">The callback argument, which must fit the <c>Xxx</c> parameter's type.</param>
+    /// <returns>
+    /// <c>true</c> when the state was updated. A value equal to the default on an untouched parameter
+    /// is deliberately not recorded, so merely rendering does not mark the bench as modified.
+    /// </returns>
     public static bool TryApply(ComponentDescriptor component, PlaygroundState state, string eventName, object? payload)
     {
         if (!eventName.EndsWith(Suffix, StringComparison.Ordinal)

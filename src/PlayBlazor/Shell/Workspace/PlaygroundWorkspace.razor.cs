@@ -71,9 +71,15 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
+    /// <summary>
+    /// The assemblies to scan. Components hidden by <see cref="PlayBlazorOptions.Exclude{TComponent}" />
+    /// or <see cref="PlayBlazorOptions.ComponentFilter" /> are left out, and a generic the host
+    /// configured with a specific closing is listed at that closing.
+    /// </summary>
     [Parameter, EditorRequired]
     public IReadOnlyList<Assembly> Assemblies { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _state.Changed += SyncUrl;
@@ -87,6 +93,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         _components = Assemblies
@@ -103,6 +110,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -145,6 +153,12 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     /* ── Gesture callbacks (from playground-workspace.js) ── */
 
+    /// <summary>Called by the workspace module when a panel drag ends.</summary>
+    /// <param name="id">The dragged panel's identifier.</param>
+    /// <param name="zone">The dock zone it landed in, or <c>null</c> when it was dropped free to float.</param>
+    /// <param name="index">Insertion position within that zone; ignored when floating.</param>
+    /// <param name="x">Pointer x in workspace coordinates, used as the float position.</param>
+    /// <param name="y">Pointer y in workspace coordinates, used as the float position.</param>
     [JSInvokable]
     public Task OnPanelDropped(string id, string? zone, int index, double x, double y)
         => InvokeAsync(() =>
@@ -159,14 +173,26 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             }
         });
 
+    /// <summary>Called by the workspace module when a dock splitter is dragged.</summary>
+    /// <param name="zone">The resized zone.</param>
+    /// <param name="pixels">The requested size; the layout clamps it.</param>
     [JSInvokable]
     public Task OnZoneResized(string zone, double pixels)
         => InvokeAsync(() => _layout.Resize(zone, pixels));
 
+    /// <summary>Called by the workspace module when a floating panel is resized by its edge or corner.</summary>
+    /// <param name="id">The floating panel's identifier.</param>
+    /// <param name="width">The new width in pixels.</param>
+    /// <param name="height">The new height in pixels.</param>
     [JSInvokable]
     public Task OnFloatResized(string id, double width, double height)
         => InvokeAsync(() => _layout.SetFloatSize(id, width, height));
 
+    /// <summary>Called by the workspace module for the shortcuts it captures.</summary>
+    /// <param name="key">
+    /// <c>1</c>–<c>4</c> toggle a panel, <c>/</c> reveals and focuses the parameter filter,
+    /// <c>Escape</c> leaves Present mode, and the arrow keys step through variants while presenting.
+    /// </param>
     [JSInvokable]
     public Task OnKey(string key)
         => InvokeAsync(() =>
@@ -205,6 +231,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             }
         });
 
+    /// <summary>Unsubscribes from state, disposes the JS module, and releases the interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         _state.Changed -= SyncUrl;

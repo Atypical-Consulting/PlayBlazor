@@ -11,9 +11,16 @@ namespace PlayBlazor.State;
 /// </summary>
 public sealed class WorkspaceLayout
 {
+    /// <summary>Identifier of the dock zone along the right edge.</summary>
     public const string RightZone = "right";
+    /// <summary>Identifier of the dock zone along the bottom edge.</summary>
     public const string BottomZone = "bottom";
 
+    /// <summary>Where a floating panel sits, and how big it is when the user has resized it.</summary>
+    /// <param name="X">Distance from the workspace's left edge, in pixels.</param>
+    /// <param name="Y">Distance from the workspace's top edge, in pixels.</param>
+    /// <param name="Width">The user's width, or <c>null</c> for the panel's natural one.</param>
+    /// <param name="Height">The user's height, or <c>null</c> for the panel's natural one.</param>
     public sealed record FloatInfo(double X, double Y, double? Width, double? Height);
 
     private static readonly string[] DefaultRight = ["graph", "parameters"];
@@ -24,19 +31,28 @@ public sealed class WorkspaceLayout
     private readonly Dictionary<string, FloatInfo> _floats = new(StringComparer.Ordinal);
     private readonly HashSet<string> _hidden = new(StringComparer.Ordinal);
 
+    /// <summary>Raised on any layout change, for re-rendering and persistence.</summary>
     public event Action? Changed;
 
+    /// <summary>Width of the right dock zone in pixels, between 240 and 560.</summary>
     // 380 rather than the handoff's 330: the parameter rows breathe (user feedback).
     public double RightWidth { get; private set; } = 380;
 
+    /// <summary>Height of the bottom dock zone in pixels, between 120 and 520.</summary>
     public double BottomHeight { get; private set; } = 235;
 
+    /// <summary>The panels docked in a zone, in display order.</summary>
+    /// <param name="zone"><see cref="RightZone" /> or <see cref="BottomZone" />; anything else reads as the bottom.</param>
     public IReadOnlyList<string> Zone(string zone)
         => zone == RightZone ? _right : _bottom;
 
+    /// <summary>Where a panel floats, or <c>null</c> when it is docked.</summary>
+    /// <param name="panel">The panel identifier.</param>
     public FloatInfo? Float(string panel)
         => _floats.TryGetValue(panel, out var info) ? info : null;
 
+    /// <summary>Whether the panel is collapsed out of view.</summary>
+    /// <param name="panel">The panel identifier.</param>
     public bool IsHidden(string panel)
         => _hidden.Contains(panel);
 
@@ -58,6 +74,10 @@ public sealed class WorkspaceLayout
         Notify();
     }
 
+    /// <summary>Records a floating panel's user-chosen size. Ignored for a docked panel.</summary>
+    /// <param name="panel">The panel identifier.</param>
+    /// <param name="width">The new width in pixels.</param>
+    /// <param name="height">The new height in pixels.</param>
     public void SetFloatSize(string panel, double width, double height)
     {
         if (_floats.TryGetValue(panel, out var info))
@@ -71,6 +91,8 @@ public sealed class WorkspaceLayout
     public void Redock(string panel)
         => Dock(panel, DefaultZoneOf(panel), int.MaxValue);
 
+    /// <summary>Collapses a visible panel, or restores a collapsed one.</summary>
+    /// <param name="panel">The panel identifier.</param>
     public void ToggleHidden(string panel)
     {
         if (!_hidden.Remove(panel))
@@ -81,6 +103,9 @@ public sealed class WorkspaceLayout
         Notify();
     }
 
+    /// <summary>Resizes a dock zone, clamped to its allowed range.</summary>
+    /// <param name="zone"><see cref="RightZone" /> or <see cref="BottomZone" />.</param>
+    /// <param name="pixels">The requested width (right) or height (bottom).</param>
     public void Resize(string zone, double pixels)
     {
         if (zone == RightZone)
@@ -95,6 +120,7 @@ public sealed class WorkspaceLayout
         Notify();
     }
 
+    /// <summary>Restores the default arrangement: nothing floating, nothing hidden, default sizes.</summary>
     public void Reset()
     {
         _right.Clear();
@@ -108,6 +134,8 @@ public sealed class WorkspaceLayout
         Notify();
     }
 
+    /// <summary>Serializes the arrangement so a host can persist it.</summary>
+    /// <returns>A JSON string accepted back by <c>FromJson</c>.</returns>
     public string ToJson()
         => JsonSerializer.Serialize(
             new WorkspaceLayoutDto(

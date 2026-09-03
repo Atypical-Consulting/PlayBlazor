@@ -4,8 +4,16 @@ using PlayBlazor.Model;
 
 namespace PlayBlazor.Discovery;
 
+/// <summary>Maps a parameter's CLR type onto the <see cref="ControlKind"/> that can drive it.</summary>
 public static class ControlKindResolver
 {
+    /// <summary>Resolves the control for one parameter type.</summary>
+    /// <param name="parameterType">The declared type of the parameter, nullable wrapper included.</param>
+    /// <returns>
+    /// The control to render, and whether the value may be null — <see cref="ControlKind.Unsupported"/>
+    /// when no control fits, which leaves the parameter readable but not drivable.
+    /// Slots and events are never reported as nullable: they are wired, not typed in.
+    /// </returns>
     public static (ControlKind Kind, bool IsNullable) Resolve(Type parameterType)
     {
         var underlying = Nullable.GetUnderlyingType(parameterType);

@@ -5,17 +5,34 @@ using PlayBlazor.Model;
 
 namespace PlayBlazor.Discovery;
 
+/// <summary>
+/// Describes components by reflecting over them at runtime: every public <c>[Parameter]</c> becomes a
+/// descriptor, and defaults are captured by instantiating the component once. Descriptors are cached
+/// per type. A component that cannot be instantiated is still described, with a warning and without
+/// defaults — discovery never fails because one component misbehaves.
+/// </summary>
 public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
 {
     private readonly ConcurrentDictionary<Type, ComponentDescriptor> _cache = new();
     private readonly XmlDocSummaryReader? _xmlDocs;
 
+    /// <summary>Creates a provider, optionally enriching descriptors with XML doc summaries.</summary>
+    /// <param name="xmlDocs">
+    /// Summaries for the scanned library, used as component and parameter tooltips. Omit it and
+    /// descriptors simply carry no summary.
+    /// </param>
     public ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null)
         => _xmlDocs = xmlDocs;
 
+    /// <inheritdoc />
     public ComponentDescriptor Describe(Type componentType)
         => _cache.GetOrAdd(componentType, Build);
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Public concrete components only. An open generic is closed with <c>string</c>, then <c>int</c>;
+    /// one that satisfies neither constraint is skipped rather than reported.
+    /// </remarks>
     public IReadOnlyList<ComponentDescriptor> Discover(Assembly assembly)
         => assembly.GetTypes()
             .Where(static t => t.IsPublic && !t.IsAbstract && typeof(ComponentBase).IsAssignableFrom(t))

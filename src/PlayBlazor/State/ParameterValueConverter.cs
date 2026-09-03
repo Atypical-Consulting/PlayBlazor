@@ -10,6 +10,10 @@ namespace PlayBlazor.State;
 /// </summary>
 public static class ParameterValueConverter
 {
+    /// <summary>Formats a value as the text a control shows and a permalink carries.</summary>
+    /// <param name="parameter">The parameter, whose kind disambiguates types recognized structurally.</param>
+    /// <param name="value">The value to format.</param>
+    /// <returns>The invariant-culture text, or <c>null</c> when the type has no text form.</returns>
     public static string? Format(ParameterDescriptor parameter, object? value)
         => value switch
         {
@@ -30,6 +34,11 @@ public static class ParameterValueConverter
             _ => null,
         };
 
+    /// <summary>Parses text back into a parameter value — the exact inverse of <see cref="Format" />.</summary>
+    /// <param name="parameter">The parameter whose type and kind drive the conversion.</param>
+    /// <param name="text">The text to parse, in invariant culture.</param>
+    /// <param name="value">The parsed value, when parsing succeeded.</param>
+    /// <returns><c>false</c> for text that does not convert, leaving the caller's value untouched.</returns>
     public static bool TryParse(ParameterDescriptor parameter, string text, out object? value)
     {
         value = null;

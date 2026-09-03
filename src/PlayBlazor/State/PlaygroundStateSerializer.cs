@@ -15,6 +15,11 @@ namespace PlayBlazor.State;
 /// </summary>
 public static class PlaygroundStateSerializer
 {
+    /// <summary>Encodes a bench into a permalink value.</summary>
+    /// <param name="descriptor">The played component's descriptor.</param>
+    /// <param name="state">The modifications to capture; values with no text form are skipped.</param>
+    /// <param name="environment">The environment flags; only non-default ones are written.</param>
+    /// <returns>A base64url string safe to use as a query-string value.</returns>
     public static string Encode(ComponentDescriptor descriptor, PlaygroundState state, PlaygroundEnvironment environment)
     {
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -44,6 +49,15 @@ public static class PlaygroundStateSerializer
         return Convert.ToBase64String(json).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     }
 
+    /// <summary>Restores a bench from a permalink value, in place.</summary>
+    /// <param name="encoded">The value produced by <see cref="Encode" />.</param>
+    /// <param name="descriptor">The played component's descriptor.</param>
+    /// <param name="state">The state to populate.</param>
+    /// <param name="environment">The environment to populate.</param>
+    /// <remarks>
+    /// Never throws: malformed input, unknown parameter names and values that no longer parse are
+    /// each ignored, so a permalink shared before an API change still opens.
+    /// </remarks>
     public static void Decode(string encoded, ComponentDescriptor descriptor, PlaygroundState state, PlaygroundEnvironment environment)
     {
         PermalinkPayload? payload;

@@ -89,9 +89,17 @@ public sealed class PlayBlazorOptions
         return this;
     }
 
+    /// <summary>Whether <see cref="Exclude{TComponent}" /> hid this component from the explorer.</summary>
+    /// <param name="componentType">The component to test; any closing of a generic matches.</param>
     public bool IsExcluded(Type componentType)
         => _excluded.Contains(Normalize(componentType));
 
+    /// <summary>Opens the fluent configuration for one component.</summary>
+    /// <typeparam name="TComponent">
+    /// The component to configure. Close a generic with the type you actually want played
+    /// (<c>For&lt;MudDataGrid&lt;Person&gt;&gt;()</c>): that closing becomes the preferred one,
+    /// replacing the placeholder discovery would otherwise pick.
+    /// </typeparam>
     public ComponentOptionsBuilder<TComponent> For<TComponent>() where TComponent : IComponent
     {
         RememberClosing(typeof(TComponent));
@@ -149,6 +157,11 @@ public sealed class PlayBlazorOptions
     public bool TryGetScaffoldSource(Type componentType, out string source)
         => _scaffoldSources.TryGetValue(componentType, out source!);
 
+    /// <summary>The fragment a host registered for a slot, used until the user types their own.</summary>
+    /// <param name="componentType">The component owning the slot.</param>
+    /// <param name="parameterName">The slot parameter.</param>
+    /// <param name="fragment">The registered fragment, when one exists.</param>
+    /// <returns><c>true</c> when a preset was found. Slot presets are shared across generic closings.</returns>
     public bool TryGetSlotPreset(Type componentType, string parameterName, out RenderFragment fragment)
     {
         if (_slotPresets.TryGetValue((componentType, parameterName), out fragment!))
@@ -159,10 +172,17 @@ public sealed class PlayBlazorOptions
         return _slotPresets.TryGetValue((Normalize(componentType), parameterName), out fragment!);
     }
 
-    // Parameter presets and scaffolds carry values typed for ONE closing of a generic
-    // component (Items = List<Person>). Serving them to another closing (the explorer's
-    // MudDataGrid<string>) is an InvalidCastException — so both match the exact type only.
-    // Slot presets are plain RenderFragments, safe to share across closings.
+    /// <summary>The baseline value a host registered for a parameter.</summary>
+    /// <param name="componentType">The component owning the parameter, at its exact generic closing.</param>
+    /// <param name="parameterName">The parameter.</param>
+    /// <param name="value">The registered value, when one exists.</param>
+    /// <returns><c>true</c> when a preset was found.</returns>
+    /// <remarks>
+    /// Parameter presets and scaffolds carry values typed for ONE closing of a generic component
+    /// (<c>Items = List&lt;Person&gt;</c>). Serving them to another closing (the explorer's
+    /// <c>MudDataGrid&lt;string&gt;</c>) is an <see cref="InvalidCastException" /> — so both match
+    /// the exact type only. Slot presets are plain fragments, safe to share across closings.
+    /// </remarks>
     public bool TryGetParameterPreset(Type componentType, string parameterName, out object? value)
         => _parameterPresets.TryGetValue((componentType, parameterName), out value);
 
@@ -175,6 +195,10 @@ public sealed class PlayBlazorOptions
         => _parameterSources.TryGetValue((componentType, parameterName), out source!)
            || _parameterSources.TryGetValue((Normalize(componentType), parameterName), out source!);
 
+    /// <summary>The parent graph a host registered around this component's specimen.</summary>
+    /// <param name="componentType">The component, at its exact generic closing.</param>
+    /// <param name="scaffold">The wrapper placing the specimen inside its required parent, when one exists.</param>
+    /// <returns><c>true</c> when a scaffold was found.</returns>
     public bool TryGetScaffold(Type componentType, out Func<RenderFragment, RenderFragment> scaffold)
         => _scaffolds.TryGetValue(componentType, out scaffold!);
 
@@ -257,6 +281,10 @@ public sealed class PlaygroundVariantBuilder
 {
     internal Dictionary<string, object?> Values { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>Sets one parameter of the variant.</summary>
+    /// <param name="parameterName">The parameter to seed, by name.</param>
+    /// <param name="value">The value applied when the variant is selected.</param>
+    /// <returns>The same builder, for chaining.</returns>
     public PlaygroundVariantBuilder Set(string parameterName, object? value)
     {
         Values[parameterName] = value;

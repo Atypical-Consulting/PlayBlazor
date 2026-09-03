@@ -4,8 +4,20 @@ using PlayBlazor.State;
 
 namespace PlayBlazor.Rendering;
 
+/// <summary>
+/// Turns a descriptor plus the current state into the parameter dictionary handed to the specimen:
+/// modified values, then host presets, then the component's own defaults. Slots are filled with
+/// their preset or the user's text, and every event callback is replaced by an interceptor writing
+/// to the event log.
+/// </summary>
 public static class ParameterDictionaryBuilder
 {
+    /// <summary>Builds the parameters to render the specimen with.</summary>
+    /// <param name="component">The played component's descriptor.</param>
+    /// <param name="state">The user's modifications.</param>
+    /// <param name="options">Host presets and slot sources. Omit them to use defaults only.</param>
+    /// <param name="eventLog">Receives intercepted callbacks. Omit it and events are not wired.</param>
+    /// <returns>A dictionary suitable for <c>RenderTreeBuilder.AddMultipleAttributes</c>.</returns>
     public static Dictionary<string, object> Build(
         ComponentDescriptor component,
         PlaygroundState state,

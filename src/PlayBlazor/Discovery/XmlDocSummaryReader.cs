@@ -13,6 +13,9 @@ public sealed partial class XmlDocSummaryReader
     private XmlDocSummaryReader(Dictionary<string, string> summaries)
         => _summaries = summaries;
 
+    /// <summary>Reads a compiler-generated documentation file.</summary>
+    /// <param name="stream">The XML documentation file emitted alongside the scanned assembly.</param>
+    /// <returns>A reader over every member summary it declares, flattened to plain text.</returns>
     public static XmlDocSummaryReader FromStream(Stream stream)
     {
         var summaries = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -36,9 +39,13 @@ public sealed partial class XmlDocSummaryReader
         return new XmlDocSummaryReader(summaries);
     }
 
+    /// <summary>The summary documented on a type, or <c>null</c> when it has none.</summary>
+    /// <param name="type">The type to look up; a closed generic resolves to its definition.</param>
     public string? GetTypeSummary(Type type)
         => _summaries.GetValueOrDefault($"T:{XmlId(type)}");
 
+    /// <summary>The summary documented on a property, or <c>null</c> when it has none.</summary>
+    /// <param name="property">The property to look up, resolved against its declaring type.</param>
     public string? GetPropertySummary(PropertyInfo property)
         => property.DeclaringType is { } declaringType
             ? _summaries.GetValueOrDefault($"P:{XmlId(declaringType)}.{property.Name}")

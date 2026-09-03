@@ -60,6 +60,5 @@ that print a report instead of asserting; run them on demand when auditing a com
 
 - Central Package Management: versions live in `Directory.Packages.props`, never in a `.csproj`.
 - Versioning is MinVer over `v`-prefixed git tags; do not hand-edit a `<Version>`.
-- `TreatWarningsAsErrors` is on. `CS1591` is suppressed repo-wide only because 174 public members
-  inherited from the incubation lack XML docs — documenting them and dropping the suppression is
-  an open task, not a licence to add undocumented public API.
+- `TreatWarningsAsErrors` is on, and `GenerateDocumentationFile` is on for the package, so
+  `CS1591` makes an undocumented public member a build error. Document what you expose.

@@ -21,6 +21,11 @@ public partial class PlaygroundExplorer : ComponentBase
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
+    /// <summary>
+    /// The assemblies to scan. Every public concrete component they expose is listed, minus those
+    /// hidden by <see cref="PlayBlazorOptions.Exclude{TComponent}" /> or by
+    /// <see cref="PlayBlazorOptions.ComponentFilter" />.
+    /// </summary>
     [Parameter, EditorRequired]
     public IReadOnlyList<Assembly> Assemblies { get; set; } = default!;
 
@@ -30,6 +35,7 @@ public partial class PlaygroundExplorer : ComponentBase
             .GroupBy(static c => c.Category)
             .OrderBy(static g => g.Key, StringComparer.Ordinal);
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         _components = Assemblies
