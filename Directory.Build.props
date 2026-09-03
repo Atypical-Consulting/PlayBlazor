@@ -35,11 +35,16 @@
   </PropertyGroup>
 
   <!-- Source Link -->
+  <!--
+    No IncludeSymbols/SymbolPackageFormat here on purpose. DotNet.ReproducibleBuilds sets
+    DebugType=embedded, so the portable PDB lives inside the assembly and no separate .pdb is ever
+    produced; asking for a snupkg then packs an empty one, which nuget.org rejects outright
+    ("The package does not contain any symbol (.pdb) files"). Embedded is the better trade anyway:
+    consumers get symbols and Source Link with no symbol-server configuration at all.
+  -->
   <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <!-- Deterministic builds -->

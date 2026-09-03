@@ -82,17 +82,16 @@ jobs:
         run: dotnet pack src/PlayBlazor/PlayBlazor.csproj --configuration Release --no-build --output ${{ env.NuGetDirectory }}
 
       # Publish the NuGet package as an artifact, so they can be used in the following jobs.
-      # The .snupkg must ride along: `dotnet nuget push` in the deploy job pushes the symbol
-      # package automatically, but only when it sits NEXT TO the .nupkg — and `*.nupkg` does not
-      # match `.snupkg`, so listing only the former silently drops symbols from every release.
+      # Only .nupkg: symbols are embedded in the assembly (see Directory.Build.props), so no
+      # symbol package is produced. Were one ever added, it would have to be listed here too —
+      # `dotnet nuget push` only forwards a .snupkg that sits NEXT TO the .nupkg, and `*.nupkg`
+      # does not match `.snupkg`.
       - uses: actions/upload-artifact@v7
         with:
           name: nuget
           if-no-files-found: error
           retention-days: 7
-          path: |
-            ${{ env.NuGetDirectory }}/*.nupkg
-            ${{ env.NuGetDirectory }}/*.snupkg
+          path: ${{ env.NuGetDirectory }}/*.nupkg
 
   validate_nuget:
     runs-on: ubuntu-latest
