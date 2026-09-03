@@ -65,6 +65,10 @@ See [the package README](src/PlayBlazor/README.md) for the full configuration AP
 
 ## Try it
 
+**[atypical-consulting.github.io/PlayBlazor](https://atypical-consulting.github.io/PlayBlazor/)** — the demo runs in your browser, nothing to install.
+
+Or locally:
+
 ```bash
 dotnet run --project demo/PlayBlazor.DemoHost
 ```
