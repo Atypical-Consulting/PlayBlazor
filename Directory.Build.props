@@ -1,0 +1,79 @@
+<Project>
+
+  <!-- Common build properties -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Organization metadata -->
+  <PropertyGroup>
+    <Company>Atypical Consulting SRL</Company>
+    <Authors>Philippe Matray</Authors>
+    <Product>PlayBlazor</Product>
+    <Copyright>Copyright (c) 2026 Atypical Consulting SRL</Copyright>
+  </PropertyGroup>
+
+  <!-- Repository metadata -->
+  <PropertyGroup>
+    <RepositoryUrl>https://github.com/Atypical-Consulting/PlayBlazor.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryBranch>main</RepositoryBranch>
+    <PackageProjectUrl>https://github.com/Atypical-Consulting/PlayBlazor</PackageProjectUrl>
+  </PropertyGroup>
+
+  <!-- Versioning -->
+  <!-- MinVer derives the version from the nearest v-prefixed git tag; untagged builds become
+       the next patch as a -preview. Skipped in Debug so local builds do not shell out to git. -->
+  <PropertyGroup>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers>
+    <MinVerSkip Condition="'$(Configuration)' == 'Debug'">true</MinVerSkip>
+  </PropertyGroup>
+
+  <!-- Source Link -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!-- Deterministic builds -->
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- Code quality -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllDisabledByDefault</AnalysisMode>
+  </PropertyGroup>
+
+  <!-- Common suppressions -->
+  <PropertyGroup>
+    <!-- IDE0073: File header -->
+    <NoWarn>$(NoWarn);IDE0073</NoWarn>
+    <!-- CS1591: Missing XML comment on a public member.
+         The documentation file is still generated - PlayBlazor reads XML doc summaries at runtime
+         to build its parameter tooltips, so the package must ship one. 174 public members inherited
+         from the incubation are not documented yet; suppressed rather than gated so the extraction
+         does not smuggle in a 174-member documentation pass. TODO: document the public surface and
+         drop this suppression. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Output paths -->
+  <PropertyGroup>
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+  </PropertyGroup>
+
+</Project>

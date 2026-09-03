@@ -1,0 +1,175 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# This workflow triggers on pushes to the main branch.
+# It builds the project, runs tests to ensure stability and creates a release draft.
+
+name: Main Branch CI
+
+on:
+  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
+  push:
+    branches:
+      - "main"       # Trigger the workflow on pushes to the main branch
+  pull_request:
+  release:
+    types:
+      - published    # Run the workflow when a new GitHub release is published
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v6
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      # `dotnet test` runs in Microsoft.Testing.Platform mode (see global.json), so coverage is
+      # collected through the MTP `--coverage` options, not VSTest's `--collect:"XPlat Code
+      # Coverage"` — the latter is silently ignored under MTP and would upload nothing.
+      - name: Run Unit Tests
+        run: >
+          dotnet test --configuration Release
+          --coverage
+          --coverage-output-format cobertura
+          --coverage-output coverage.cobertura.xml
+          --results-directory ${{ github.workspace }}/TestResults
+
+      - name: Upload Code Coverage
+        uses: codecov/codecov-action@v5
+
+  create_nuget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
+
+      # Install the .NET SDK indicated in the global.json file
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Build the project first so that the staticwebassets.build.json manifest is generated
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      # Create the NuGet package in the folder from the environment variable NuGetDirectory
+      - name: Create NuGet package
+        run: dotnet pack src/PlayBlazor/PlayBlazor.csproj --configuration Release --no-build --output ${{ env.NuGetDirectory }}
+
+      # Publish the NuGet package as an artifact, so they can be used in the following jobs
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nuget
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ env.NuGetDirectory }}/*.nupkg
+
+  validate_nuget:
+    runs-on: ubuntu-latest
+    needs: [ create_nuget ]
+    steps:
+      # Install the .NET SDK indicated in the global.json file
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      # Download the NuGet package created in the previous job
+      - uses: actions/download-artifact@v8
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      - name: Install nuget validator
+        run: dotnet tool update Meziantou.Framework.NuGetPackageValidation.Tool --global
+
+      # Validate metadata and content of the NuGet package
+      # https://www.nuget.org/packages/Meziantou.Framework.NuGetPackageValidation.Tool#readme-body-tab
+      # If some rules are not applicable, you can disable them
+      # using the --excluded-rules or --excluded-rule-ids option
+      - name: Validate package
+        run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
+
+  update_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: release-drafter/release-drafter@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    # Publish only when creating a GitHub Release
+    # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs: [ validate_nuget, run_test ]
+
+    # Job-level, so it must restate contents: read — a job-level block REPLACES the
+    # workflow-level one rather than adding to it.
+    permissions:
+      contents: read
+      id-token: write # request the GitHub OIDC token for NuGet Trusted Publishing
+
+    steps:
+      # Download the NuGet package created in the previous job
+      - uses: actions/download-artifact@v8
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      # Install the .NET SDK indicated in the global.json file
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      # Publish all NuGet packages to NuGet.org
+      # Use --skip-duplicate to prevent errors if a package with the same version already exists.
+      # If you retry a failed workflow, already published packages will be skipped without error.
+      # Trusted Publishing: exchanges the OIDC token (needs `id-token: write` above) for a NuGet
+      # key valid ~1 hour, so no long-lived secret is stored. Keep it adjacent to the push so the
+      # key cannot expire in between. Requires a Trusted Publishing policy on nuget.org naming
+      # this repository and `main.yml`, plus the NUGET_USER secret (the nuget.org profile name).
+      # Deliberately UNGUARDED: this job only runs on a published Release, so publishing is
+      # expected. A missing policy must fail loudly rather than skip and leave the release
+      # unpublished behind a green check.
+      - name: NuGet login (OIDC -> short-lived key)
+        id: nuget-login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish NuGet package
+        run: |
+          foreach($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
+              dotnet nuget push $file --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }

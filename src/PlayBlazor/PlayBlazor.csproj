@@ -1,12 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <!-- General -->
   <PropertyGroup>
-    <TargetFramework>$(PrimaryTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- File inclusion -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <!-- Development dependencies -->
+  <ItemGroup>
+    <!-- Reproducible Builds -->
+    <PackageReference Include="DotNet.ReproducibleBuilds">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <!-- MinVer -->
+    <PackageReference Include="MinVer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <!-- NuGet metadata -->
+  <PropertyGroup>
+    <PackageId>PlayBlazor</PackageId>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Auto-generated playgrounds for any Blazor component library. Point PlayBlazor at your components and every public [Parameter] becomes an interactive control — no story files, no hand-written wiring. Ships a live Razor snippet, an event log, permalinks and a dockable workspace UI with zero styling dependencies.</Description>
+    <PackageTags>blazor;playground;storybook;components;documentation;razor;reflection;design-system;net10</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLanguage>en-US</PackageLanguage>
+  </PropertyGroup>
 
 </Project>

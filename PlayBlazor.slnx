@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="renovate.json" />
+  </Folder>
+  <Folder Name="/demo/">
+    <Project Path="demo/PlayBlazor.DemoHost/PlayBlazor.DemoHost.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/PlayBlazor/PlayBlazor.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PlayBlazor.UnitTests/PlayBlazor.UnitTests.csproj" />
+  </Folder>
+</Solution>
