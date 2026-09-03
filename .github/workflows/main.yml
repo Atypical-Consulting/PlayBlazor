@@ -112,12 +112,8 @@ jobs:
       # https://www.nuget.org/packages/Meziantou.Framework.NuGetPackageValidation.Tool#readme-body-tab
       # If some rules are not applicable, you can disable them
       # using the --excluded-rules or --excluded-rule-ids option
-      #
-      # Rule 32 (the package has no icon) is excluded until PlayBlazor has a logo. NuGet does not
-      # accept SVG for PackageIcon, so this needs a real PNG export.
-      # TODO: drop --excluded-rule-ids once <PackageIcon> is wired up in src/PlayBlazor.
       - name: Validate package
-        run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg") --excluded-rule-ids 32
+        run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
 
   update_release_draft:
     permissions:

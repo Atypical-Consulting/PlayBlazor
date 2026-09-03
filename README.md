@@ -1,3 +1,5 @@
+![PlayBlazor banner](.github/banner.png)
+
 # PlayBlazor
 
 > **Auto-generated playgrounds for any Blazor component library — point it at your components and every `[Parameter]` becomes an interactive control.**

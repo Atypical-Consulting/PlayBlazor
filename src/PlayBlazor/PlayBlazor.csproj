@@ -13,6 +13,7 @@
 
   <!-- File inclusion -->
   <ItemGroup>
+    <None Include="../../Logo.png" Pack="true" PackagePath="" />
     <None Include="../../LICENSE" Pack="true" PackagePath="" />
     <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
@@ -39,6 +40,7 @@
   <!-- NuGet metadata -->
   <PropertyGroup>
     <PackageId>PlayBlazor</PackageId>
+    <PackageIcon>Logo.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>Auto-generated playgrounds for any Blazor component library. Point PlayBlazor at your components and every public [Parameter] becomes an interactive control — no story files, no hand-written wiring. Ships a live Razor snippet, an event log, permalinks and a dockable workspace UI with zero styling dependencies.</Description>
