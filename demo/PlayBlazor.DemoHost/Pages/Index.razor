@@ -11,7 +11,9 @@
         <code>EventCallback</code> a log entry, every configuration a shareable link.
         No story files. Nothing below is hand-written.
     </p>
-    <a class="demo-cta" href="/explorer">Open the explorer &rarr;</a>
+    @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
+       walks past <base href> straight to the domain root. *@
+    <a class="demo-cta" href="explorer">Open the explorer &rarr;</a>
 </header>
 
 <main class="demo-main">
@@ -39,7 +41,7 @@
         <div class="demo-tiles">
             @foreach (var component in _covered)
             {
-                <a class="demo-tile" href="/explorer?pb-@component.DisplayName=e30">
+                <a class="demo-tile" href="explorer?pb-@component.DisplayName=e30">
                     @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
                     {
                         <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
@@ -51,7 +53,7 @@
     </section>
 </main>
 <footer class="demo-footer">
-    Incubated inside the MudBlazor repository — MudBlazor is the first demo library, not a dependency.
+    MudBlazor is the library this playground is pointed at, not a dependency of it.
 </footer>
 
 @code {
