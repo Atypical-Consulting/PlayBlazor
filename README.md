@@ -65,7 +65,10 @@ See [the package README](src/PlayBlazor/README.md) for the full configuration AP
 
 ## Try it
 
-**[atypical-consulting.github.io/PlayBlazor](https://atypical-consulting.github.io/PlayBlazor/)** — the demo runs in your browser, nothing to install.
+**[atypical-consulting.github.io/PlayBlazor](https://atypical-consulting.github.io/PlayBlazor/)** — the
+same playground pointed at two libraries, running in your browser:
+[MudBlazor](https://atypical-consulting.github.io/PlayBlazor/mud/),
+[Fluent UI](https://atypical-consulting.github.io/PlayBlazor/fluent/).
 
 Or locally:
 
@@ -86,6 +89,7 @@ dockable workspace on `/explorer`. MudBlazor is the **demo subject, not a depend
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (landing page, library switcher) shared by every showcase app. |
 | `demo/PlayBlazor.Demo.MudBlazor` | Blazor WebAssembly showcase driving MudBlazor. |
 | `demo/PlayBlazor.Demo.FluentUI` | Blazor WebAssembly showcase driving Fluent UI Blazor. Uncurated scaffold — lists every discovered component, providers and base types included — pending milestone 3. |
+| `demo/landing` | Plain static HTML served at the Pages site root — picks a library, no WASM to boot. |
 | `docs/superpowers` | Design spec, milestone plans and the UX concept prototypes (A→G) that produced the current shell. |
 
 ## Building
