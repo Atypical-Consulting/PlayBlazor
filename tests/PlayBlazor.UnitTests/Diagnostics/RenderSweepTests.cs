@@ -61,8 +61,9 @@ public class RenderSweepTests
             // Each library needs its own service registrations before its components will render.
             if (assembly.GetName().Name == "MudBlazor") { context.Services.AddMudServices(); }
             else if (assembly.GetName().Name == "Microsoft.FluentUI.AspNetCore.Components") { context.Services.AddFluentUIComponents(); }
-            // DaisyBlazor is not yet a sweep case (see ExploredLibraries) — once its demo app
-            // exists, add: else if (assembly.GetName().Name == "DaisyBlazor.Components") { context.Services.AddDaisyBlazor(); }
+            // DaisyBlazor is not yet a sweep case: the third branch will call AddDaisyBlazor()
+            // once the DaisyBlazor demo app exists — see the note in ExploredLibraries for the
+            // blocker.
 
             context.Services.AddPlayBlazor();
 
