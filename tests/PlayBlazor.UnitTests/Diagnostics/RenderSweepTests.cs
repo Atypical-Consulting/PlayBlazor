@@ -1,8 +1,10 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FluentUI.AspNetCore.Components;
 using MudBlazor;
 using MudBlazor.Services;
 using NUnit.Framework;
@@ -11,16 +13,18 @@ using PlayBlazor.Discovery;
 namespace PlayBlazor.UnitTests.Diagnostics;
 
 /// <summary>
-/// Diagnostic sweep: renders every discovered MudBlazor component through PlaygroundView
-/// under explorer-like conditions (Mud services + providers, loose JS interop) and reports
-/// every component that surfaces an error — either contained by the error boundary or
-/// escaping the render. The test never fails; its output is the inventory used to drive fixes.
+/// Diagnostic sweep: renders every discovered component of an explored library through
+/// PlaygroundView under explorer-like conditions (the library's own services + providers, loose
+/// JS interop) and reports every component that surfaces an error — either contained by the
+/// error boundary or escaping the render. The test never fails; its output is the inventory used
+/// to drive fixes.
 /// </summary>
-public class MudBlazorRenderSweepTests
+public class RenderSweepTests
 {
     [Test]
     [Explicit("Diagnostic inventory — run on demand; prints a report instead of asserting.")]
-    public async Task RenderSweep_ReportsEveryComponentError()
+    [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.All))]
+    public async Task RenderSweep_ReportsEveryComponentError(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
         // Debug.Assert in a component lifecycle (e.g. FooterCell asserting its parent DataGrid)
         // TERMINATES the process in Debug builds — convert asserts into catchable exceptions
@@ -30,7 +34,7 @@ public class MudBlazorRenderSweepTests
         Trace.Listeners.Add(new ThrowingTraceListener());
         try
         {
-            await RunSweepAsync();
+            await RunSweepAsync(assembly, configure);
         }
         finally
         {
@@ -39,10 +43,12 @@ public class MudBlazorRenderSweepTests
         }
     }
 
-    private static async Task RunSweepAsync()
+    private static async Task RunSweepAsync(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
-        var catalog = new ReflectionCatalogProvider();
-        var components = catalog.Discover(typeof(MudButton).Assembly);
+        var options = new PlayBlazorOptions();
+        configure(options);
+        var catalog = new ReflectionCatalogProvider(options: options);
+        var components = catalog.Discover(assembly);
         var contained = new List<(string Name, string Error)>();
         var escaped = new List<(string Name, string Error)>();
         var healthy = 0;
@@ -51,15 +57,25 @@ public class MudBlazorRenderSweepTests
         {
             await using var context = new BunitContext();
             context.JSInterop.Mode = JSRuntimeMode.Loose;
-            context.Services.AddMudServices();
+
+            // Each library needs its own service registrations before its components will render.
+            if (assembly.GetName().Name == "MudBlazor") { context.Services.AddMudServices(); }
+            else if (assembly.GetName().Name == "Microsoft.FluentUI.AspNetCore.Components") { context.Services.AddFluentUIComponents(); }
+            // DaisyBlazor is not yet a sweep case (see ExploredLibraries) — once its demo app
+            // exists, add: else if (assembly.GetName().Name == "DaisyBlazor.Components") { context.Services.AddDaisyBlazor(); }
+
             context.Services.AddPlayBlazor();
 
             try
             {
                 var cut = context.Render(builder =>
                 {
-                    builder.OpenComponent<MudPopoverProvider>(0);
-                    builder.CloseComponent();
+                    if (assembly.GetName().Name == "MudBlazor")
+                    {
+                        builder.OpenComponent<MudPopoverProvider>(0);
+                        builder.CloseComponent();
+                    }
+
                     builder.OpenComponent<PlaygroundView>(1);
                     builder.AddComponentParameter(2, nameof(PlaygroundView.Component), component.Type);
                     builder.CloseComponent();
@@ -83,6 +99,7 @@ public class MudBlazorRenderSweepTests
         }
 
         var report = new StringBuilder();
+        report.AppendLine($"=== {assembly.GetName().Name} ===");
         report.AppendLine($"SWEEP {components.Count} components: {healthy} healthy, {contained.Count} contained errors, {escaped.Count} escaped exceptions");
         report.AppendLine("--- ESCAPED (would take down more than the preview) ---");
         foreach (var (name, error) in escaped)

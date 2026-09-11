@@ -1,4 +1,4 @@
-using MudBlazor;
+using System.Reflection;
 using NUnit.Framework;
 using PlayBlazor.Discovery;
 using PlayBlazor.Model;
@@ -9,16 +9,20 @@ public class UnsupportedParameterInventory
 {
     [Test]
     [Explicit("Diagnostic inventory — run on demand; prints a report instead of asserting.")]
-    public void ListUnsupportedParameterTypes()
+    [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.All))]
+    public void ListUnsupportedParameterTypes(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
-        var provider = new ReflectionCatalogProvider();
-        var groups = provider.Discover(typeof(MudButton).Assembly)
+        var options = new PlayBlazorOptions();
+        configure(options);
+        var provider = new ReflectionCatalogProvider(options: options);
+        var groups = provider.Discover(assembly)
             .SelectMany(c => c.Parameters
                 .Where(p => p.Kind == ControlKind.Unsupported)
                 .Select(p => (Component: c.DisplayName, Parameter: p)))
             .GroupBy(x => Pretty(x.Parameter.Type))
             .OrderByDescending(g => g.Count());
 
+        TestContext.Out.WriteLine($"=== {assembly.GetName().Name} ===");
         foreach (var group in groups)
         {
             var examples = string.Join(", ", group.Take(4).Select(x => $"{x.Component}.{x.Parameter.Name}"));
