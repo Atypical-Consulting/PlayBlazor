@@ -44,4 +44,19 @@ public class DemoLandingTests
         cut.Markup.Should().Contain("../mud/");
         cut.Markup.Should().Contain("../daisy/");
     }
+
+    [Test]
+    public void Landing_PassesItsCurrentParameterThroughToTheSwitcher()
+    {
+        var cut = _context.Render<DemoLanding>(ps => ps
+            .Add(c => c.Assembly, typeof(BasicFixture).Assembly)
+            .Add(c => c.LibraryName, "MudBlazor")
+            .Add(c => c.DocsUrl, "https://example.test/")
+            .Add(c => c.Current, "mud"));
+
+        var current = cut.FindAll("span.demo-switch-current");
+        current.Count.Should().Be(1);
+        current[0].TextContent.Should().Be("MudBlazor");
+        cut.FindAll("a.demo-switch").Count.Should().Be(2);
+    }
 }
