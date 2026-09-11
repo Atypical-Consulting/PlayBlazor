@@ -11,6 +11,7 @@
   <Folder Name="/demo/">
     <Project Path="demo/PlayBlazor.Demo.Shared/PlayBlazor.Demo.Shared.csproj" />
     <Project Path="demo/PlayBlazor.Demo.MudBlazor/PlayBlazor.Demo.MudBlazor.csproj" />
+    <Project Path="demo/PlayBlazor.Demo.FluentUI/PlayBlazor.Demo.FluentUI.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/PlayBlazor/PlayBlazor.csproj" />

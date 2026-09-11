@@ -85,6 +85,7 @@ dockable workspace on `/explorer`. MudBlazor is the **demo subject, not a depend
 | `tests/PlayBlazor.UnitTests` | 220 bUnit/NUnit tests, plus `[Explicit]` diagnostic sweeps over a whole component library. |
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (landing page, library switcher) shared by every showcase app. |
 | `demo/PlayBlazor.Demo.MudBlazor` | Blazor WebAssembly showcase driving MudBlazor. |
+| `demo/PlayBlazor.Demo.FluentUI` | Blazor WebAssembly showcase driving Fluent UI Blazor. Uncurated scaffold — lists every discovered component, providers and base types included — pending milestone 3. |
 | `docs/superpowers` | Design spec, milestone plans and the UX concept prototypes (A→G) that produced the current shell. |
 
 ## Building

@@ -34,6 +34,7 @@ that print a report instead of asserting; run them on demand when auditing a com
 | `tests/PlayBlazor.UnitTests` | bUnit + NUnit + AwesomeAssertions. |
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (`DemoLanding`, `LibrarySwitcher`) shared by every showcase app. Zero UI dependencies — same constraint as `src/PlayBlazor`. |
 | `demo/PlayBlazor.Demo.MudBlazor` | `PlaygroundConfig.cs` holds every preset, scaffold, variant and exclusion for the MudBlazor showcase. Namespace stays `PlayBlazor.DemoHost` even though the project and assembly are `PlayBlazor.Demo.MudBlazor`. |
+| `demo/PlayBlazor.Demo.FluentUI` | Fluent UI Blazor showcase. An uncurated scaffold: `FluentPlaygroundConfig.cs` registers only the hand-written `FluentIconCatalogue` (24 SVGs, no dependency on the 23 MB icons package); presets, scaffolds, variants and exclusion land in milestone 3 from a sweep inventory. |
 | `docs/superpowers` | Incubation-era design spec, milestone plans, and the UX concept prototypes (A→G) whose concept G v2 is the shell that exists today. Paths quoted inside them predate the `src`/`tests`/`demo` split. |
 
 ## Traps learned the hard way
