@@ -1,0 +1,26 @@
+<nav class="demo-switcher" aria-label="Component library">
+    @foreach (var (slug, label) in Libraries)
+    {
+        @if (slug == Current)
+        {
+            <span class="demo-switch demo-switch-current" aria-current="page">@label</span>
+        }
+        else
+        {
+            @* Relative, never rooted: under a project subpath a leading slash walks past
+               <base href> straight to the domain root. *@
+            <a class="demo-switch" href="@($"../{slug}/")">@label</a>
+        }
+    }
+</nav>
+@code {
+    private static readonly (string Slug, string Label)[] Libraries =
+    [
+        ("mud", "MudBlazor"),
+        ("fluent", "Fluent UI"),
+        ("daisy", "DaisyBlazor"),
+    ];
+
+    /// <summary>The slug of the library this app shows: <c>mud</c>, <c>fluent</c> or <c>daisy</c>.</summary>
+    [Parameter, EditorRequired] public string Current { get; set; } = default!;
+}

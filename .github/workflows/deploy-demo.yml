@@ -38,7 +38,7 @@ jobs:
           dotnet-version: 10.x
 
       - name: Publish the demo
-        run: dotnet publish demo/PlayBlazor.DemoHost/PlayBlazor.DemoHost.csproj -c Release -o publish
+        run: dotnet publish demo/PlayBlazor.Demo.MudBlazor/PlayBlazor.Demo.MudBlazor.csproj -c Release -o publish
 
       # The site is served from https://atypical-consulting.github.io/PlayBlazor/, not from a
       # domain root, so every asset URL Blazor resolves — _framework, _content, the scoped CSS —

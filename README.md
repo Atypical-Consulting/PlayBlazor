@@ -70,7 +70,7 @@ See [the package README](src/PlayBlazor/README.md) for the full configuration AP
 Or locally:
 
 ```bash
-dotnet run --project demo/PlayBlazor.DemoHost
+dotnet run --project demo/PlayBlazor.Demo.MudBlazor
 ```
 
 The demo points PlayBlazor at MudBlazor's component set — 65 curated components on `/`, the full
@@ -83,7 +83,8 @@ dockable workspace on `/explorer`. MudBlazor is the **demo subject, not a depend
 |------|-----------|
 | `src/PlayBlazor` | The shipped Razor class library (the `PlayBlazor` NuGet package). |
 | `tests/PlayBlazor.UnitTests` | 220 bUnit/NUnit tests, plus `[Explicit]` diagnostic sweeps over a whole component library. |
-| `demo/PlayBlazor.DemoHost` | Blazor WebAssembly showcase driving MudBlazor. |
+| `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (landing page, library switcher) shared by every showcase app. |
+| `demo/PlayBlazor.Demo.MudBlazor` | Blazor WebAssembly showcase driving MudBlazor. |
 | `docs/superpowers` | Design spec, milestone plans and the UX concept prototypes (A→G) that produced the current shell. |
 
 ## Building
