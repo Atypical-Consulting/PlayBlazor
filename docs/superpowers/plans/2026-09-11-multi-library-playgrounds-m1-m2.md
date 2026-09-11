@@ -830,9 +830,21 @@ Expected: 5 tests PASS.
 In `src/PlayBlazor/State/PlaygroundStateSerializer.cs`, add an optional trailing parameter to both entry points and a private helper, then use it at the two converter call sites (`:33` and `:101`):
 
 ```csharp
+    // A catalogue fills a ControlKind, it never widens one — the same rule discovery applies in
+    // ReflectionCatalogProvider. Without the Kind gate a string catalogue would reach EVERY text
+    // parameter in the library, and decoding `Label=Save` would yield the Save icon's markup.
     private static CatalogueDefinition? CatalogueFor(PlayBlazorOptions? options, ParameterDescriptor parameter)
-        => options is not null && options.TryGetCatalogue(parameter.Type, out var catalogue) ? catalogue : null;
+        => parameter.Kind == ControlKind.Icon
+           && options is not null
+           && options.TryGetCatalogue(parameter.Type, out var catalogue)
+            ? catalogue
+            : null;
 ```
+
+The gate belongs here and **only** here — `Format` and `TryParse` receive an explicit catalogue, so
+their caller has already decided; second-guessing it inside them would be wrong. Their
+`<param name="catalogue">` docs instead state that the caller is responsible for supplying a
+catalogue only for a parameter that catalogue actually drives.
 
 `Encode` gains `PlayBlazorOptions? options = null` as its last parameter, and line 33 becomes:
 

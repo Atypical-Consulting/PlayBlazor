@@ -67,10 +67,11 @@ public sealed class PlayBlazorOptions
 {
     /// <summary>Named values a host offers for one parameter type, with an optional preview.</summary>
     public PlayBlazorOptions Catalogue<T>(
-        IReadOnlyDictionary<string, T?> named,
-        Func<T?, RenderFragment>? preview = null);
+        IReadOnlyDictionary<string, T> named,
+        Func<T, RenderFragment>? preview = null)
+        where T : class;
 
-    internal bool TryGetCatalogue(Type type, out CatalogueDefinition catalogue);
+    public bool TryGetCatalogue(Type type, out CatalogueDefinition catalogue);
 }
 ```
 
@@ -81,7 +82,8 @@ public sealed class PlayBlazorOptions
 `ControlKind.Icon` est décidé par l'union de deux règles :
 
 1. l'heuristique actuelle (type `string` **et** nom finissant par `Icon`) — inchangée ;
-2. **nouvelle** : le type du paramètre a un catalogue enregistré.
+2. **nouvelle** : le paramètre résout en `Unsupported` **et** son type a un catalogue
+   enregistré. Le verrou sur `Unsupported` est ce qui rend la règle incapable d'élargir.
 
 Conséquences voulues :
 
@@ -206,7 +208,12 @@ Nouveaux tests ciblés :
 - un catalogue sur `string` **n'élargit pas** — un `string` ordinaire reste `ControlKind.Text` ;
 - l'aperçu du catalogue est rendu quand `preview` est fourni, et le champ texte historique
   subsiste quand aucun catalogue n'est enregistré ;
-- sérialisation/permalien d'une valeur issue d'un catalogue (`ParameterValueConverter`).
+- sérialisation/permalien d'une valeur issue d'un catalogue (`ParameterValueConverter`) ;
+- **un paramètre `ControlKind.Text` dont la valeur coïncide avec un NOM du catalogue survit à
+  l'aller-retour.** La règle « remplit, n'élargit jamais » vaut aussi à la sérialisation : sans
+  verrou sur le `Kind`, un catalogue `string` atteindrait tout paramètre texte de la librairie
+  et `Label=Save` se décoderait en markup SVG. Le test doit passer par `Encode`/`Decode`,
+  puisque le défaut vit dans la sélection du catalogue, pas dans la conversion.
 
 Le projet de tests peut référencer les trois librairies : c'est le package qui doit rester
 propre, pas les tests.
