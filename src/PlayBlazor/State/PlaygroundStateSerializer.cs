@@ -116,8 +116,17 @@ public static class PlaygroundStateSerializer
         }
     }
 
+    // Gated on Icon so a catalogue registered for a shared type (typically `string`) never widens
+    // beyond the kind it was meant to fill: without this check, a string catalogue would reach
+    // every ordinary ControlKind.Text parameter in the library too — a permalink carrying
+    // Label=Save would decode to the "Save" icon's markup instead of the literal text "Save".
+    // Mirrors the identical gate at discovery time in ReflectionCatalogProvider.
     private static CatalogueDefinition? CatalogueFor(PlayBlazorOptions? options, ParameterDescriptor parameter)
-        => options is not null && options.TryGetCatalogue(parameter.Type, out var catalogue) ? catalogue : null;
+        => parameter.Kind == ControlKind.Icon
+           && options is not null
+           && options.TryGetCatalogue(parameter.Type, out var catalogue)
+            ? catalogue
+            : null;
 }
 
 internal sealed record PermalinkPayload(

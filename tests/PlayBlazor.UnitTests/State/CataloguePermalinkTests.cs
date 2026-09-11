@@ -1,7 +1,10 @@
 using AwesomeAssertions;
 using NUnit.Framework;
+using PlayBlazor.Discovery;
 using PlayBlazor.Model;
+using PlayBlazor.Rendering;
 using PlayBlazor.State;
+using PlayBlazor.UnitTests.Fixtures;
 
 namespace PlayBlazor.UnitTests.State;
 
@@ -16,6 +19,10 @@ public class CataloguePermalinkTests
             .TryGetCatalogue(typeof(string), out var catalogue);
         return catalogue;
     }
+
+    private static PlayBlazorOptions Options()
+        => new PlayBlazorOptions()
+            .Catalogue(new Dictionary<string, string>(StringComparer.Ordinal) { ["Save"] = SaveMarkup });
 
     private static ParameterDescriptor IconParameter()
         => new("Icon", typeof(string), ControlKind.Icon, IsNullable: true,
@@ -58,5 +65,24 @@ public class CataloguePermalinkTests
         ParameterValueConverter.TryParse(IconParameter(), text, out var value, catalogue).Should().BeTrue();
 
         value.Should().Be(SaveMarkup);
+    }
+
+    [Test]
+    public void Decode_TextParameterNamedLikeACatalogueEntry_KeepsTheLiteralText()
+    {
+        // BasicFixture.Label is an ordinary ControlKind.Text string parameter — nothing about it
+        // asks for the icon catalogue. "Save" is both a plausible label and a catalogued icon
+        // name; the serializer must not let the catalogue registered for `string` reach a
+        // parameter the catalogue was never meant to drive.
+        var descriptor = new ReflectionCatalogProvider().Describe(typeof(BasicFixture));
+        var options = Options();
+        var state = new PlaygroundState();
+        state.Set("Label", "Save");
+        var encoded = PlaygroundStateSerializer.Encode(descriptor, state, new PlaygroundEnvironment(), options);
+
+        var restored = new PlaygroundState();
+        PlaygroundStateSerializer.Decode(encoded, descriptor, restored, new PlaygroundEnvironment(), options);
+
+        restored.GetValue(descriptor.Parameters.Single(p => p.Name == "Label")).Should().Be("Save");
     }
 }

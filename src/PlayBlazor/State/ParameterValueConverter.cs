@@ -16,6 +16,8 @@ public static class ParameterValueConverter
     /// <param name="catalogue">
     /// The host catalogue for this parameter's type, when one exists. A catalogued value is
     /// carried as its NAME, which keeps a permalink short and survives the value changing shape.
+    /// The caller is responsible for supplying a catalogue only for a parameter it actually
+    /// drives — one passed for an unrelated parameter lets a colliding name win.
     /// </param>
     /// <returns>The invariant-culture text, or <c>null</c> when the type has no text form.</returns>
     public static string? Format(ParameterDescriptor parameter, object? value, CatalogueDefinition? catalogue = null)
@@ -52,7 +54,9 @@ public static class ParameterValueConverter
     /// <param name="catalogue">
     /// The host catalogue for this parameter's type, when one exists. A catalogue name wins;
     /// anything else falls through to the type-based parsing, so permalinks written before a
-    /// catalogue existed still resolve.
+    /// catalogue existed still resolve. The caller is responsible for supplying a catalogue only
+    /// for a parameter it actually drives — one passed for an unrelated parameter lets a
+    /// colliding name win.
     /// </param>
     /// <returns><c>false</c> for text that does not convert, leaving the caller's value untouched.</returns>
     public static bool TryParse(
