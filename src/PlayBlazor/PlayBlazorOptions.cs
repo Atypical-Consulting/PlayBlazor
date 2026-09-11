@@ -26,6 +26,8 @@ public sealed class PlayBlazorOptions
 
     private readonly Dictionary<Type, Type> _preferredClosings = new();
 
+    private readonly Dictionary<Type, CatalogueDefinition> _catalogues = new();
+
     /// <summary>
     /// Wraps the rendered specimen in the host's theme infrastructure (e.g. a theme provider
     /// honoring <see cref="PlaygroundEnvironment.Dark"/>). Null renders the specimen bare.
@@ -124,6 +126,37 @@ public sealed class PlayBlazorOptions
            && _preferredClosings.TryGetValue(discoveredType.GetGenericTypeDefinition(), out var preferred)
             ? preferred
             : discoveredType;
+
+    /// <summary>
+    /// Named values the host offers for every parameter of type <typeparamref name="T" /> —
+    /// the entries of an icon picker.
+    /// </summary>
+    /// <remarks>
+    /// A catalogue FILLS <see cref="Model.ControlKind.Icon" />, it never widens it. Registering
+    /// one for <c>string</c> reaches only the string parameters discovery already recognized as
+    /// icons, never every text field in the library.
+    /// </remarks>
+    /// <param name="named">The offered values, by the name the picker shows.</param>
+    /// <param name="preview">Renders one value as a thumbnail. Omit it to list names alone.</param>
+    /// <typeparam name="T">The parameter type this catalogue drives.</typeparam>
+    /// <returns>The same options, for chaining.</returns>
+    public PlayBlazorOptions Catalogue<T>(
+        IReadOnlyDictionary<string, T> named,
+        Func<T, RenderFragment>? preview = null)
+        where T : class
+    {
+        _catalogues[typeof(T)] = new CatalogueDefinition(
+            named.ToDictionary(static entry => entry.Key, static entry => (object?)entry.Value, StringComparer.Ordinal),
+            preview is null ? null : value => preview((T)value!));
+        return this;
+    }
+
+    /// <summary>The catalogue a host registered for a parameter type, if any.</summary>
+    /// <param name="type">The parameter's declared type.</param>
+    /// <param name="catalogue">The registered catalogue, when one exists.</param>
+    /// <returns><c>true</c> when the host registered a catalogue for this exact type.</returns>
+    public bool TryGetCatalogue(Type type, out CatalogueDefinition catalogue)
+        => _catalogues.TryGetValue(type, out catalogue!);
 
     internal void AddSlotPreset(Type componentType, string parameterName, RenderFragment content, string? source)
     {
