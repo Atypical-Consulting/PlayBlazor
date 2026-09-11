@@ -37,12 +37,11 @@ jobs:
             project: demo/PlayBlazor.Demo.MudBlazor/PlayBlazor.Demo.MudBlazor.csproj
           - app: fluent
             project: demo/PlayBlazor.Demo.FluentUI/PlayBlazor.Demo.FluentUI.csproj
-          # DaisyBlazor entry blocked on phmatray/blazor-tailwind-ui#20 (DaisyBlazor.Components
-          # 1.0.0 not on NuGet, @daisyblazor/tailwind not on npm). Once released, add:
-          #   - app: daisy
-          #     project: demo/PlayBlazor.Demo.Daisy/PlayBlazor.Demo.Daisy.csproj
-          # plus a setup-node step and a `npm ci` / `npm run build:css` step ahead of publish,
-          # since daisyUI is a Tailwind plugin and its stylesheet is generated, not shipped.
+          # A third entry for the DaisyBlazor app belongs here once it exists, pointing at its
+          # .csproj under demo/PlayBlazor.Demo.Daisy — plus a Node setup step and a Tailwind CSS
+          # build step ahead of publish, since daisyUI is a Tailwind plugin and its stylesheet is
+          # generated, not shipped. Blocked on phmatray/blazor-tailwind-ui#20 (DaisyBlazor.Components
+          # 1.0.0 not on NuGet, @daisyblazor/tailwind not on npm).
     steps:
       - uses: actions/checkout@v6
 
