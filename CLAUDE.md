@@ -15,7 +15,7 @@ MudBlazor appears only in `demo/` and `tests/`, as the library being *pointed at
 
 ```bash
 dotnet build -c Release
-dotnet test -c Release                                     # 220 tests, ~2s
+dotnet test -c Release                                     # 252 tests, 4 skipped, ~1s
 dotnet test -c Release -- --filter "FullyQualifiedName~X"  # single suite (MTP, note the `--`)
 dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and /explorer
 ```
@@ -25,6 +25,8 @@ Tests run on Microsoft.Testing.Platform (see `global.json`), not VSTest — VSTe
 
 Two `[Explicit]` suites (`RenderSweep`, `ListUnsupportedParameterTypes`) are diagnostic inventories
 that print a report instead of asserting; run them on demand when auditing a component library.
+They are parametrized per explored library (currently MudBlazor and Fluent UI), so a normal run
+discovers all 252 tests but skips these 4 (2 suites × 2 libraries) rather than executing them.
 
 ## Layout
 

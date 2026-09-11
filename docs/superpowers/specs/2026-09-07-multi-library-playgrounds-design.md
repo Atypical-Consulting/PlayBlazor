@@ -253,3 +253,22 @@ c'est le filet de sécurité de la restructuration.
   caractère près**, chacun se déclarant canonique. L'ancien renvoie 200 et ne pourra plus jamais
   être mis à jour (Actions désactivé sur un repo archivé). Correctif : désarchiver, remplacer le
   contenu Pages par une redirection, ré-archiver. **Autre repo, autre session.**
+- **`RazorSnippetGenerator.FormatValue` ne consulte jamais le catalogue** —
+  `src/PlayBlazor/CodeGen/RazorSnippetGenerator.cs:431` sérialise une valeur cataloguée sans
+  forme texte native via `value.ToString()`, faute de mieux. Pour les icônes `string` de
+  MudBlazor (markup SVG brut), ça dégrade sans casser — moche, mais du Razor valide. Pour les
+  paramètres **typés** `Icon` de Fluent, ça casse pour de vrai : collé dans un attribut entre
+  guillemets, `.ToString()` produit `IconStart="PlayBlazor.Demo.FluentUI.FluentIconCatalogue+DemoIcon"`
+  (vérifié empiriquement) — pour un type sans conversion implicite depuis `string`, donc le
+  snippet généré **ne compile pas**. C'est passé inaperçu parce que la vérification navigateur
+  du jalon a contrôlé le permalien et le rendu du spécimen, jamais le panneau de code généré.
+  Piste retenue : une expression *source* optionnelle sur `Catalogue<T>`, dans le même esprit
+  que `Slot(…, source:)` et `Parameter(…, source:)` qui existent déjà sur `PlayBlazorOptions`
+  précisément pour que le code généré montre quelque chose qu'un utilisateur peut coller.
+- **`demo.css` fait fuiter un nom MudBlazor dans le chrome partagé** —
+  `demo/PlayBlazor.Demo.Shared/wwwroot/css/demo.css:207` utilise
+  `var(--mud-palette-text-primary, inherit)`, une custom property nommée pour MudBlazor, à
+  l'intérieur du chrome que le commentaire du `.csproj` déclare pourtant agnostique de
+  librairie. Préexistant à cette branche (présent bien avant les premiers commits multi-lib) et
+  sans effet visible grâce au fallback `inherit`. À généraliser ou retirer la prochaine fois que
+  ce fichier est touché pour une autre raison.
