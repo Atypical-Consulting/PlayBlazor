@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PlayBlazor\PlayBlazor.csproj" />
+    <ProjectReference Include="..\..\demo\PlayBlazor.DemoHost\PlayBlazor.DemoHost.csproj" />
   </ItemGroup>
 
 </Project>

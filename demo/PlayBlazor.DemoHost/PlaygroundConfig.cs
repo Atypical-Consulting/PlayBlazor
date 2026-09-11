@@ -46,6 +46,17 @@ public static class PlaygroundConfig
         options.ComponentFilter = type => Curated.Contains(StripArity(type.Name));
         options.IconResolver = ComponentIcons.Resolve;
 
+        // Icon parameters are MudBlazor SVG markup strings. Naming them turns a blob field into
+        // a picker — and shortens every permalink that carries an icon.
+        options.Catalogue(MudIconCatalogue.Filled, static markup => builder =>
+        {
+            builder.OpenElement(0, "svg");
+            builder.AddAttribute(1, "viewBox", "0 0 24 24");
+            builder.AddAttribute(2, "aria-hidden", "true");
+            builder.AddMarkupContent(3, markup);
+            builder.CloseElement();
+        });
+
         // Discovery closes T with string, which MudFileUpload warns about at render time —
         // declare the closing it actually supports.
         options.For<MudFileUpload<IBrowserFile>>();
