@@ -1444,13 +1444,16 @@ Create `demo/PlayBlazor.Demo.FluentUI/PlayBlazor.Demo.FluentUI.csproj`:
 
 `demo/PlayBlazor.Demo.FluentUI/MainLayout.razor`:
 
+> **v5 is not v4 here.** `FluentDesignTheme` and `FluentMenuProvider` do **not** exist in
+> `5.0.0-rc.5-26219.1` — theming moved from a component to a service (`IThemeService`,
+> `ThemeService`, `ThemeSettings`, `ThemeMode`), and a single `FluentProviders` replaces v4's stack.
+> A scaffold needs no custom theme, so none is configured. Verified: `FluentProviders` activates as
+> plain markup. Do not reach for `FluentMessageBarProvider` as a substitute without supplying its
+> required `Section` parameter.
+
 ```razor
 @inherits LayoutComponentBase
-<FluentDesignTheme StorageName="playblazor-fluent" />
-<FluentToastProvider />
-<FluentDialogProvider />
-<FluentTooltipProvider />
-<FluentMenuProvider />
+<FluentProviders />
 <div class="demo-host">
     @Body
 </div>
@@ -1492,8 +1495,10 @@ public static class FluentPlaygroundConfig
     {
         // Fluent UI icons are Icon OBJECTS, not markup strings: without a catalogue the
         // parameter resolves to ControlKind.Unsupported and gets no control at all.
+        // ToMarkup() returns a MarkupString, so this is AddContent's MarkupString overload —
+        // AddMarkupContent takes a string and does not compile here.
         options.Catalogue(FluentIconCatalogue.All, static icon => builder
-            => builder.AddMarkupContent(0, icon.ToMarkup()));
+            => builder.AddContent(0, icon.ToMarkup()));
     }
 }
 ```
