@@ -201,7 +201,13 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentWizardStep.Label), "Account")
             .Parameter(nameof(FluentWizardStep.Summary), "Create your account")
             .Variant("Disabled", v => v.Set(nameof(FluentWizardStep.Disabled), true))
-            .Variant("Deferred loading", v => v.Set(nameof(FluentWizardStep.DeferredLoading), true))
+            // DeferredLoading only affects a NON-active step's panel, and the scaffold's single
+            // step is always the active one — that chip would render identically to the base
+            // preset. IconCurrent is the icon this specimen (index 0 of a one-step wizard, always
+            // Status.Current) actually draws — verified against FluentWizard.AddStep/
+            // SetCurrentStatusToStep, which sets Status=Current on registration for the step at
+            // Value (0 by default) — so overriding it is a real, visible difference.
+            .Variant("Custom current-step icon", v => v.Set(nameof(FluentWizardStep.IconCurrent), FluentIconCatalogue.All["Star"]))
             .Variant("Numbered", v => v.Set(nameof(FluentWizardStep.DisplayStepNumber), true));
 
         // FluentWizardStepValidator needs BOTH a FluentWizardStep ancestor and an EditContext
@@ -801,7 +807,11 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentTab.Header), "Home")
             .Variant("With icon", v => v.Set(nameof(FluentTab.IconStart), FluentIconCatalogue.All["Circle"]))
             .Variant("Disabled", v => v.Set(nameof(FluentTab.Disabled), true))
-            .Variant("Deferred loading", v => v.Set(nameof(FluentTab.DeferredLoading), true));
+            // DeferredLoading only affects whether the OWNING FluentTabs renders this tab's
+            // panel — this standalone specimen has no owner (no scaffold), so the flag has
+            // nothing to act on and the chip would be indistinguishable from the base preset.
+            // HeaderStyle is a real, visible difference on the bare <fluent-tab> itself.
+            .Variant("Styled header", v => v.Set(nameof(FluentTab.HeaderStyle), "color: var(--colorPaletteRedForeground1); font-weight: 600;"));
 
         // FluentMenu has no Open/Visible parameter in v5: OpenOnHover/OpenOnContext only pick
         // WHICH interaction opens it, and Trigger just names an external anchor id — none forces
@@ -832,14 +842,14 @@ public static class FluentPlaygroundConfig
 
         options.For<FluentMenuButton>()
             .Slot(nameof(FluentMenuButton.ChildContent), b => b.AddContent(0, "More options"), "More options")
-            .Variant("Accent", v => v.Set(nameof(FluentMenuButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Primary", v => v.Set(nameof(FluentMenuButton.Appearance), ButtonAppearance.Primary))
             .Variant("Icon only", v => v.Set(nameof(FluentMenuButton.IconOnly), true).Set(nameof(FluentMenuButton.IconStart), FluentIconCatalogue.All["Settings"]))
             .Variant("Disabled", v => v.Set(nameof(FluentMenuButton.Disabled), true));
 
         options.For<FluentSplitButton>()
             .Slot(nameof(FluentSplitButton.ChildContent), FluentDemoFragments.SplitButtonItems, FluentDemoFragmentSources.SplitButtonItems)
             .Parameter(nameof(FluentSplitButton.Label), "Save")
-            .Variant("Accent", v => v.Set(nameof(FluentSplitButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Primary", v => v.Set(nameof(FluentSplitButton.Appearance), ButtonAppearance.Primary))
             .Variant("With icon", v => v.Set(nameof(FluentSplitButton.IconStart), FluentIconCatalogue.All["Checkmark"]))
             .Variant("Small", v => v.Set(nameof(FluentSplitButton.Size), ButtonSize.Small));
 
@@ -847,19 +857,19 @@ public static class FluentPlaygroundConfig
             .Slot(nameof(FluentToggleButton.ChildContent), b => b.AddContent(0, "Bold"), "Bold")
             .Variant("Pressed", v => v.Set(nameof(FluentToggleButton.Pressed), true))
             .Variant("Mixed", v => v.Set(nameof(FluentToggleButton.Mixed), true))
-            .Variant("Accent", v => v.Set(nameof(FluentToggleButton.Appearance), ButtonAppearance.Primary));
+            .Variant("Primary", v => v.Set(nameof(FluentToggleButton.Appearance), ButtonAppearance.Primary));
 
         options.For<FluentCompoundButton>()
             .Slot(nameof(FluentCompoundButton.Description), b => b.AddContent(0, "Choose how notifications reach you."), "Choose how notifications reach you.")
             .Parameter(nameof(FluentCompoundButton.Label), "Notification settings")
             .Variant("With icon", v => v.Set(nameof(FluentCompoundButton.IconStart), FluentIconCatalogue.All["Settings"]))
-            .Variant("Accent", v => v.Set(nameof(FluentCompoundButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Primary", v => v.Set(nameof(FluentCompoundButton.Appearance), ButtonAppearance.Primary))
             .Variant("Disabled", v => v.Set(nameof(FluentCompoundButton.Disabled), true));
 
         options.For<FluentAnchorButton>()
             .Slot(nameof(FluentAnchorButton.ChildContent), b => b.AddContent(0, "Download"), "Download")
             .Parameter(nameof(FluentAnchorButton.Href), "https://learn.microsoft.com/fluentui-blazor")
-            .Variant("Accent", v => v.Set(nameof(FluentAnchorButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Primary", v => v.Set(nameof(FluentAnchorButton.Appearance), ButtonAppearance.Primary))
             .Variant("Open in new tab", v => v.Set(nameof(FluentAnchorButton.Target), LinkTarget.Blank))
             .Variant("With icon", v => v.Set(nameof(FluentAnchorButton.IconStart), FluentIconCatalogue.All["ArrowDown"]));
 
@@ -872,7 +882,11 @@ public static class FluentPlaygroundConfig
 
         options.For<FluentAccordion>()
             .Slot(nameof(FluentAccordion.ChildContent), FluentDemoFragments.AccordionItems, FluentDemoFragmentSources.AccordionItems)
-            .Variant("Multiple expanded", v => v.Set(nameof(FluentAccordion.ExpandMode), AccordionExpandMode.Multi))
+            // ExpandMode defaults to null on the C# side, but the web component's own
+            // connectedCallback falls back to "multi" when unset — Multi is therefore already
+            // the default and would render identically to the un-varied specimen. Single is the
+            // value that actually differs.
+            .Variant("Single expanded", v => v.Set(nameof(FluentAccordion.ExpandMode), AccordionExpandMode.Single))
             .Variant("Block", v => v.Set(nameof(FluentAccordion.Block), true))
             .Variant("Marker at the end", v => v.Set(nameof(FluentAccordion.MarkerPosition), AccordionItemMarkerPosition.End));
 
@@ -971,7 +985,10 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentTooltip.Anchor), "fluentui-demo-tooltip-anchor")
             .Parameter(nameof(FluentTooltip.UseTooltipService), false)
             .Slot(nameof(FluentTooltip.ChildContent), b => b.AddContent(0, "A helpful hint"), "A helpful hint")
-            .Variant("Above", v => v.Set(nameof(FluentTooltip.Positioning), Positioning.Above))
+            // Positioning is null by default, and the shipped bundle's JS fallback
+            // (`n[o] ?? n.above`) resolves an UNSET positioning to "above" — so an explicit
+            // Above variant risks reproducing the default box exactly. After is unambiguous.
+            .Variant("After", v => v.Set(nameof(FluentTooltip.Positioning), Positioning.After))
             .Variant("Below", v => v.Set(nameof(FluentTooltip.Positioning), Positioning.Below))
             .Variant("Long delay", v => v.Set(nameof(FluentTooltip.Delay), 1000));
 

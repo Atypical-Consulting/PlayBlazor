@@ -87,9 +87,11 @@ public static class FluentDemoFragmentSources
 
     public const string MenuContent = """
 <FluentMenuButton>Options</FluentMenuButton>
-<FluentMenuItem Label="Cut" />
-<FluentMenuItem Label="Copy" />
-<FluentMenuItem Label="Paste" />
+<FluentMenuList>
+    <FluentMenuItem Label="Cut" />
+    <FluentMenuItem Label="Copy" />
+    <FluentMenuItem Label="Paste" />
+</FluentMenuList>
 """;
 
     public const string MenuListItems = """
@@ -99,9 +101,11 @@ public static class FluentDemoFragmentSources
 """;
 
     public const string SplitButtonItems = """
-<FluentMenuItem Label="Save As..." />
-<FluentMenuItem Label="Save a Copy" />
-<FluentMenuItem Label="Save as Template" />
+<FluentMenuList>
+    <FluentMenuItem Label="Save As..." />
+    <FluentMenuItem Label="Save a Copy" />
+    <FluentMenuItem Label="Save as Template" />
+</FluentMenuList>
 """;
 
     public const string AccordionItems = """

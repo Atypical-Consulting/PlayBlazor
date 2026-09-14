@@ -79,11 +79,16 @@
         </FluentTab>
     </text>;
 
+    // fluent-menu's default slot only marks its FIRST child element popover (and hides it until
+    // opened) — every subsequent element renders as a loose, always-visible row instead. A single
+    // FluentMenuList wrapping all the items is the shape the web component actually expects.
     public static RenderFragment MenuContent => @<text>
         <FluentMenuButton>Options</FluentMenuButton>
-        <FluentMenuItem Label="Cut" />
-        <FluentMenuItem Label="Copy" />
-        <FluentMenuItem Label="Paste" />
+        <FluentMenuList>
+            <FluentMenuItem Label="Cut" />
+            <FluentMenuItem Label="Copy" />
+            <FluentMenuItem Label="Paste" />
+        </FluentMenuList>
     </text>;
 
     public static RenderFragment MenuListItems => @<text>
@@ -92,10 +97,14 @@
         <FluentMenuItem Label="Sort by size" />
     </text>;
 
+    // Same FluentMenuList requirement as MenuContent above — FluentSplitButton forwards
+    // ChildContent straight into its internal FluentMenu's default slot.
     public static RenderFragment SplitButtonItems => @<text>
-        <FluentMenuItem Label="Save As..." />
-        <FluentMenuItem Label="Save a Copy" />
-        <FluentMenuItem Label="Save as Template" />
+        <FluentMenuList>
+            <FluentMenuItem Label="Save As..." />
+            <FluentMenuItem Label="Save a Copy" />
+            <FluentMenuItem Label="Save as Template" />
+        </FluentMenuList>
     </text>;
 
     public static RenderFragment AccordionItems => @<text>
