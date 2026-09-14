@@ -481,7 +481,13 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentCounterBadge.Count), 4)
             .Variant("Overflow", v => v.Set(nameof(FluentCounterBadge.Count), 128).Set(nameof(FluentCounterBadge.OverflowCount), 99))
             .Variant("Dot", v => v.Set(nameof(FluentCounterBadge.Dot), true))
-            .Variant("Show zero", v => v.Set(nameof(FluentCounterBadge.Count), 0).Set(nameof(FluentCounterBadge.ShowZero), true));
+            // GetCount() (decompiled) returns Count only when ShowWhen(Count) is true, and the
+            // default ShowWhen is `Count => Count > 0` — Count=0 always fails that predicate, so
+            // ShowZero alone (it only gates whether the badge SHELL renders, via _render) never
+            // makes the "count" attribute appear. ShowWhen must be overridden too.
+            .Variant("Show zero", v => v.Set(nameof(FluentCounterBadge.Count), 0)
+                .Set(nameof(FluentCounterBadge.ShowZero), true)
+                .Set(nameof(FluentCounterBadge.ShowWhen), (Func<int?, bool>)(count => count.HasValue)));
 
         // FluentPresenceBadge.Status already defaults to Available and picks its own icon
         // internally (GetPresenceIcon), so it looks like itself with no preset — only variants.
@@ -546,12 +552,20 @@ public static class FluentPlaygroundConfig
             .Variant("Wrap", v => v.Set(nameof(FluentStack.Wrap), true));
 
         // FluentSpacer renders an empty div: its whole job is to occupy space inside a flex
-        // parent (FluentStack), so there is no meaningful ChildContent to preset — only Width,
-        // the value that actually makes it occupy something on a bare bench.
+        // parent (FluentStack), so there is no meaningful ChildContent to preset. Its StyleValue
+        // (decompiled) only ever writes "width" when Orientation is Horizontal and "height" when
+        // Orientation is Vertical — Horizontal's default, paired with a Width-only preset, NEVER
+        // gets a height style at all, so the standalone div collapses to zero height and is
+        // invisible (this was the actual bug: setting Width alone did not "need a second
+        // attribute", it needed the ONE orientation whose own dimension a bare div renders).
+        // Vertical is the only orientation whose dimension (Height) is written unconditionally on
+        // a bare div — a <div style="height:40px"> is a full-width band regardless of any flex
+        // parent — so that is the one that actually shows something standalone.
         options.For<FluentSpacer>()
-            .Parameter(nameof(FluentSpacer.Width), "40px")
-            .Variant("Vertical", v => v.Set(nameof(FluentSpacer.Orientation), Orientation.Vertical).Set(nameof(FluentSpacer.Height), "40px"))
-            .Variant("Wide", v => v.Set(nameof(FluentSpacer.Width), "120px"));
+            .Parameter(nameof(FluentSpacer.Orientation), Orientation.Vertical)
+            .Parameter(nameof(FluentSpacer.Height), "40px")
+            .Variant("Tall", v => v.Set(nameof(FluentSpacer.Height), "120px"))
+            .Variant("Short", v => v.Set(nameof(FluentSpacer.Height), "8px"));
 
         // FluentLayout defaults Height to "100dvh" when unset (OnParametersSet-free — see
         // StyleValue), which would blow out the workspace stage; bound it for the bench.
@@ -650,7 +664,12 @@ public static class FluentPlaygroundConfig
             .Slot(nameof(FluentMultiSplitter.ChildContent), FluentDemoFragments.SplitterPanes, FluentDemoFragmentSources.SplitterPanes)
             .Parameter(nameof(FluentMultiSplitter.Height), "200px")
             .Variant("Vertical", v => v.Set(nameof(FluentMultiSplitter.Orientation), Orientation.Vertical))
-            .Variant("Thick bar", v => v.Set(nameof(FluentMultiSplitter.BarSize), "12"));
+            // BarSize feeds --fluent-multi-splitter-bar-size, consumed by the shipped
+            // bundle.scp.css directly as `width:var(--fluent-multi-splitter-bar-size)` with no
+            // calc()/unit wrapper (its own default is `var(--spacingVerticalS)`, a real length
+            // token) — a bare number is an invalid CSS length and the property is dropped, so
+            // this needs an explicit unit.
+            .Variant("Thick bar", v => v.Set(nameof(FluentMultiSplitter.BarSize), "12px"));
 
         // FluentMultiSplitterPane's [CascadingParameter] Splitter is nullable and null-checked
         // throughout (Next(), IsLast, IsResizable, …), so it renders alone without throwing — but

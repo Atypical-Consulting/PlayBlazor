@@ -59,9 +59,11 @@ public class FluentPresetTests
     [TestCase(typeof(FluentHighlighter))]
     [TestCase(typeof(FluentImage))]
     [TestCase(typeof(FluentSkeleton))]
-#pragma warning disable CS0618 // FluentProgress/FluentProgressRing are obsolete (renamed) but still curated per the brief.
+#pragma warning disable CS0618 // FluentProgress is obsolete (renamed to FluentProgressBar) but still curated per the brief.
     [TestCase(typeof(FluentProgress))]
+#pragma warning restore CS0618
     [TestCase(typeof(FluentProgressBar))]
+#pragma warning disable CS0618 // FluentProgressRing is obsolete (renamed to FluentSpinner) but still curated per the brief.
     [TestCase(typeof(FluentProgressRing))]
 #pragma warning restore CS0618
     [TestCase(typeof(FluentSpinner))]
