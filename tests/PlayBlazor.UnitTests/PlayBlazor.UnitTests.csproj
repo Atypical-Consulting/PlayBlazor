@@ -10,6 +10,16 @@
          and fails with "Conflicting assets with the same target path" the moment a second
          WebAssembly app is referenced alongside the first. -->
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+    <!-- CodeGen/Corpus/*.razor compiles every snippet the showcases can generate, so that markup
+         which does not build breaks the build (see SnippetCorpusTests). Two of those snippets
+         leave an [EditorRequired] parameter unset, and RZ2012 would be an error here under
+         TreatWarningsAsErrors: FluentSortableList.ItemTemplate and TemplateColumn.ChildContent are
+         RenderFragment<T>, which ParameterDictionaryBuilder.BuildSlot cannot fill, and
+         FluentAppBarItem.IconRest is an Icon, which FormatValue deliberately omits rather than
+         print a type name that does not compile. Both gaps are recorded beside the components in
+         FluentPlaygroundConfig; neither is a syntax error, so suppressing RZ2012 costs this corpus
+         nothing it was built to catch. -->
+    <NoWarn>$(NoWarn);RZ2012</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,0 +1,589 @@
+@* Every Razor snippet the Fluent UI showcase can generate, verbatim.
+
+   This file exists to be COMPILED: it is the proof that what a visitor copies out of the code
+   panel actually builds. Do not hand-edit the block between the markers — SnippetCorpusTests
+   regenerates it and will fail if it drifts. Fix the curation, not the corpus.
+
+   The @code block at the bottom stands in for the fields a host declares beside its own bench;
+   the snippets reference them by the @_camelCase names the generator emits for values that have
+   no literal form. Their names are part of the generated output, so if one changes here it is
+   because the curation changed there.
+*@
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Dialog.MessageBox
+@using Microsoft.FluentUI.AspNetCore.Components.Utilities
+@using PlayBlazor.Demo.FluentUI
+
+@* FluentProgress and FluentProgressRing are [Obsolete] (renamed), and deliberately still curated
+   — see the comment beside them in FluentPlaygroundConfig. Their snippets are just as real. *@
+@{
+#pragma warning disable CS0618
+}
+
+@* ==> generated snippets begin — see SnippetCorpusTests <== *@
+
+@* AddTag *@
+<AddTag Name="fluent-badge-container" />
+
+@* FluentAccordion *@
+<FluentAccordion>
+    <FluentAccordionItem Header="Shipping details" Expanded="true">
+        <FluentText Block="true">Ships within 2 business days via standard courier.</FluentText>
+    </FluentAccordionItem>
+    <FluentAccordionItem Header="Return policy">
+        <FluentText Block="true">Items can be returned within 30 days of delivery.</FluentText>
+    </FluentAccordionItem>
+</FluentAccordion>
+
+@* FluentAccordionItem *@
+<FluentAccordionItem Header="Shipping details" Expanded="true">Ships within 2 business days via standard courier.</FluentAccordionItem>
+
+@* FluentAnchorButton *@
+<FluentAnchorButton Href="https://learn.microsoft.com/fluentui-blazor">Download</FluentAnchorButton>
+
+@* FluentAppBar *@
+<FluentAppBar>
+    <FluentAppBarItem Text="Home" IconRest="@HomeIcon" />
+    <FluentAppBarItem Text="Search" IconRest="@SearchIcon" />
+    <FluentAppBarItem Text="Settings" IconRest="@SettingsIcon" />
+</FluentAppBar>
+
+@* FluentAppBarItem *@
+<FluentAppBar>
+    <FluentAppBarItem Text="Chat" />
+</FluentAppBar>
+
+@* FluentAutocomplete *@
+<FluentAutocomplete TOption="string"
+                    TValue="string"
+                    Placeholder="Type to search..."
+                    Items="@_colors"
+                    Label="Colors" />
+
+@* FluentAvatar *@
+<FluentAvatar Name="Ada Lovelace" />
+
+@* FluentBadge *@
+<FluentBadge Content="New" />
+
+@* FluentButton *@
+<FluentButton>Click me</FluentButton>
+
+@* FluentCalendar *@
+<FluentCalendar TValue="DateTime?" Label="Choose a date" />
+
+@* FluentCard *@
+<FluentCard Width="280px">
+    <FluentBadge Appearance="BadgeAppearance.Tint" Color="BadgeColor.Brand">New</FluentBadge>
+    <FluentText Weight="TextWeight.Semibold" Block="true">Old paint</FluentText>
+    <FluentText Size="TextSize.Size200">A study of layered paint on wood, found in a Copenhagen attic.</FluentText>
+</FluentCard>
+
+@* FluentCheckbox *@
+<FluentCheckbox Label="I agree to the terms" />
+
+@* FluentColorPicker *@
+<FluentColorPicker SelectedColor="#6d4aff" />
+
+@* FluentColorPickerInput *@
+<FluentColorPickerInput Label="Brand color" Value="#0078D4" />
+
+@* FluentCombobox *@
+<FluentCombobox TOption="string"
+                TValue="string"
+                Placeholder="Select your color"
+                Items="@_colors"
+                Label="Color" />
+
+@* FluentCompoundButton *@
+<FluentCompoundButton Label="Notification settings">
+    <Description>
+        Choose how notifications reach you.
+    </Description>
+</FluentCompoundButton>
+
+@* FluentCounterBadge *@
+<FluentCounterBadge Count="4" />
+
+@* FluentDataGrid *@
+<FluentDataGrid TGridItem="Person" Items="@_people">
+    <PropertyColumn Property="p => p.Name" />
+    <PropertyColumn Property="p => p.Role" />
+    <PropertyColumn Property="p => p.Age" />
+</FluentDataGrid>
+
+@* FluentDataGridCell *@
+<FluentDataGrid Items="@_people">
+    <FluentDataGridRow>
+        <FluentDataGridCell TGridItem="Person"
+                            Item="@_item"
+                            CellTitle="Employee name">Ada Lovelace</FluentDataGridCell>
+    </FluentDataGridRow>
+</FluentDataGrid>
+
+@* FluentDataGridRow *@
+<FluentDataGrid Items="@_people">
+    <FluentDataGridRow TGridItem="Person" Item="@_item">
+        <FluentDataGridCell>Ada Lovelace</FluentDataGridCell>
+        <FluentDataGridCell>Analyst</FluentDataGridCell>
+    </FluentDataGridRow>
+</FluentDataGrid>
+
+@* FluentDatePicker *@
+<FluentDatePicker TValue="DateTime?" Label="Production date" />
+
+@* FluentDialog *@
+<FluentDialog>
+    <FluentDialogBody>
+        <FluentText Block="true">This action permanently deletes the selected file. It cannot be undone.</FluentText>
+    </FluentDialogBody>
+</FluentDialog>
+
+@* FluentDialogBody *@
+<FluentDialogBody>
+    <ChildContent>
+        This action permanently deletes the selected file. It cannot be undone.
+    </ChildContent>
+    <TitleTemplate>
+        Delete file?
+    </TitleTemplate>
+</FluentDialogBody>
+
+@* FluentDivider *@
+<FluentDivider>OR</FluentDivider>
+
+@* FluentDragContainer *@
+<FluentDragContainer TItem="string">
+    <FluentDropZone Item="@("To do")" Droppable="true">
+        <FluentText Block="true">Design mockups</FluentText>
+    </FluentDropZone>
+    <FluentDropZone Item="@("Doing")" Droppable="true">
+        <FluentText Block="true">Implement API</FluentText>
+    </FluentDropZone>
+    <FluentDropZone Item="@("Done")" Droppable="true">
+        <FluentText Block="true">Ship v1</FluentText>
+    </FluentDropZone>
+</FluentDragContainer>
+
+@* FluentDropZone *@
+<FluentDragContainer TItem="string">
+    <FluentDropZone TItem="string"
+                    Item="@("Design mockups")"
+                    Droppable="true"
+                    Draggable="true">Design mockups</FluentDropZone>
+</FluentDragContainer>
+
+@* FluentErrorBoundary *@
+<FluentErrorBoundary>Everything below this line is guarded.</FluentErrorBoundary>
+
+@* FluentField *@
+<FluentField Label="Email"><FluentTextInput Placeholder="you@@example.com" /></FluentField>
+
+@* FluentGrid *@
+<FluentGrid Spacing="2">
+    <FluentGridItem Xs="4"><FluentCard>Column 1</FluentCard></FluentGridItem>
+    <FluentGridItem Xs="4"><FluentCard>Column 2</FluentCard></FluentGridItem>
+    <FluentGridItem Xs="4"><FluentCard>Column 3</FluentCard></FluentGridItem>
+</FluentGrid>
+
+@* FluentGridItem *@
+<FluentGrid>
+    <FluentGridItem Xs="6">Column content</FluentGridItem>
+</FluentGrid>
+
+@* FluentHighlighter *@
+<FluentHighlighter HighlightedText="fox" Text="The quick brown fox jumps over the lazy dog" />
+
+@* FluentImage *@
+<FluentImage Width="280px"
+             Source="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22280%22%20height%3D%22160%22%3E%3Crect%20width%3D%22280%22%20height%3D%22160%22%20fill%3D%22%230078d4%22%2F%3E%3Ccircle%20cx%3D%2270%22%20cy%3D%2255%22%20r%3D%2228%22%20fill%3D%22%2350a0e0%22%2F%3E%3Cpath%20d%3D%22M0%20160%2090%2080l60%2050%2050-36%2080%2066z%22%20fill%3D%22%23004c8c%22%2F%3E%3Ctext%20x%3D%2214%22%20y%3D%22146%22%20font-family%3D%22monospace%22%20font-size%3D%2213%22%20fill%3D%22%23fff%22%3Eplayblazor.svg%3C%2Ftext%3E%3C%2Fsvg%3E"
+             AlternateText="Sample image" />
+
+@* FluentInputFile *@
+<FluentInputFile Height="200px" Accept="image/*">Drag files here, or click to browse.</FluentInputFile>
+
+@* FluentKeyCode *@
+<FluentKeyCode>Press any key</FluentKeyCode>
+
+@* FluentLabel *@
+<FluentLabel>Selected fruit: Banana</FluentLabel>
+
+@* FluentLabelInfo *@
+<FluentLabelInfo InfoText="Deleted items are recoverable until this period elapses.">Retention period</FluentLabelInfo>
+
+@* FluentLayout *@
+<FluentLayout Height="320px">
+    <FluentLayoutItem Area="LayoutArea.Header">
+        <FluentText Weight="TextWeight.Semibold" Block="true">Header</FluentText>
+    </FluentLayoutItem>
+    <FluentLayoutItem Area="LayoutArea.Navigation" Width="160px">
+        <FluentText Block="true">Navigation</FluentText>
+    </FluentLayoutItem>
+    <FluentLayoutItem Area="LayoutArea.Content">
+        <FluentText Block="true">Content</FluentText>
+    </FluentLayoutItem>
+    <FluentLayoutItem Area="LayoutArea.Footer">
+        <FluentText Block="true">Footer</FluentText>
+    </FluentLayoutItem>
+</FluentLayout>
+
+@* FluentLayoutHamburger *@
+<FluentLayoutHamburger PanelHeader="Navigation">
+    <FluentNav>
+        <FluentNavItem>Dashboard</FluentNavItem>
+        <FluentNavItem>Reports</FluentNavItem>
+        <FluentNavItem>Settings</FluentNavItem>
+    </FluentNav>
+</FluentLayoutHamburger>
+
+@* FluentLayoutItem *@
+<FluentLayout Height="200px">
+    <FluentLayoutItem Area="LayoutArea.Content">Panel content</FluentLayoutItem>
+</FluentLayout>
+
+@* FluentLink *@
+<FluentLink Href="https://learn.microsoft.com/fluentui-blazor">Learn more</FluentLink>
+
+@* FluentListbox *@
+<FluentListbox TOption="string"
+               TValue="string"
+               Items="@_colors"
+               Label="Color" />
+
+@* FluentMenu *@
+<FluentMenu>
+    <FluentMenuButton>Options</FluentMenuButton>
+    <FluentMenuList>
+        <FluentMenuItem Label="Cut" />
+        <FluentMenuItem Label="Copy" />
+        <FluentMenuItem Label="Paste" />
+    </FluentMenuList>
+</FluentMenu>
+
+@* FluentMenuButton *@
+<FluentMenuButton>More options</FluentMenuButton>
+
+@* FluentMenuItem *@
+<FluentMenuItem Label="Cut" />
+
+@* FluentMenuList *@
+<FluentMenuList>
+    <FluentMenuItem Label="Sort by name" />
+    <FluentMenuItem Label="Sort by date" />
+    <FluentMenuItem Label="Sort by size" />
+</FluentMenuList>
+
+@* FluentMessageBar *@
+<FluentMessageBar Title="Action required">Your subscription expires in 3 days.</FluentMessageBar>
+
+@* FluentMessageBox *@
+<FluentMessageBox />
+
+@* FluentMultiSplitter *@
+<FluentMultiSplitter Height="200px">
+    <FluentMultiSplitterPane>
+        <FluentText Block="true">Left pane</FluentText>
+    </FluentMultiSplitterPane>
+    <FluentMultiSplitterPane>
+        <FluentText Block="true">Right pane</FluentText>
+    </FluentMultiSplitterPane>
+</FluentMultiSplitter>
+
+@* FluentMultiSplitterPane *@
+<FluentMultiSplitter Height="200px">
+    <FluentMultiSplitterPane Size="50%">Pane content</FluentMultiSplitterPane>
+    <FluentMultiSplitterPane>Other pane</FluentMultiSplitterPane>
+</FluentMultiSplitter>
+
+@* FluentNav *@
+<FluentNav Width="240px">
+    <FluentNavSectionHeader Title="General" />
+    <FluentNavItem>Dashboard</FluentNavItem>
+    <FluentNavItem>Reports</FluentNavItem>
+    <FluentNavCategory Title="Settings" Expanded="true">
+        <FluentNavItem>Profile</FluentNavItem>
+        <FluentNavItem>Security</FluentNavItem>
+    </FluentNavCategory>
+</FluentNav>
+
+@* FluentNavCategory *@
+<FluentNav>
+    <FluentNavCategory Title="Settings" Expanded="true">
+        <FluentNavItem>Profile</FluentNavItem>
+        <FluentNavItem>Security</FluentNavItem>
+    </FluentNavCategory>
+</FluentNav>
+
+@* FluentNavItem *@
+<FluentNav>
+    <FluentNavItem>Dashboard</FluentNavItem>
+</FluentNav>
+
+@* FluentNavSectionHeader *@
+<FluentNav>
+    <FluentNavSectionHeader Title="General" />
+</FluentNav>
+
+@* FluentNumberInput *@
+<FluentNumberInput TValue="int"
+                   Min="0"
+                   Max="100"
+                   Label="Quantity"
+                   Value="42" />
+
+@* FluentOption *@
+<FluentOption TValue="string"
+              Value="@("red")"
+              Text="Red" />
+
+@* FluentOverflow *@
+<FluentOverflow>
+    <FluentButton Appearance="ButtonAppearance.Primary">Home</FluentButton>
+    <FluentButton>Products</FluentButton>
+    <FluentButton>Services</FluentButton>
+    <FluentButton>About</FluentButton>
+    <FluentButton>Contact</FluentButton>
+</FluentOverflow>
+
+@* FluentOverlay *@
+<FluentOverlay Visible="true">Saving changes...</FluentOverlay>
+
+@* FluentPaginator *@
+<FluentPaginator State="@_paginationState" />
+
+@* FluentPopover *@
+<div>
+    <FluentButton Id="fluentui-demo-popover-anchor">Show details</FluentButton>
+    <FluentPopover AnchorId="fluentui-demo-popover-anchor" Opened="true">
+        <FluentText Weight="TextWeight.Semibold" Block="true">Storage details</FluentText>
+        <FluentText Size="TextSize.Size200">64.2 GB used of 100 GB available.</FluentText>
+    </FluentPopover>
+</div>
+
+@* FluentPresenceBadge *@
+<FluentPresenceBadge />
+
+@* FluentProgress *@
+<FluentProgress />
+
+@* FluentProgressBar *@
+<FluentProgressBar />
+
+@* FluentProgressRing *@
+<FluentProgressRing />
+
+@* FluentPullToRefresh *@
+<FluentPullToRefresh>Pull down to refresh the feed.</FluentPullToRefresh>
+
+@* FluentRadio *@
+<FluentRadioGroup TValue="string">
+    <FluentRadio TValue="string"
+                 Label="Apple"
+                 Value="@("Apple")" />
+</FluentRadioGroup>
+
+@* FluentRadioGroup *@
+<FluentRadioGroup TValue="string"
+                  Wrap="true"
+                  Label="Favorite fruit">
+    <FluentRadio Label="Apple" />
+    <FluentRadio Label="Banana" />
+    <FluentRadio Label="Orange" Disabled="true" />
+    <FluentRadio Label="Kiwi" />
+</FluentRadioGroup>
+
+@* FluentRatingDisplay *@
+<FluentRatingDisplay Count="128"
+                     Max="5"
+                     Value="3.5" />
+
+@* FluentSelect *@
+<FluentSelect TOption="string"
+              TValue="string"
+              Placeholder="Select a color"
+              Items="@_colors"
+              Label="Color" />
+
+@* FluentSkeleton *@
+<FluentSkeleton Width="220px" />
+
+@* FluentSlider *@
+<FluentSlider TValue="int"
+              Label="Volume"
+              Value="50" />
+
+@* FluentSortableList *@
+<FluentSortableList TItem="string"
+                    AriaLabel="Project tasks"
+                    Items="@_tasks" />
+
+@* FluentSpacer *@
+<div style="display:grid; grid-template-columns:auto minmax(40px,max-content) auto; align-items:stretch; justify-items:stretch; gap:8px">
+    <FluentCard Width="120px">Before</FluentCard>
+    <FluentSpacer Height="40px" Orientation="Orientation.Vertical" />
+    <FluentCard Width="120px">After</FluentCard>
+</div>
+
+@* FluentSpinner *@
+<FluentSpinner />
+
+@* FluentSplitButton *@
+<FluentSplitButton Label="Save">
+    <FluentMenuList>
+        <FluentMenuItem Label="Save As..." />
+        <FluentMenuItem Label="Save a Copy" />
+        <FluentMenuItem Label="Save as Template" />
+    </FluentMenuList>
+</FluentSplitButton>
+
+@* FluentStack *@
+<FluentStack>
+    <FluentCard Width="120px">Item 1</FluentCard>
+    <FluentCard Width="120px">Item 2</FluentCard>
+    <FluentCard Width="120px">Item 3</FluentCard>
+</FluentStack>
+
+@* FluentSwitch *@
+<FluentSwitch Label="Notifications" />
+
+@* FluentTab *@
+<FluentTab Header="Home" />
+
+@* FluentTabs *@
+<FluentTabs>
+    <FluentTab Header="Home">
+        <FluentText Block="true">Welcome back! Here's what's new today.</FluentText>
+    </FluentTab>
+    <FluentTab Header="Profile">
+        <FluentText Block="true">Manage your account details and preferences.</FluentText>
+    </FluentTab>
+    <FluentTab Header="Settings">
+        <FluentText Block="true">Configure notifications and privacy options.</FluentText>
+    </FluentTab>
+</FluentTabs>
+
+@* FluentText *@
+<FluentText>The quick brown fox jumps over the lazy dog</FluentText>
+
+@* FluentTextArea *@
+<FluentTextArea Label="Description" Value="A brief description of the specimen." />
+
+@* FluentTextInput *@
+<FluentTextInput Placeholder="Ada Lovelace" Label="Name" />
+
+@* FluentTimePicker *@
+<FluentTimePicker TValue="DateTime?"
+                  Increment="15"
+                  Label="Pick a time" />
+
+@* FluentToast *@
+<FluentToast Opened="true" Title="File saved">Your changes have been saved.</FluentToast>
+
+@* FluentToggleButton *@
+<FluentToggleButton>Bold</FluentToggleButton>
+
+@* FluentTooltip *@
+<div>
+    <FluentButton Id="fluentui-demo-tooltip-anchor">Hover me</FluentButton>
+    <FluentTooltip UseTooltipService="false" Anchor="fluentui-demo-tooltip-anchor">A helpful hint</FluentTooltip>
+</div>
+
+@* FluentTreeItem *@
+<FluentTreeItem Text="Documents" Expanded="true">
+    <FluentTreeItem Text="Resume.docx" />
+    <FluentTreeItem Text="CoverLetter.docx" />
+</FluentTreeItem>
+
+@* FluentTreeView *@
+<FluentTreeView>
+    <FluentTreeItem Text="Documents" Expanded="true">
+        <FluentTreeItem Text="Resume.docx" />
+        <FluentTreeItem Text="CoverLetter.docx" />
+    </FluentTreeItem>
+    <FluentTreeItem Text="Pictures" />
+</FluentTreeView>
+
+@* FluentValidationMessage *@
+<EditForm Model="@_model">
+    <FluentValidationMessage TValue="string" Field="@_field" />
+</EditForm>
+
+@* FluentValidationSummary *@
+<EditForm Model="@_model">
+    <FluentValidationSummary />
+</EditForm>
+
+@* FluentWizard *@
+<FluentWizard>
+    <Steps>
+        <FluentWizardStep Label="Account" Summary="Create your account">
+            <FluentText Block="true">Enter your name and email address.</FluentText>
+        </FluentWizardStep>
+        <FluentWizardStep Label="Profile" Summary="Tell us about you">
+            <FluentText Block="true">Add a photo and a short bio.</FluentText>
+        </FluentWizardStep>
+        <FluentWizardStep Label="Review" Summary="Confirm and finish">
+            <FluentText Block="true">Review your details before finishing.</FluentText>
+        </FluentWizardStep>
+    </Steps>
+</FluentWizard>
+
+@* FluentWizardStep *@
+<FluentWizard>
+    <Steps>
+        <FluentWizardStep Label="Account" Summary="Create your account">Enter your name and email address.</FluentWizardStep>
+    </Steps>
+</FluentWizard>
+
+@* FluentWizardStepValidator *@
+<FluentWizard>
+    <Steps>
+        <FluentWizardStep Label="Step 1">
+            <EditForm Model="_model">
+                <FluentWizardStepValidator />
+            </EditForm>
+        </FluentWizardStep>
+    </Steps>
+</FluentWizard>
+
+@* HierarchicalSelectColumn *@
+<FluentDataGrid Items="@_people">
+    <HierarchicalSelectColumn TGridItem="Person" Property="@_isSelected" />
+</FluentDataGrid>
+
+@* PropertyColumn *@
+<FluentDataGrid Items="@_people">
+    <PropertyColumn TGridItem="Person"
+                    TProp="string"
+                    Property="@_property" />
+</FluentDataGrid>
+
+@* SelectColumn *@
+<FluentDataGrid Items="@_people">
+    <SelectColumn TGridItem="Person" Property="@_isSelected" />
+</FluentDataGrid>
+
+@* TemplateColumn *@
+<FluentDataGrid Items="@_people">
+    <TemplateColumn TGridItem="Person" Title="Bio" />
+</FluentDataGrid>
+@* ==> generated snippets end <== *@
+
+@code {
+    private readonly IQueryable<Person> _people = Array.Empty<Person>().AsQueryable();
+    private readonly Person _item = new("Ada Lovelace", "Analyst", 36);
+    private readonly Func<Person, bool> _isSelected = _ => false;
+    private readonly Expression<Func<Person, string>> _property = p => p.Name;
+    private readonly string[] _colors = ["Red", "Green", "Blue"];
+    private readonly string[] _tasks = ["Design", "Build", "Ship"];
+    private readonly PaginationState _paginationState = new();
+    private readonly object _model = new();
+    private readonly FieldIdentifier? _field = null;
+    @* CoreIcons is internal to the library, so a consumer cannot name it: the showcase's own
+       hand-written catalogue is what a host would reach for, and is what the demo uses. *@
+    private static readonly Icon HomeIcon = FluentIconCatalogue.All["Circle"];
+    private static readonly Icon SearchIcon = FluentIconCatalogue.All["Search"];
+    private static readonly Icon SettingsIcon = FluentIconCatalogue.All["Settings"];
+}

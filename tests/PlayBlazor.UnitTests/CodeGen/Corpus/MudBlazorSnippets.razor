@@ -1,0 +1,373 @@
+@* Every Razor snippet the MudBlazor showcase can generate, verbatim.
+
+   This file exists to be COMPILED: it is the proof that what a visitor copies out of the code
+   panel actually builds. Do not hand-edit the block between the markers — SnippetCorpusTests
+   regenerates it and will fail if it drifts. Fix the curation, not the corpus.
+
+   The @code block at the bottom stands in for the fields a host declares beside its own bench;
+   the snippets reference them by the @_camelCase names the generator emits for values that have
+   no literal form. Their names are part of the generated output, so if one changes here it is
+   because the curation changed there.
+*@
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+@using PlayBlazor.DemoHost
+
+@* ==> generated snippets begin — see SnippetCorpusTests <== *@
+
+@* MudAlert *@
+<MudAlert>The reactor is running at optimum temperature.</MudAlert>
+
+@* MudAppBar *@
+<MudAppBar Fixed="false">My application</MudAppBar>
+
+@* MudAutocomplete *@
+<MudAutocomplete T="string"
+                 SearchFunc="@_searchFunc"
+                 Label="US state" />
+
+@* MudAvatar *@
+<MudAvatar Color="Color.Primary">PB</MudAvatar>
+
+@* MudAvatarGroup *@
+<MudAvatarGroup>
+    <MudAvatar Color="Color.Primary">A</MudAvatar>
+    <MudAvatar Color="Color.Secondary">B</MudAvatar>
+    <MudAvatar Color="Color.Tertiary">C</MudAvatar>
+</MudAvatarGroup>
+
+@* MudBadge *@
+<MudBadge Color="Color.Primary"
+          Overlap="true"
+          Content="@_content"><MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" /></MudBadge>
+
+@* MudBreadcrumbs *@
+<MudBreadcrumbs Items="@_items" />
+
+@* MudButton *@
+<MudButton>Click me</MudButton>
+
+@* MudButtonGroup *@
+<MudButtonGroup>
+    <MudButton>One</MudButton>
+    <MudButton>Two</MudButton>
+    <MudButton>Three</MudButton>
+</MudButtonGroup>
+
+@* MudCard *@
+<MudCard>
+    <MudCardContent>
+        <MudText Typo="Typo.h6">Old paint</MudText>
+        <MudText Typo="Typo.body2">A study of layered paint on wood, found in a Copenhagen attic.</MudText>
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Text" Color="Color.Primary">Learn more</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@* MudCarousel *@
+<MudCarousel TData="string"
+             AutoCycle="false"
+             Style="height:200px;width:100%">
+    <MudCarouselItem Color="Color.Primary">
+        <div class="d-flex" style="height:100%"><MudText Class="ma-auto" Typo="Typo.h5">Slide one</MudText></div>
+    </MudCarouselItem>
+    <MudCarouselItem Color="Color.Secondary">
+        <div class="d-flex" style="height:100%"><MudText Class="ma-auto" Typo="Typo.h5">Slide two</MudText></div>
+    </MudCarouselItem>
+</MudCarousel>
+
+@* MudChart *@
+<MudChart T="int"
+          ChartLabels="@_chartLabels"
+          ChartSeries="@_chartSeries" />
+
+@* MudCheckBox *@
+<MudCheckBox T="bool"
+             Label="I agree to the terms"
+             Color="Color.Primary" />
+
+@* MudChip *@
+<MudChip T="string">Blazor</MudChip>
+
+@* MudChipSet *@
+<MudChipSet T="string">
+    <MudChip T="string" Color="Color.Primary">Blazor</MudChip>
+    <MudChip T="string" Color="Color.Secondary">WASM</MudChip>
+    <MudChip T="string" Color="Color.Info">.NET</MudChip>
+</MudChipSet>
+
+@* MudColorPicker *@
+<MudColorPicker Label="Brand color" PickerVariant="PickerVariant.Static" />
+
+@* MudContainer *@
+<MudContainer MaxWidth="MaxWidth.Small">A centered, max-width content container.</MudContainer>
+
+@* MudDataGrid *@
+<MudDataGrid T="Person" Items="@_people">
+    <Columns>
+        <PropertyColumn Property="x => x.Name" />
+        <PropertyColumn Property="x => x.Role" />
+        <PropertyColumn Property="x => x.Age" />
+    </Columns>
+</MudDataGrid>
+
+@* MudDatePicker *@
+<MudDatePicker Label="Select a date" />
+
+@* MudDateRangePicker *@
+<MudDateRangePicker Label="Period" />
+
+@* MudDivider *@
+<MudDivider />
+
+@* MudDrawer *@
+<MudDrawer Fixed="false">
+    <MudNavLink Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.People">Team</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+</MudDrawer>
+
+@* MudElement *@
+<MudElement HtmlTag="blockquote">Renders any HTML tag you name.</MudElement>
+
+@* MudExpansionPanels *@
+<MudExpansionPanels>
+    <MudExpansionPanel Text="How does discovery work?" Expanded="true">
+        <MudText Typo="Typo.body2">By reflecting over [Parameter] properties.</MudText>
+    </MudExpansionPanel>
+    <MudExpansionPanel Text="Does it need story files?">
+        <MudText Typo="Typo.body2">No — that is the whole point.</MudText>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@* MudFab *@
+<MudFab Color="Color.Primary" StartIcon="<path d=&quot;M0 0h24v24H0z&quot; fill=&quot;none&quot;/><path d=&quot;M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z&quot;/>" />
+
+@* MudField *@
+<MudField Label="Field label"><MudText>Read-only value inside a field</MudText></MudField>
+
+@* MudFileUpload *@
+<MudFileUpload T="IBrowserFile"
+               Accept="image/*"
+               Hidden="false" />
+
+@* MudForm *@
+<MudForm>
+    <MudTextField T="string" Label="Name" Required="true" RequiredError="Name is required" />
+    <MudTextField T="string" Label="Email" Required="true" InputType="InputType.Email" />
+</MudForm>
+
+@* MudGrid *@
+<MudGrid Spacing="2">
+    <MudItem xs="4"><MudPaper Class="pa-4 mud-theme-primary">xs-4</MudPaper></MudItem>
+    <MudItem xs="4"><MudPaper Class="pa-4 mud-theme-secondary">xs-4</MudPaper></MudItem>
+    <MudItem xs="4"><MudPaper Class="pa-4 mud-theme-tertiary">xs-4</MudPaper></MudItem>
+</MudGrid>
+
+@* MudHidden *@
+<MudHidden Breakpoint="Breakpoint.Xs">Visible unless the viewport matches the breakpoint.</MudHidden>
+
+@* MudHighlighter *@
+<MudHighlighter Text="The quick brown fox jumps over the lazy dog" HighlightedText="fox" />
+
+@* MudIcon *@
+<MudIcon Icon="<path d=&quot;M0 0h24v24H0z&quot; fill=&quot;none&quot;/><path d=&quot;M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z&quot;/>" Color="Color.Primary" />
+
+@* MudIconButton *@
+<MudIconButton Icon="<path d=&quot;M0 0h24v24H0z&quot; fill=&quot;none&quot;/><path d=&quot;M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z&quot;/>" />
+
+@* MudImage *@
+<MudImage Src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22280%22%20height%3D%22160%22%3E%3Crect%20width%3D%22280%22%20height%3D%22160%22%20fill%3D%22%236d4aff%22%2F%3E%3Ccircle%20cx%3D%2270%22%20cy%3D%2255%22%20r%3D%2228%22%20fill%3D%22%23a18bff%22%2F%3E%3Cpath%20d%3D%22M0%20160%2090%2080l60%2050%2050-36%2080%2066z%22%20fill%3D%22%234c30c4%22%2F%3E%3Ctext%20x%3D%2214%22%20y%3D%22146%22%20font-family%3D%22monospace%22%20font-size%3D%2213%22%20fill%3D%22%23fff%22%3Eplayblazor.svg%3C%2Ftext%3E%3C%2Fsvg%3E"
+          Alt="Sample image"
+          Elevation="4" />
+
+@* MudLink *@
+<MudLink Href="https://mudblazor.com">Read the MudBlazor docs</MudLink>
+
+@* MudList *@
+<MudList T="string">
+    <MudListItem T="string" Icon="@Icons.Material.Filled.Inbox" Text="Inbox" />
+    <MudListItem T="string" Icon="@Icons.Material.Filled.Send" Text="Sent" />
+    <MudListItem T="string" Icon="@Icons.Material.Filled.Delete" Text="Trash" />
+</MudList>
+
+@* MudMenu *@
+<MudMenu Label="Open menu"
+         Color="Color.Primary"
+         Variant="Variant.Filled">
+    <MudMenuItem Icon="@Icons.Material.Filled.ContentCopy">Copy</MudMenuItem>
+    <MudMenuItem Icon="@Icons.Material.Filled.ContentPaste">Paste</MudMenuItem>
+    <MudMenuItem Icon="@Icons.Material.Filled.Delete">Delete</MudMenuItem>
+</MudMenu>
+
+@* MudNavMenu *@
+<MudNavMenu>
+    <MudNavLink Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.People">Team</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+</MudNavMenu>
+
+@* MudNumericField *@
+<MudNumericField T="double" Label="Amount" />
+
+@* MudOverlay *@
+<MudOverlay><MudText Class="ma-auto" Style="color:white">Overlay content</MudText></MudOverlay>
+
+@* MudPagination *@
+<MudPagination Count="10" />
+
+@* MudPaper *@
+<MudPaper><MudText Class="pa-4">Elevation carries depth.</MudText></MudPaper>
+
+@* MudPopover *@
+<MudPopover Open="true">Popover content</MudPopover>
+
+@* MudProgressCircular *@
+<MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+
+@* MudProgressLinear *@
+<MudProgressLinear Color="Color.Primary" Value="65" />
+
+@* MudRadioGroup *@
+<MudRadioGroup T="string">
+    <MudRadio T="string" Value="@("small")">Small</MudRadio>
+    <MudRadio T="string" Value="@("medium")">Medium</MudRadio>
+    <MudRadio T="string" Value="@("large")">Large</MudRadio>
+</MudRadioGroup>
+
+@* MudRating *@
+<MudRating SelectedValue="3" />
+
+@* MudScrollToTop *@
+<MudScrollToTop Visible="true"><MudFab StartIcon="@Icons.Material.Filled.ArrowUpward" Color="Color.Primary" /></MudScrollToTop>
+
+@* MudSelect *@
+<MudSelect T="string" Label="Coffee">
+    <MudSelectItem T="string" Value="@("Espresso")">Espresso</MudSelectItem>
+    <MudSelectItem T="string" Value="@("Cappuccino")">Cappuccino</MudSelectItem>
+    <MudSelectItem T="string" Value="@("Flat white")">Flat white</MudSelectItem>
+</MudSelect>
+
+@* MudSimpleTable *@
+<MudSimpleTable>
+    <thead>
+        <tr><th>Name</th><th>Role</th><th>Age</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Ada Lovelace</td><td>Engineering</td><td>36</td></tr>
+        <tr><td>Grace Hopper</td><td>R&amp;D</td><td>85</td></tr>
+        <tr><td>Katherine Johnson</td><td>Science</td><td>101</td></tr>
+    </tbody>
+</MudSimpleTable>
+
+@* MudSkeleton *@
+<MudSkeleton Width="220px" />
+
+@* MudSlider *@
+<MudSlider T="int"
+           Value="30"
+           Color="Color.Primary" />
+
+@* MudStack *@
+<MudStack>
+    <MudPaper Class="pa-3">Item 1</MudPaper>
+    <MudPaper Class="pa-3">Item 2</MudPaper>
+    <MudPaper Class="pa-3">Item 3</MudPaper>
+</MudStack>
+
+@* MudStepper *@
+<MudStepper>
+    <MudStep Title="Point at an assembly" />
+    <MudStep Title="Play with parameters" />
+    <MudStep Title="Copy the snippet" />
+</MudStepper>
+
+@* MudSwitch *@
+<MudSwitch T="bool"
+           Label="Notifications"
+           Color="Color.Primary" />
+
+@* MudTable *@
+<MudTable T="Person" Items="@_people">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Role</MudTh>
+        <MudTh>Age</MudTh>
+    </HeaderContent>
+</MudTable>
+
+@* MudTabs *@
+<MudTabs>
+    <MudTabPanel Text="Discover">
+        <MudText Class="pa-4">Reflection finds every parameter on its own.</MudText>
+    </MudTabPanel>
+    <MudTabPanel Text="Play">
+        <MudText Class="pa-4">Every control on the right is generated.</MudText>
+    </MudTabPanel>
+    <MudTabPanel Text="Share">
+        <MudText Class="pa-4">The URL carries the exact configuration.</MudText>
+    </MudTabPanel>
+</MudTabs>
+
+@* MudText *@
+<MudText>The quick brown fox jumps over the lazy dog</MudText>
+
+@* MudTextField *@
+<MudTextField T="string" Label="Name" />
+
+@* MudTimePicker *@
+<MudTimePicker Label="Pick a time" />
+
+@* MudTimeline *@
+<MudTimeline>
+    <MudTimelineItem Color="Color.Primary">
+        <MudText Typo="Typo.body2">Discovered by reflection</MudText>
+    </MudTimelineItem>
+    <MudTimelineItem Color="Color.Secondary">
+        <MudText Typo="Typo.body2">Driven by generated controls</MudText>
+    </MudTimelineItem>
+    <MudTimelineItem Color="Color.Tertiary">
+        <MudText Typo="Typo.body2">Shared as a permalink</MudText>
+    </MudTimelineItem>
+</MudTimeline>
+
+@* MudToggleGroup *@
+<MudToggleGroup T="string" Color="Color.Primary">
+    <MudToggleItem T="string" Value="@("left")" Text="Left" />
+    <MudToggleItem T="string" Value="@("center")" Text="Center" />
+    <MudToggleItem T="string" Value="@("right")" Text="Right" />
+</MudToggleGroup>
+
+@* MudToolBar *@
+<MudToolBar>
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" />
+    <MudText Typo="Typo.h6">Title</MudText>
+    <MudSpacer />
+    <MudIconButton Icon="@Icons.Material.Filled.MoreVert" />
+</MudToolBar>
+
+@* MudTooltip *@
+<MudTooltip Text="A helpful hint"><MudButton Variant="Variant.Filled" Color="Color.Primary">Hover me</MudButton></MudTooltip>
+
+@* MudTreeView *@
+<MudTreeView T="string">
+    <MudTreeViewItem T="string" Text="src" Expanded="true">
+        <MudTreeViewItem T="string" Text="PlayBlazor" />
+        <MudTreeViewItem T="string" Text="PlayBlazor.DemoHost" />
+    </MudTreeViewItem>
+    <MudTreeViewItem T="string" Text="docs" />
+</MudTreeView>
+@* ==> generated snippets end <== *@
+
+@code {
+    private readonly IEnumerable<Person> _people = [];
+    private readonly IReadOnlyList<BreadcrumbItem> _items = [];
+    private readonly string[] _chartLabels = ["Jan", "Feb", "Mar", "Apr", "May"];
+    private readonly List<ChartSeries<int>> _chartSeries = [];
+    private readonly Expression<Func<Person, string>> _property = p => p.Name;
+    private readonly Func<string, CancellationToken, Task<IEnumerable<string>>> _searchFunc =
+        (_, _) => Task.FromResult<IEnumerable<string>>([]);
+    private readonly RenderFragment _content = @<text>Content</text>;
+}
