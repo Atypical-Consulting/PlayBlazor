@@ -55,4 +55,103 @@ public static class FluentDemoFragmentSources
     <FluentText Block="true">Right pane</FluentText>
 </FluentMultiSplitterPane>
 """;
+
+    // --- Navigation and overlays ---
+
+    public const string NavContent = """
+<FluentNavSectionHeader Title="General" />
+<FluentNavItem>Dashboard</FluentNavItem>
+<FluentNavItem>Reports</FluentNavItem>
+<FluentNavCategory Title="Settings" Expanded="true">
+    <FluentNavItem>Profile</FluentNavItem>
+    <FluentNavItem>Security</FluentNavItem>
+</FluentNavCategory>
+""";
+
+    public const string NavCategoryItems = """
+<FluentNavItem>Profile</FluentNavItem>
+<FluentNavItem>Security</FluentNavItem>
+""";
+
+    public const string TabsContent = """
+<FluentTab Header="Home">
+    <FluentText Block="true">Welcome back! Here's what's new today.</FluentText>
+</FluentTab>
+<FluentTab Header="Profile">
+    <FluentText Block="true">Manage your account details and preferences.</FluentText>
+</FluentTab>
+<FluentTab Header="Settings">
+    <FluentText Block="true">Configure notifications and privacy options.</FluentText>
+</FluentTab>
+""";
+
+    public const string MenuContent = """
+<FluentMenuButton>Options</FluentMenuButton>
+<FluentMenuItem Label="Cut" />
+<FluentMenuItem Label="Copy" />
+<FluentMenuItem Label="Paste" />
+""";
+
+    public const string MenuListItems = """
+<FluentMenuItem Label="Sort by name" />
+<FluentMenuItem Label="Sort by date" />
+<FluentMenuItem Label="Sort by size" />
+""";
+
+    public const string SplitButtonItems = """
+<FluentMenuItem Label="Save As..." />
+<FluentMenuItem Label="Save a Copy" />
+<FluentMenuItem Label="Save as Template" />
+""";
+
+    public const string AccordionItems = """
+<FluentAccordionItem Header="Shipping details" Expanded="true">
+    <FluentText Block="true">Ships within 2 business days via standard courier.</FluentText>
+</FluentAccordionItem>
+<FluentAccordionItem Header="Return policy">
+    <FluentText Block="true">Items can be returned within 30 days of delivery.</FluentText>
+</FluentAccordionItem>
+""";
+
+    public const string DialogContent = """
+<FluentDialogBody>
+    <FluentText Block="true">This action permanently deletes the selected file. It cannot be undone.</FluentText>
+</FluentDialogBody>
+""";
+
+    public const string PopoverBody = """
+<FluentText Weight="TextWeight.Semibold" Block="true">Storage details</FluentText>
+<FluentText Size="TextSize.Size200">64.2 GB used of 100 GB available.</FluentText>
+""";
+
+    public const string WizardSteps = """
+<FluentWizardStep Label="Account" Summary="Create your account">
+    <FluentText Block="true">Enter your name and email address.</FluentText>
+</FluentWizardStep>
+<FluentWizardStep Label="Profile" Summary="Tell us about you">
+    <FluentText Block="true">Add a photo and a short bio.</FluentText>
+</FluentWizardStep>
+<FluentWizardStep Label="Review" Summary="Confirm and finish">
+    <FluentText Block="true">Review your details before finishing.</FluentText>
+</FluentWizardStep>
+""";
+
+    public const string TreeViewItems = """
+<FluentTreeItem Text="Documents" Expanded="true">
+    <FluentTreeItem Text="Resume.docx" />
+    <FluentTreeItem Text="CoverLetter.docx" />
+</FluentTreeItem>
+<FluentTreeItem Text="Pictures" />
+""";
+
+    public const string TreeItemChildren = """
+<FluentTreeItem Text="Resume.docx" />
+<FluentTreeItem Text="CoverLetter.docx" />
+""";
+
+    public const string AppBarItems = """
+<FluentAppBarItem Text="Home" IconRest="@HomeIcon" />
+<FluentAppBarItem Text="Search" IconRest="@SearchIcon" />
+<FluentAppBarItem Text="Settings" IconRest="@SettingsIcon" />
+""";
 }

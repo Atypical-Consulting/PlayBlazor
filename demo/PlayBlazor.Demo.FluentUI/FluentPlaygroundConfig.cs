@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Dialog.MessageBox;
 using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 
 namespace PlayBlazor.Demo.FluentUI;
@@ -116,7 +117,12 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentAppBar>\n    {specimen}\n</FluentAppBar>")
-            .Related<FluentAppBar>();
+            .Related<FluentAppBar>()
+            .Parameter(nameof(FluentAppBarItem.Text), "Chat")
+            .Parameter(nameof(FluentAppBarItem.IconRest), FluentIconCatalogue.All["Circle"])
+            .Variant("With badge count", v => v.Set(nameof(FluentAppBarItem.Count), 5))
+            .Variant("With tooltip", v => v.Set(nameof(FluentAppBarItem.Tooltip), "Chat"))
+            .Variant("Custom icon", v => v.Set(nameof(FluentAppBarItem.IconRest), FluentIconCatalogue.All["Star"]));
 
         options.For<FluentNavItem>()
             .Scaffold(specimen => builder =>
@@ -126,7 +132,12 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentNav>\n    {specimen}\n</FluentNav>")
-            .Related<FluentNav>();
+            .Related<FluentNav>()
+            .Slot(nameof(FluentNavItem.ChildContent), b => b.AddContent(0, "Dashboard"), "Dashboard")
+            .Parameter(nameof(FluentNavItem.IconRest), FluentIconCatalogue.All["Settings"])
+            .Variant("With link", v => v.Set(nameof(FluentNavItem.Href), "https://learn.microsoft.com/fluentui-blazor"))
+            .Variant("Disabled", v => v.Set(nameof(FluentNavItem.Disabled), true))
+            .Variant("With tooltip", v => v.Set(nameof(FluentNavItem.Tooltip), "Go to your dashboard"));
 
         options.For<FluentNavCategory>()
             .Scaffold(specimen => builder =>
@@ -136,7 +147,15 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentNav>\n    {specimen}\n</FluentNav>")
-            .Related<FluentNav>();
+            .Related<FluentNav>()
+            // Expanded defaults to false, and the sub-item group is hidden until expanded — set it
+            // true so the standalone bench actually shows the sub-items rather than a bare header.
+            .Slot(nameof(FluentNavCategory.ChildContent), FluentDemoFragments.NavCategoryItems, FluentDemoFragmentSources.NavCategoryItems)
+            .Parameter(nameof(FluentNavCategory.Title), "Settings")
+            .Parameter(nameof(FluentNavCategory.Expanded), true)
+            .Variant("Collapsed", v => v.Set(nameof(FluentNavCategory.Expanded), false))
+            .Variant("Custom icon", v => v.Set(nameof(FluentNavCategory.IconRest), FluentIconCatalogue.All["Star"]))
+            .Variant("With tooltip", v => v.Set(nameof(FluentNavCategory.Tooltip), "Application settings"));
 
         options.For<FluentNavSectionHeader>()
             .Scaffold(specimen => builder =>
@@ -146,7 +165,12 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentNav>\n    {specimen}\n</FluentNav>")
-            .Related<FluentNav>();
+            .Related<FluentNav>()
+            // Title is the component's only real customization axis (besides the FluentNav owner
+            // it validates against) — one variant is enough to show it is a live parameter rather
+            // than a fabrication.
+            .Parameter(nameof(FluentNavSectionHeader.Title), "General")
+            .Variant("Longer title", v => v.Set(nameof(FluentNavSectionHeader.Title), "Advanced configuration"));
 
         // FluentRadio<TValue> cascades from a FluentRadioGroup<TValue> of the SAME TValue —
         // discovery already closes the placeholder with string, so play that same closing here.
@@ -172,7 +196,13 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentWizard>\n    <Steps>\n        {specimen}\n    </Steps>\n</FluentWizard>")
-            .Related<FluentWizard>();
+            .Related<FluentWizard>()
+            .Slot(nameof(FluentWizardStep.ChildContent), b => b.AddContent(0, "Enter your name and email address."), "Enter your name and email address.")
+            .Parameter(nameof(FluentWizardStep.Label), "Account")
+            .Parameter(nameof(FluentWizardStep.Summary), "Create your account")
+            .Variant("Disabled", v => v.Set(nameof(FluentWizardStep.Disabled), true))
+            .Variant("Deferred loading", v => v.Set(nameof(FluentWizardStep.DeferredLoading), true))
+            .Variant("Numbered", v => v.Set(nameof(FluentWizardStep.DisplayStepNumber), true));
 
         // FluentWizardStepValidator needs BOTH a FluentWizardStep ancestor and an EditContext
         // from an EditForm — one parent is not enough, so the scaffold nests two.
@@ -740,6 +770,276 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentMultiSplitterPane.Size), "50%")
             .Variant("Collapsible", v => v.Set(nameof(FluentMultiSplitterPane.Collapsible), true))
             .Variant("Fixed 200px", v => v.Set(nameof(FluentMultiSplitterPane.Size), "200px"));
+
+        // --- Navigation and overlays: nav/tabs/menu/accordion/tree/wizard/app-bar structure, plus
+        // the dialog/popover/tooltip/toast/message family. Verified against the pinned
+        // 5.0.0-rc.5 assembly with ilspycmd rather than assumed. FluentNavItem, FluentNavCategory,
+        // FluentNavSectionHeader, FluentWizardStep and FluentAppBarItem were already scaffolded by
+        // Task 3 (see their chains above, under the earlier "Scaffolds" comment) — their presets
+        // were added to those SAME chains rather than opened again here.
+
+        options.For<FluentNav>()
+            .Slot(nameof(FluentNav.ChildContent), FluentDemoFragments.NavContent, FluentDemoFragmentSources.NavContent)
+            .Parameter(nameof(FluentNav.Width), "240px")
+            .Variant("Single expanded category", v => v.Set(nameof(FluentNav.UseSingleExpanded), true))
+            .Variant("Compact density", v => v.Set(nameof(FluentNav.Density), NavDensity.Small))
+            .Variant("No icons", v => v.Set(nameof(FluentNav.UseIcons), false));
+
+        options.For<FluentTabs>()
+            .Slot(nameof(FluentTabs.ChildContent), FluentDemoFragments.TabsContent, FluentDemoFragmentSources.TabsContent)
+            .Variant("Vertical", v => v.Set(nameof(FluentTabs.Orientation), Orientation.Vertical))
+            .Variant("Subtle appearance", v => v.Set(nameof(FluentTabs.Appearance), TabsAppearance.Subtle))
+            .Variant("Small", v => v.Set(nameof(FluentTabs.Size), TabsSize.Small));
+
+        // FluentTab never reads its own ChildContent in BuildRenderTree — the active tab's panel
+        // is drawn by the OWNING FluentTabs instead (see FluentTabs.BuildRenderTree, which walks
+        // its registered Tabs and emits `item.ChildContent` itself). A ChildContent Slot on the
+        // standalone specimen would register and compile but never render anything different —
+        // exactly the silent-nothing trap the brief warns about — so Header is the preset here,
+        // since it IS what a bare FluentTab actually draws.
+        options.For<FluentTab>()
+            .Parameter(nameof(FluentTab.Header), "Home")
+            .Variant("With icon", v => v.Set(nameof(FluentTab.IconStart), FluentIconCatalogue.All["Circle"]))
+            .Variant("Disabled", v => v.Set(nameof(FluentTab.Disabled), true))
+            .Variant("Deferred loading", v => v.Set(nameof(FluentTab.DeferredLoading), true));
+
+        // FluentMenu has no Open/Visible parameter in v5: OpenOnHover/OpenOnContext only pick
+        // WHICH interaction opens it, and Trigger just names an external anchor id — none forces
+        // the initial render open, and the underlying <fluent-menu> web component sets no "open"
+        // attribute of its own. No preset can make the dropdown itself visible on a static bench.
+        // The trigger-inside-ChildContent shape below (a FluentMenuButton alongside the items,
+        // both inside FluentMenu.ChildContent) is the real v5 idiom — confirmed by decompiling
+        // FluentSplitButton.BuildRenderTree, which composes the identical slot="trigger" shape —
+        // so the bench at least shows a real, clickable trigger instead of nothing.
+        options.For<FluentMenu>()
+            .Slot(nameof(FluentMenu.ChildContent), FluentDemoFragments.MenuContent, FluentDemoFragmentSources.MenuContent)
+            .Variant("Open on hover", v => v.Set(nameof(FluentMenu.OpenOnHover), true))
+            .Variant("Context menu", v => v.Set(nameof(FluentMenu.OpenOnContext), true))
+            .Variant("Bounded height", v => v.Set(nameof(FluentMenu.Height), "200px"));
+
+        options.For<FluentMenuItem>()
+            .Parameter(nameof(FluentMenuItem.Label), "Cut")
+            .Variant("With icon", v => v.Set(nameof(FluentMenuItem.IconStart), FluentIconCatalogue.All["Delete"]))
+            .Variant("Checkbox", v => v.Set(nameof(FluentMenuItem.Role), MenuItemRole.Checkbox).Set(nameof(FluentMenuItem.Checked), true))
+            .Variant("Disabled", v => v.Set(nameof(FluentMenuItem.Disabled), true));
+
+        // Unlike FluentMenu, <fluent-menu-list> renders unconditionally visible — it has no
+        // open/closed gating at all, so the Slot alone already shows the bench something real.
+        // Its own real parameter surface is otherwise just ChildContent plus two click callbacks,
+        // with no scalar axis to build a Variant from.
+        options.For<FluentMenuList>()
+            .Slot(nameof(FluentMenuList.ChildContent), FluentDemoFragments.MenuListItems, FluentDemoFragmentSources.MenuListItems);
+
+        options.For<FluentMenuButton>()
+            .Slot(nameof(FluentMenuButton.ChildContent), b => b.AddContent(0, "More options"), "More options")
+            .Variant("Accent", v => v.Set(nameof(FluentMenuButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Icon only", v => v.Set(nameof(FluentMenuButton.IconOnly), true).Set(nameof(FluentMenuButton.IconStart), FluentIconCatalogue.All["Settings"]))
+            .Variant("Disabled", v => v.Set(nameof(FluentMenuButton.Disabled), true));
+
+        options.For<FluentSplitButton>()
+            .Slot(nameof(FluentSplitButton.ChildContent), FluentDemoFragments.SplitButtonItems, FluentDemoFragmentSources.SplitButtonItems)
+            .Parameter(nameof(FluentSplitButton.Label), "Save")
+            .Variant("Accent", v => v.Set(nameof(FluentSplitButton.Appearance), ButtonAppearance.Primary))
+            .Variant("With icon", v => v.Set(nameof(FluentSplitButton.IconStart), FluentIconCatalogue.All["Checkmark"]))
+            .Variant("Small", v => v.Set(nameof(FluentSplitButton.Size), ButtonSize.Small));
+
+        options.For<FluentToggleButton>()
+            .Slot(nameof(FluentToggleButton.ChildContent), b => b.AddContent(0, "Bold"), "Bold")
+            .Variant("Pressed", v => v.Set(nameof(FluentToggleButton.Pressed), true))
+            .Variant("Mixed", v => v.Set(nameof(FluentToggleButton.Mixed), true))
+            .Variant("Accent", v => v.Set(nameof(FluentToggleButton.Appearance), ButtonAppearance.Primary));
+
+        options.For<FluentCompoundButton>()
+            .Slot(nameof(FluentCompoundButton.Description), b => b.AddContent(0, "Choose how notifications reach you."), "Choose how notifications reach you.")
+            .Parameter(nameof(FluentCompoundButton.Label), "Notification settings")
+            .Variant("With icon", v => v.Set(nameof(FluentCompoundButton.IconStart), FluentIconCatalogue.All["Settings"]))
+            .Variant("Accent", v => v.Set(nameof(FluentCompoundButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Disabled", v => v.Set(nameof(FluentCompoundButton.Disabled), true));
+
+        options.For<FluentAnchorButton>()
+            .Slot(nameof(FluentAnchorButton.ChildContent), b => b.AddContent(0, "Download"), "Download")
+            .Parameter(nameof(FluentAnchorButton.Href), "https://learn.microsoft.com/fluentui-blazor")
+            .Variant("Accent", v => v.Set(nameof(FluentAnchorButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Open in new tab", v => v.Set(nameof(FluentAnchorButton.Target), LinkTarget.Blank))
+            .Variant("With icon", v => v.Set(nameof(FluentAnchorButton.IconStart), FluentIconCatalogue.All["ArrowDown"]));
+
+        options.For<FluentLink>()
+            .Slot(nameof(FluentLink.ChildContent), b => b.AddContent(0, "Learn more"), "Learn more")
+            .Parameter(nameof(FluentLink.Href), "https://learn.microsoft.com/fluentui-blazor")
+            .Variant("Subtle", v => v.Set(nameof(FluentLink.Appearance), LinkAppearance.Subtle))
+            .Variant("Inline", v => v.Set(nameof(FluentLink.Inline), true))
+            .Variant("With icon", v => v.Set(nameof(FluentLink.IconEnd), FluentIconCatalogue.All["ArrowRight"]));
+
+        options.For<FluentAccordion>()
+            .Slot(nameof(FluentAccordion.ChildContent), FluentDemoFragments.AccordionItems, FluentDemoFragmentSources.AccordionItems)
+            .Variant("Multiple expanded", v => v.Set(nameof(FluentAccordion.ExpandMode), AccordionExpandMode.Multi))
+            .Variant("Block", v => v.Set(nameof(FluentAccordion.Block), true))
+            .Variant("Marker at the end", v => v.Set(nameof(FluentAccordion.MarkerPosition), AccordionItemMarkerPosition.End));
+
+        options.For<FluentAccordionItem>()
+            .Slot(nameof(FluentAccordionItem.ChildContent), b => b.AddContent(0, "Ships within 2 business days via standard courier."), "Ships within 2 business days via standard courier.")
+            .Parameter(nameof(FluentAccordionItem.Header), "Shipping details")
+            // Expanded defaults to false; without this the standalone bench shows only a header.
+            .Parameter(nameof(FluentAccordionItem.Expanded), true)
+            .Variant("Collapsed", v => v.Set(nameof(FluentAccordionItem.Expanded), false))
+            .Variant("Disabled", v => v.Set(nameof(FluentAccordionItem.Disabled), true))
+            .Variant("Large", v => v.Set(nameof(FluentAccordionItem.Size), AccordionItemSize.Large));
+
+        // FluentDialog has no Open/Visible parameter in v5 either — it only appears via
+        // ShowAsync() or the DialogService, both a JS round-trip after render, so no preset can
+        // make it visible on the static bench (confirmed: BuildRenderTree sets no "open"
+        // attribute on the underlying <fluent-dialog>/<fluent-drawer> element at all). The best
+        // available curation is realistic declarative content — a real FluentDialogBody, ready to
+        // look right the moment a real user calls ShowAsync().
+        options.For<FluentDialog>()
+            .Slot(nameof(FluentDialog.ChildContent), FluentDemoFragments.DialogContent, FluentDemoFragmentSources.DialogContent)
+            .Variant("Non-modal", v => v.Set(nameof(FluentDialog.Modal), false))
+            .Variant("Drawer, from the end", v => v.Set(nameof(FluentDialog.Alignment), DialogAlignment.End))
+            .Variant("Prevent Escape dismiss", v => v.Set(nameof(FluentDialog.PreventDismissOnEscape), true));
+
+        // Unlike FluentDialog, FluentDialogBody renders its ChildContent in a plain <div> with no
+        // dependency on a cascading IDialogInstance (null-checked throughout) — it looks right
+        // standalone, outside any FluentDialog wrapper. Scaffolding it INSIDE a FluentDialog would
+        // make it invisible again, since the wrapper itself never opens (see FluentDialog above).
+        // FixedHeaderFooter is its only real non-slot parameter, so one variant is honest rather
+        // than padded.
+        options.For<FluentDialogBody>()
+            .Slot(nameof(FluentDialogBody.TitleTemplate), b => b.AddContent(0, "Delete file?"), "Delete file?")
+            .Slot(nameof(FluentDialogBody.ChildContent), b => b.AddContent(0, "This action permanently deletes the selected file. It cannot be undone."), "This action permanently deletes the selected file. It cannot be undone.")
+            .Variant("Scrollable content", v => v.Set(nameof(FluentDialogBody.FixedHeaderFooter), false));
+
+        // FluentMessageBox.Message is a MarkupStringSanitized? — every one of its constructors is
+        // `internal` to the library assembly, so no value can be constructed from this demo
+        // project at all; Icon defaults to a real CheckmarkCircle and needs no override (Icon
+        // itself is `internal static class CoreIcons`, likewise unreachable here). IconColor is
+        // the one publicly settable axis that still varies the specimen meaningfully.
+        options.For<FluentMessageBox>()
+            .Variant("Warning", v => v.Set(nameof(FluentMessageBox.IconColor), Color.Warning))
+            .Variant("Error", v => v.Set(nameof(FluentMessageBox.IconColor), Color.Error))
+            .Variant("Info", v => v.Set(nameof(FluentMessageBox.IconColor), Color.Info));
+
+        options.For<FluentMessageBar>()
+            .Parameter(nameof(FluentMessageBar.Title), "Action required")
+            .Slot(nameof(FluentMessageBar.ChildContent), b => b.AddContent(0, "Your subscription expires in 3 days."), "Your subscription expires in 3 days.")
+            .Variant("Warning", v => v.Set(nameof(FluentMessageBar.Intent), MessageBarIntent.Warning))
+            .Variant("Error", v => v.Set(nameof(FluentMessageBar.Intent), MessageBarIntent.Error))
+            .Variant("Notification layout", v => v.Set(nameof(FluentMessageBar.Layout), MessageBarLayout.Notification));
+
+        // FluentToast.Opened IS a real [Parameter] bool, reflected straight onto the "opened"
+        // attribute of <fluent-toast-b> — unlike FluentMenu/FluentTooltip/FluentDialog, this one
+        // genuinely can be forced visible.
+        options.For<FluentToast>()
+            .Parameter(nameof(FluentToast.Opened), true)
+            .Parameter(nameof(FluentToast.Title), "File saved")
+            .Slot(nameof(FluentToast.ChildContent), b => b.AddContent(0, "Your changes have been saved."), "Your changes have been saved.")
+            .Variant("Success", v => v.Set(nameof(FluentToast.Intent), ToastIntent.Success))
+            .Variant("Error", v => v.Set(nameof(FluentToast.Intent), ToastIntent.Error))
+            .Variant("Progress", v => v.Set(nameof(FluentToast.Intent), ToastIntent.Progress));
+
+        // FluentTooltip has no Open/Visible parameter in v5 — it only appears on hover of its
+        // Anchor element (BuildRenderTree sets no "open" state at all), so no preset forces it
+        // open on the static bench; the Scaffold at least anchors it to a real, hoverable button
+        // instead of an id that resolves to nothing. UseTooltipService=false makes the specimen
+        // render inline at its own position instead of being registered with ITooltipService and
+        // drawn elsewhere by <FluentTooltipProvider/> (documented as a valid use: "Set this to
+        // false when ChildContent is dynamic").
+        //
+        // Sweep finding: the demo's MainLayout renders <FluentProviders/>, and decompiling
+        // FluentProviders.BuildRenderTree shows it DOES compose <FluentTooltipProvider/> (along
+        // with FluentDialogProvider, FluentToastProvider, FluentKeyCodeProvider) — so the running
+        // demo app already satisfies FluentTooltip's provider requirement. The sweep's "<FluentTo
+        // oltipProvider/> needs to be added to the main layout" warning is a bUnit RenderSweep
+        // harness artifact: that suite renders the specimen without MainLayout, so no provider is
+        // ever present there. No provider setup was needed in the demo.
+        options.For<FluentTooltip>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.OpenComponent<FluentButton>(1);
+                builder.AddComponentParameter(2, nameof(FluentButton.Id), "fluentui-demo-tooltip-anchor");
+                builder.AddComponentParameter(3, nameof(FluentButton.ChildContent), (RenderFragment)(b => b.AddContent(0, "Hover me")));
+                builder.CloseComponent();
+                builder.AddContent(4, specimen);
+                builder.CloseElement();
+            },
+            """
+            <div>
+                <FluentButton Id="fluentui-demo-tooltip-anchor">Hover me</FluentButton>
+                {specimen}
+            </div>
+            """)
+            .Parameter(nameof(FluentTooltip.Anchor), "fluentui-demo-tooltip-anchor")
+            .Parameter(nameof(FluentTooltip.UseTooltipService), false)
+            .Slot(nameof(FluentTooltip.ChildContent), b => b.AddContent(0, "A helpful hint"), "A helpful hint")
+            .Variant("Above", v => v.Set(nameof(FluentTooltip.Positioning), Positioning.Above))
+            .Variant("Below", v => v.Set(nameof(FluentTooltip.Positioning), Positioning.Below))
+            .Variant("Long delay", v => v.Set(nameof(FluentTooltip.Delay), 1000));
+
+        // FluentPopover.AnchorId is `required` at compile time only — Blazor's runtime parameter
+        // binding never enforces `required`, and BuildRenderTree never null-checks it either, so
+        // it renders without throwing even unset; it just floats unanchored. Opened IS a real
+        // [Parameter] bool though (reflected onto the "opened" attribute), so — unlike
+        // FluentMenu/FluentTooltip — this one genuinely can be forced visible; the Scaffold gives
+        // it a real anchor element to visibly point at.
+        options.For<FluentPopover>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.OpenComponent<FluentButton>(1);
+                builder.AddComponentParameter(2, nameof(FluentButton.Id), "fluentui-demo-popover-anchor");
+                builder.AddComponentParameter(3, nameof(FluentButton.ChildContent), (RenderFragment)(b => b.AddContent(0, "Show details")));
+                builder.CloseComponent();
+                builder.AddContent(4, specimen);
+                builder.CloseElement();
+            },
+            """
+            <div>
+                <FluentButton Id="fluentui-demo-popover-anchor">Show details</FluentButton>
+                {specimen}
+            </div>
+            """)
+            .Parameter(nameof(FluentPopover.AnchorId), "fluentui-demo-popover-anchor")
+            .Parameter(nameof(FluentPopover.Opened), true)
+            .Slot(nameof(FluentPopover.ChildContent), FluentDemoFragments.PopoverBody, FluentDemoFragmentSources.PopoverBody)
+            .Variant("Wide", v => v.Set(nameof(FluentPopover.Width), "320px"))
+            .Variant("With offset", v => v.Set(nameof(FluentPopover.OffsetVertical), 16).Set(nameof(FluentPopover.OffsetHorizontal), 16))
+            .Variant("Nested", v => v.Set(nameof(FluentPopover.Nested), true));
+
+        // FluentOverlay.Visible IS a real [Parameter] bool (reflected onto the "visible"
+        // attribute) — unlike the anchor-driven overlay family above, this one is straightforward.
+        options.For<FluentOverlay>()
+            .Parameter(nameof(FluentOverlay.Visible), true)
+            .Slot(nameof(FluentOverlay.ChildContent), b => b.AddContent(0, "Saving changes..."), "Saving changes...")
+            .Variant("Interactive", v => v.Set(nameof(FluentOverlay.Interactive), true))
+            .Variant("Full screen", v => v.Set(nameof(FluentOverlay.FullScreen), true))
+            .Variant("Low opacity", v => v.Set(nameof(FluentOverlay.Opacity), 15));
+
+        options.For<FluentWizard>()
+            .Slot(nameof(FluentWizard.Steps), FluentDemoFragments.WizardSteps, FluentDemoFragmentSources.WizardSteps)
+            .Variant("Stepper on top", v => v.Set(nameof(FluentWizard.StepperPosition), StepperPosition.Top))
+            .Variant("Outside border", v => v.Set(nameof(FluentWizard.Border), WizardBorder.Outside))
+            .Variant("Free navigation", v => v.Set(nameof(FluentWizard.StepSequence), WizardStepSequence.Any));
+
+        options.For<FluentTreeView>()
+            .Slot(nameof(FluentTreeView.ChildContent), FluentDemoFragments.TreeViewItems, FluentDemoFragmentSources.TreeViewItems)
+            .Variant("Small", v => v.Set(nameof(FluentTreeView.Size), TreeSize.Small))
+            .Variant("Transparent", v => v.Set(nameof(FluentTreeView.Appearance), TreeAppearance.Transparent))
+            .Variant("Hide selection", v => v.Set(nameof(FluentTreeView.HideSelection), true));
+
+        options.For<FluentTreeItem>()
+            .Slot(nameof(FluentTreeItem.ChildContent), FluentDemoFragments.TreeItemChildren, FluentDemoFragmentSources.TreeItemChildren)
+            .Parameter(nameof(FluentTreeItem.Text), "Documents")
+            // Without this the nested children Slot above has nothing to reveal on the bench.
+            .Parameter(nameof(FluentTreeItem.Expanded), true)
+            .Variant("With icon", v => v.Set(nameof(FluentTreeItem.IconStart), FluentIconCatalogue.All["Star"]))
+            .Variant("Collapsed", v => v.Set(nameof(FluentTreeItem.Expanded), false))
+            .Variant("Custom height", v => v.Set(nameof(FluentTreeItem.Height), "40px"));
+
+        options.For<FluentAppBar>()
+            .Slot(nameof(FluentAppBar.ChildContent), FluentDemoFragments.AppBarItems, FluentDemoFragmentSources.AppBarItems)
+            .Variant("Horizontal", v => v.Set(nameof(FluentAppBar.Orientation), Orientation.Horizontal))
+            .Variant("No search in overflow", v => v.Set(nameof(FluentAppBar.PopoverShowSearch), false))
+            .Variant("Hide active indicator", v => v.Set(nameof(FluentAppBar.HideActiveIndicator), true));
     }
 
     // StripArity is duplicated from the MudBlazor config on purpose: the two apps share no code

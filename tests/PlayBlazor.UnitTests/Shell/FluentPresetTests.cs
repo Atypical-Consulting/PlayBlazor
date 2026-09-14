@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Dialog.MessageBox;
 using NUnit.Framework;
 using PlayBlazor.Demo.FluentUI;
 
@@ -70,6 +71,39 @@ public class FluentPresetTests
     [TestCase(typeof(FluentRatingDisplay))]
     [TestCase(typeof(FluentMultiSplitter))]
     [TestCase(typeof(FluentMultiSplitterPane))]
+
+    // --- Task 7: navigation and overlays ---
+    [TestCase(typeof(FluentNav))]
+    [TestCase(typeof(FluentNavItem))]
+    [TestCase(typeof(FluentNavCategory))]
+    [TestCase(typeof(FluentNavSectionHeader))]
+    [TestCase(typeof(FluentTabs))]
+    [TestCase(typeof(FluentTab))]
+    [TestCase(typeof(FluentMenu))]
+    [TestCase(typeof(FluentMenuItem))]
+    [TestCase(typeof(FluentMenuList))]
+    [TestCase(typeof(FluentMenuButton))]
+    [TestCase(typeof(FluentSplitButton))]
+    [TestCase(typeof(FluentToggleButton))]
+    [TestCase(typeof(FluentCompoundButton))]
+    [TestCase(typeof(FluentAnchorButton))]
+    [TestCase(typeof(FluentLink))]
+    [TestCase(typeof(FluentAccordion))]
+    [TestCase(typeof(FluentAccordionItem))]
+    [TestCase(typeof(FluentDialog))]
+    [TestCase(typeof(FluentDialogBody))]
+    [TestCase(typeof(FluentMessageBox))]
+    [TestCase(typeof(FluentMessageBar))]
+    [TestCase(typeof(FluentToast))]
+    [TestCase(typeof(FluentTooltip))]
+    [TestCase(typeof(FluentPopover))]
+    [TestCase(typeof(FluentOverlay))]
+    [TestCase(typeof(FluentWizard))]
+    [TestCase(typeof(FluentWizardStep))]
+    [TestCase(typeof(FluentTreeView))]
+    [TestCase(typeof(FluentTreeItem))]
+    [TestCase(typeof(FluentAppBar))]
+    [TestCase(typeof(FluentAppBarItem))]
     public void ComponentHasCuration(Type component)
     {
         var options = Configured();

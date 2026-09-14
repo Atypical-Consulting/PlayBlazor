@@ -49,4 +49,108 @@
             <FluentText Block="true">Right pane</FluentText>
         </FluentMultiSplitterPane>
     </text>;
+
+    // --- Navigation and overlays ---
+
+    public static RenderFragment NavContent => @<text>
+        <FluentNavSectionHeader Title="General" />
+        <FluentNavItem>Dashboard</FluentNavItem>
+        <FluentNavItem>Reports</FluentNavItem>
+        <FluentNavCategory Title="Settings" Expanded="true">
+            <FluentNavItem>Profile</FluentNavItem>
+            <FluentNavItem>Security</FluentNavItem>
+        </FluentNavCategory>
+    </text>;
+
+    public static RenderFragment NavCategoryItems => @<text>
+        <FluentNavItem>Profile</FluentNavItem>
+        <FluentNavItem>Security</FluentNavItem>
+    </text>;
+
+    public static RenderFragment TabsContent => @<text>
+        <FluentTab Header="Home">
+            <FluentText Block="true">Welcome back! Here's what's new today.</FluentText>
+        </FluentTab>
+        <FluentTab Header="Profile">
+            <FluentText Block="true">Manage your account details and preferences.</FluentText>
+        </FluentTab>
+        <FluentTab Header="Settings">
+            <FluentText Block="true">Configure notifications and privacy options.</FluentText>
+        </FluentTab>
+    </text>;
+
+    public static RenderFragment MenuContent => @<text>
+        <FluentMenuButton>Options</FluentMenuButton>
+        <FluentMenuItem Label="Cut" />
+        <FluentMenuItem Label="Copy" />
+        <FluentMenuItem Label="Paste" />
+    </text>;
+
+    public static RenderFragment MenuListItems => @<text>
+        <FluentMenuItem Label="Sort by name" />
+        <FluentMenuItem Label="Sort by date" />
+        <FluentMenuItem Label="Sort by size" />
+    </text>;
+
+    public static RenderFragment SplitButtonItems => @<text>
+        <FluentMenuItem Label="Save As..." />
+        <FluentMenuItem Label="Save a Copy" />
+        <FluentMenuItem Label="Save as Template" />
+    </text>;
+
+    public static RenderFragment AccordionItems => @<text>
+        <FluentAccordionItem Header="Shipping details" Expanded="true">
+            <FluentText Block="true">Ships within 2 business days via standard courier.</FluentText>
+        </FluentAccordionItem>
+        <FluentAccordionItem Header="Return policy">
+            <FluentText Block="true">Items can be returned within 30 days of delivery.</FluentText>
+        </FluentAccordionItem>
+    </text>;
+
+    public static RenderFragment DialogContent => @<text>
+        <FluentDialogBody>
+            <FluentText Block="true">This action permanently deletes the selected file. It cannot be undone.</FluentText>
+        </FluentDialogBody>
+    </text>;
+
+    public static RenderFragment PopoverBody => @<text>
+        <FluentText Weight="TextWeight.Semibold" Block="true">Storage details</FluentText>
+        <FluentText Size="TextSize.Size200">64.2 GB used of 100 GB available.</FluentText>
+    </text>;
+
+    public static RenderFragment WizardSteps => @<text>
+        <FluentWizardStep Label="Account" Summary="Create your account">
+            <FluentText Block="true">Enter your name and email address.</FluentText>
+        </FluentWizardStep>
+        <FluentWizardStep Label="Profile" Summary="Tell us about you">
+            <FluentText Block="true">Add a photo and a short bio.</FluentText>
+        </FluentWizardStep>
+        <FluentWizardStep Label="Review" Summary="Confirm and finish">
+            <FluentText Block="true">Review your details before finishing.</FluentText>
+        </FluentWizardStep>
+    </text>;
+
+    public static RenderFragment TreeViewItems => @<text>
+        <FluentTreeItem Text="Documents" Expanded="true">
+            <FluentTreeItem Text="Resume.docx" />
+            <FluentTreeItem Text="CoverLetter.docx" />
+        </FluentTreeItem>
+        <FluentTreeItem Text="Pictures" />
+    </text>;
+
+    public static RenderFragment TreeItemChildren => @<text>
+        <FluentTreeItem Text="Resume.docx" />
+        <FluentTreeItem Text="CoverLetter.docx" />
+    </text>;
+
+    // Hoisted so the markup below never nests a quoted dictionary key inside a Razor attribute.
+    private static readonly Icon HomeIcon = FluentIconCatalogue.All["Circle"];
+    private static readonly Icon SearchIcon = FluentIconCatalogue.All["Search"];
+    private static readonly Icon SettingsIcon = FluentIconCatalogue.All["Settings"];
+
+    public static RenderFragment AppBarItems => @<text>
+        <FluentAppBarItem Text="Home" IconRest="@HomeIcon" />
+        <FluentAppBarItem Text="Search" IconRest="@SearchIcon" />
+        <FluentAppBarItem Text="Settings" IconRest="@SettingsIcon" />
+    </text>;
 }
