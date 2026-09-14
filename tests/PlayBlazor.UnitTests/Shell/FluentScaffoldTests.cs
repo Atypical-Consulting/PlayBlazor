@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 using NUnit.Framework;
 using PlayBlazor.Demo.FluentUI;
 
@@ -32,5 +33,24 @@ public class FluentScaffoldTests
         options.TryGetScaffold(typeof(FluentNavItem), out _).Should().BeTrue();
         options.TryGetScaffoldSource(typeof(FluentNavItem), out var source).Should().BeTrue();
         source.Should().Contain("{specimen}");
+    }
+
+    [Test]
+    public void ValidationComponents_RenderInsideAnEditForm()
+    {
+        var options = Configured();
+
+        options.TryGetScaffoldSource(typeof(FluentValidationSummary), out var source).Should().BeTrue();
+        source.Should().Contain("EditForm");
+    }
+
+    [Test]
+    public void ComponentsWithARequiredValue_GetOne()
+    {
+        var options = Configured();
+
+        options.TryGetParameterPreset(typeof(AddTag), "Name", out var name).Should().BeTrue();
+        name.Should().NotBeNull();
+        options.TryGetSlotPreset(typeof(FluentKeyCode), "ChildContent", out _).Should().BeTrue();
     }
 }

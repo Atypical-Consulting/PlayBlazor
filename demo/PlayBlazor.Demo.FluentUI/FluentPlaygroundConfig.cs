@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 
 namespace PlayBlazor.Demo.FluentUI;
 
@@ -31,8 +32,20 @@ public static class FluentPlaygroundConfig
         new("Alan Turing", "Cryptanalyst", 41),
     ];
 
-    /// <summary>The model an <see cref="EditForm"/> scaffold binds to — its content is irrelevant, only its <see cref="EditContext"/> matters.</summary>
-    private static readonly object ValidatorModel = new();
+    /// <summary>
+    /// The model behind the <see cref="EditForm"/> nested inside the
+    /// <see cref="FluentWizardStepValidator"/> scaffold — its content is irrelevant, only the
+    /// <see cref="EditContext"/> it cascades to the validator matters.
+    /// </summary>
+    private static readonly object WizardStepValidatorModel = new();
+
+    /// <summary>
+    /// The model behind the <see cref="EditForm"/> scaffold that gives the validation-display
+    /// components (<see cref="FluentValidationSummary"/>, <see cref="FluentValidationMessage{TValue}"/>)
+    /// the cascading <see cref="EditContext"/> they demand by name — distinct from
+    /// <see cref="WizardStepValidatorModel"/>, which backs a different scaffold entirely.
+    /// </summary>
+    private static readonly Person ValidationScaffoldModel = new("Ada Lovelace", "Analyst", 36);
 
     /// <summary>Applies the Fluent UI curation to the playground options.</summary>
     /// <param name="options">The options to configure.</param>
@@ -141,7 +154,7 @@ public static class FluentPlaygroundConfig
                     stepsBuilder.AddAttribute(2, nameof(FluentWizardStep.ChildContent), (RenderFragment)(stepBuilder =>
                     {
                         stepBuilder.OpenComponent<EditForm>(0);
-                        stepBuilder.AddAttribute(1, nameof(EditForm.Model), ValidatorModel);
+                        stepBuilder.AddAttribute(1, nameof(EditForm.Model), WizardStepValidatorModel);
                         stepBuilder.AddAttribute(2, nameof(EditForm.ChildContent), (RenderFragment<EditContext>)(_ => specimen));
                         stepBuilder.CloseComponent();
                     }));
@@ -245,6 +258,45 @@ public static class FluentPlaygroundConfig
             },
             "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
             .Related<FluentDataGrid<Person>>();
+
+        // Both validation components demand a cascading EditContext and say so by name. An
+        // EditForm over a throwaway model is the smallest thing that supplies one.
+        options.For<FluentValidationSummary>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<EditForm>(0);
+                builder.AddAttribute(1, nameof(EditForm.Model), ValidationScaffoldModel);
+                builder.AddAttribute(2, nameof(EditForm.ChildContent),
+                    (RenderFragment<EditContext>)(_ => specimen));
+                builder.CloseComponent();
+            },
+            "<EditForm Model=\"@_model\">\n    {specimen}\n</EditForm>");
+
+        // FluentValidationMessage<TValue> checks its cascading EditContext first, but — verified
+        // by actually rendering it — throws a SECOND, different error the moment that check
+        // passes: it also demands a Field or For value to know which messages to show. A Parameter
+        // preset for Field (built from the same throwaway model) supplies that.
+        options.For<FluentValidationMessage<string>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<EditForm>(0);
+                builder.AddAttribute(1, nameof(EditForm.Model), ValidationScaffoldModel);
+                builder.AddAttribute(2, nameof(EditForm.ChildContent),
+                    (RenderFragment<EditContext>)(_ => specimen));
+                builder.CloseComponent();
+            },
+            "<EditForm Model=\"@_model\">\n    {specimen}\n</EditForm>")
+            .Parameter(nameof(FluentValidationMessage<string>.Field),
+                new FieldIdentifier(ValidationScaffoldModel, nameof(Person.Name)));
+
+        // AddTag.Name is `required` — without a preset, BuildRenderTree throws before anything shows.
+        options.For<AddTag>()
+            .Parameter(nameof(AddTag.Name), "priority");
+
+        // FluentKeyCode needs either an Anchor id or ChildContent to attach its key-listening JS to.
+        // ChildContent is the one a Slot preset can supply.
+        options.For<FluentKeyCode>()
+            .Slot(nameof(FluentKeyCode.ChildContent), b => b.AddContent(0, "Press any key"), "Press any key");
 
         // FluentPaginator's sweep failure is not a missing parent — it wants a PaginationState
         // instance, so it gets a Parameter preset rather than a Scaffold.
