@@ -39,10 +39,9 @@ public class DemoLandingTests
     {
         var cut = _context.Render<LibrarySwitcher>(ps => ps.Add(c => c.Current, "fluent"));
 
-        cut.FindAll("a.demo-switch").Count.Should().Be(2);
+        cut.FindAll("a.demo-switch").Count.Should().Be(1);
         cut.FindAll("span.demo-switch-current").Count.Should().Be(1);
         cut.Markup.Should().Contain("../mud/");
-        cut.Markup.Should().Contain("../daisy/");
     }
 
     [Test]
@@ -57,6 +56,6 @@ public class DemoLandingTests
         var current = cut.FindAll("span.demo-switch-current");
         current.Count.Should().Be(1);
         current[0].TextContent.Should().Be("MudBlazor");
-        cut.FindAll("a.demo-switch").Count.Should().Be(2);
+        cut.FindAll("a.demo-switch").Count.Should().Be(1);
     }
 }

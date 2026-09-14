@@ -45,6 +45,10 @@ builder.Services.AddPlayBlazor(options =>
     // the played specimen is injected where it belongs, controls keep driving it.
     options.For<PropertyColumn<Person, string>>().Scaffold(specimen => builder => { /* grid around specimen */ });
 
+    // Give a library's own icon-shaped type (no implicit string conversion, so it would
+    // otherwise be undrivable) a searchable picker, by name:
+    options.Catalogue(MyIconSet.Named, icon => builder => builder.AddContent(0, icon.ToMarkup()));
+
     // Hide providers and internals from the explorer:
     options.Exclude<MudThemeProvider>().Exclude<MudPopoverProvider>();
 
@@ -84,8 +88,10 @@ The shell has **zero UI dependencies** — system fonts, scoped CSS, no JS beyon
 
 - Generic components need a closed type (`typeof(MudSelect<string>)`); the explorer tries
   `string` then `int` automatically.
-- Complex-typed parameters are not drivable from generated controls (host `Parameter` presets
-  can still inject them); richer mappers come later (`Color`/`Icon` kinds are reserved).
+- Complex-typed parameters are generally not drivable from generated controls (host `Parameter`
+  presets can still inject them). Two exceptions are recognized structurally and get a real
+  control: color types (R/G/B properties + a string constructor) and icon types, the latter only
+  when the host registers a `Catalogue` for it — there is no such registration for `Color`.
 - Only the conventional `ChildContent` slot round-trips into the generated snippet.
 
 ## Roadmap

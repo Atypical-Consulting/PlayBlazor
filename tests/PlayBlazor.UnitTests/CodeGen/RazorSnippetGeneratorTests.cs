@@ -225,4 +225,33 @@ public class RazorSnippetGeneratorTests
         RazorSnippetGenerator.Generate(descriptor, new PlaygroundState())
             .Should().Be("""<GenericFixture TItem="int" />""");
     }
+
+    [Test]
+    public void Generate_CataloguedIconValue_OmitsTheAttribute_SinceItHasNoLiteralForm()
+    {
+        var options = new PlayBlazorOptions().Catalogue(new Dictionary<string, CatalogueFixture.Glyph>(StringComparer.Ordinal)
+        {
+            ["Save"] = new("<path d='save' />"),
+        });
+        var descriptor = new ReflectionCatalogProvider(options: options).Describe(typeof(CatalogueFixture));
+        var state = new PlaygroundState();
+        state.Set("Icon", new CatalogueFixture.Glyph("<path d='save' />"));
+
+        // Glyph has no defined Razor text form; emitting whatever ToString() happens to return
+        // would look like real markup but not compile — omitting the attribute is honest,
+        // copy-pasteable output, exactly what a host with no catalogue registered would produce.
+        RazorSnippetGenerator.Generate(descriptor, state, options)
+            .Should().Be("<CatalogueFixture />");
+    }
+
+    [Test]
+    public void Generate_StringIconValue_StillAppearsVerbatim_LikeAMudBlazorIconString()
+    {
+        var descriptor = new ReflectionCatalogProvider().Describe(typeof(CatalogueFixture));
+        var state = new PlaygroundState();
+        state.Set("TrailingIcon", "<path d='trailing' />");
+
+        RazorSnippetGenerator.Generate(descriptor, state)
+            .Should().Be("""<CatalogueFixture TrailingIcon="<path d='trailing' />" />""");
+    }
 }
