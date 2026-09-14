@@ -190,7 +190,8 @@ public static class RazorSnippetGenerator
 
             if (state.IsModified(parameter.Name))
             {
-                if (state.GetValue(parameter) is { } value && FormatValue(value, parameter.Kind) is { } text)
+                if (state.GetValue(parameter) is { } value
+                    && AttributeValue(component.Type, parameter, value) is { } text)
                 {
                     attributes.Add((parameter.Name, text));
                 }
@@ -203,7 +204,7 @@ public static class RazorSnippetGenerator
                 {
                     attributes.Add((parameter.Name, src));
                 }
-                else if (FormatValue(preset, parameter.Kind) is { } text)
+                else if (AttributeValue(component.Type, parameter, preset) is { } text)
                 {
                     attributes.Add((parameter.Name, text));
                 }
@@ -247,24 +248,45 @@ public static class RazorSnippetGenerator
         }
         else if (slotChildren.Count > 0 || childContentFromHost || childText is not null)
         {
+            // Razor refuses to mix loose child content with explicit child-content elements:
+            // `<C>text<TitleTemplate>…</TitleTemplate></C>` is RZ9996 "Unrecognized child content".
+            // So as soon as a named slot is on the tag, the child content has to be named too, in
+            // its own <ChildContent> element — anything else emits markup that does not compile.
+            var nameChildContent = slotChildren.Count > 0 && (childText is not null || childContentFromHost);
+            var contentIndent = nameChildContent ? "        " : "    ";
+
             // Structured children each get their own line.
             tokens.Add(new Token(TokenKind.Punctuation, ">"));
+            if (nameChildContent)
+            {
+                tokens.Add(new Token(TokenKind.Punctuation, "\n    <"));
+                tokens.Add(new Token(TokenKind.Tag, "ChildContent"));
+                tokens.Add(new Token(TokenKind.Punctuation, ">"));
+            }
+
             if (childText is not null)
             {
-                tokens.Add(new Token(TokenKind.Punctuation, "\n    "));
+                tokens.Add(new Token(TokenKind.Punctuation, "\n" + contentIndent));
                 tokens.Add(new Token(TokenKind.ChildContent, childText));
             }
             else if (childContentFromHost)
             {
                 if (childContentSource is null)
                 {
-                    tokens.Add(new Token(TokenKind.Punctuation, "\n    "));
+                    tokens.Add(new Token(TokenKind.Punctuation, "\n" + contentIndent));
                     tokens.Add(new Token(TokenKind.Comment, HostContentComment));
                 }
                 else
                 {
-                    AppendSourceLines(tokens, childContentSource, "    ");
+                    AppendSourceLines(tokens, childContentSource, contentIndent);
                 }
+            }
+
+            if (nameChildContent)
+            {
+                tokens.Add(new Token(TokenKind.Punctuation, "\n    </"));
+                tokens.Add(new Token(TokenKind.Tag, "ChildContent"));
+                tokens.Add(new Token(TokenKind.Punctuation, ">"));
             }
 
             foreach (var (slot, source) in slotChildren)
@@ -433,6 +455,51 @@ public static class RazorSnippetGenerator
 
     private static string EscapeContent(string text)
         => text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+
+    /// <summary>
+    /// The text to put inside the attribute's quotes, or <c>null</c> when nothing honest can be
+    /// shown. A <see cref="string" /> landing in a parameter DECLARED as one of the component's
+    /// own type parameters is wrapped as an explicit expression: Razor treats a quoted value as a
+    /// string literal only when the declared type is <c>string</c>, and parses it as C# otherwise,
+    /// so the bare form is a compile error — <c>Value="Apple"</c> is CS0103, and
+    /// <c>Item="Design mockups"</c> is CS1003 as soon as the text contains a space. Fluent UI
+    /// documents the same shape itself, in <c>FluentOptionString</c>'s XML doc:
+    /// <c>&lt;FluentOption TValue="string" Value="@("My value")" /&gt;</c>. Values that already
+    /// format as C# expressions (numbers, <c>true</c>, <c>Enum.Member</c>) need no wrapping.
+    /// </summary>
+    private static string? AttributeValue(Type componentType, ParameterDescriptor parameter, object value)
+    {
+        if (FormatValue(value, parameter.Kind) is not { } text)
+        {
+            return null;
+        }
+
+        return value is string && IsTypeParameterTyped(componentType, parameter.Name)
+            ? $"@(\"{text}\")"
+            : text;
+    }
+
+    /// <summary>
+    /// Whether the parameter's declaration on the OPEN generic definition is one of the
+    /// component's type parameters (<c>TValue Value</c>, <c>TItem Item</c>). The descriptor
+    /// carries the CLOSED type, where <c>TValue</c> has already become <c>string</c> — which is
+    /// precisely why the bare literal looks safe and is not.
+    /// </summary>
+    private static bool IsTypeParameterTyped(Type componentType, string parameterName)
+    {
+        if (!componentType.IsConstructedGenericType)
+        {
+            return false;
+        }
+
+        var declared = componentType.GetGenericTypeDefinition().GetProperty(parameterName)?.PropertyType;
+        if (declared is null)
+        {
+            return false;
+        }
+
+        return (Nullable.GetUnderlyingType(declared) ?? declared).IsGenericParameter;
+    }
 
     /// <summary>
     /// The value's Razor-attribute literal, or <c>null</c> when nothing honest can be shown.
