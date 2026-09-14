@@ -616,13 +616,20 @@ git commit -m "Feat: give the Fluent validation and required-value components wh
 
 ---
 
-### Tasks 5-8: Presets and variants, by component family
+### Task 5: Presets for the form inputs
 
-These four tasks are the bulk of the curation and share one shape, so the shape is specified once here and each task names its own components. **This is a specification of repetitive work, not a placeholder** — each task below lists exactly which components it covers and what each one needs; what is not repeated four times is the worked example of the shape.
+**Files:**
+- Modify: `demo/PlayBlazor.Demo.FluentUI/FluentPlaygroundConfig.cs`
+- Create or modify: `demo/PlayBlazor.Demo.FluentUI/FluentDemoFragments.razor`, `FluentDemoFragmentSources.cs`
+- Test: `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`
+
+**Interfaces:**
+- Consumes: `ComponentOptionsBuilder<T>.Slot(string, RenderFragment, string?)`, `.Parameter(string, object?, string?)`, `.Variant(string, Action<PlaygroundVariantBuilder>)`; the `Person` record and `SampleRows` list from Task 3.
+- Produces: presets for the components listed below. The other preset tasks add to the same `Configure` method and the same test file.
 
 **The shape, per component:**
 
-1. A **slot preset** for its content parameter, with realistic sample text and its `source` string — so the bench shows something and the generated snippet reproduces it. Mirror `demo/PlayBlazor.Demo.MudBlazor/PlaygroundConfig.cs`'s use of `.Slot(name, fragment, source)` and its `DemoFragments.razor` / `DemoFragmentSources.cs` pair for anything longer than a line of text.
+1. A **slot preset** for its content parameter, with realistic sample text and its `source` string — so the bench shows something and the generated snippet reproduces it. Mirror `demo/PlayBlazor.Demo.MudBlazor/PlaygroundConfig.cs`'s use of `.Slot(name, fragment, source)`, and its `DemoFragments.razor` / `DemoFragmentSources.cs` pair for anything longer than a line of text.
 2. A **parameter preset** for any value the component needs to look like itself (an icon, a label, a count).
 3. **Two to four variants**, each named after a real configuration from Fluent's own documentation, via `.Variant(name, v => v.Set(...))`.
 
@@ -636,39 +643,312 @@ Worked example, in the style the MudBlazor config already uses:
             .Variant("Disabled", v => v.Set(nameof(FluentButton.Disabled), true));
 ```
 
-**Check each component's real API on the pinned RC before writing its entry.** `Appearance` above is illustrative; v5 may name it differently, and a v4-era guess is exactly what blocked an earlier task in this project.
+**Check each component's real API on the pinned RC before writing its entry.** `Appearance` above is illustrative; v5 may name it differently, and a v4-era guess is exactly what blocked an earlier task in this project — `FluentDesignTheme` and `FluentMenuProvider` turned out not to exist at all.
 
-**Per task, the same five steps:**
+**The components:** `FluentTextInput`, `FluentTextArea`, `FluentNumberInput<int>`, `FluentSelect`, `FluentCombobox`, `FluentAutocomplete`, `FluentListbox`, `FluentOption`, `FluentCheckbox`, `FluentSwitch`, `FluentRadio`, `FluentRadioGroup`, `FluentSlider`, `FluentDatePicker<DateTime?>`, `FluentTimePicker<DateTime?>`, `FluentCalendar<DateTime?>`, `FluentColorPicker`, `FluentColorPickerInput`, `FluentField`, `FluentLabel`, `FluentInputFile`.
 
-- [ ] **Step 1:** Write a test in `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs` asserting that every component this task names has at least one preset, slot or variant registered — a `[TestCase]` per component, so a missing one is named in the failure rather than hidden in a count.
-- [ ] **Step 2:** Run it and watch it fail, naming the components that have nothing yet.
-- [ ] **Step 3:** Add the entries to `FluentPlaygroundConfig.Configure`, grouped under a comment naming the family.
-- [ ] **Step 4:** Run the filtered test; expect all PASS. Then run the full suite.
-- [ ] **Step 5:** Commit with `Feat: preset the Fluent <family> components`.
+Fifteen of these take an `IEnumerable<string>` of items, per `sweeps/2026-unsupported.txt` — give them one shared sample list at class scope rather than repeating a literal per component. The four generic closings come from Task 2; use those exact closings, never new ones.
 
-### Task 5 — Form inputs
+- [ ] **Step 1: Write the failing test**
 
-`FluentTextInput`, `FluentTextArea`, `FluentNumberInput<int>`, `FluentSelect`, `FluentCombobox`, `FluentAutocomplete`, `FluentListbox`, `FluentOption`, `FluentCheckbox`, `FluentSwitch`, `FluentRadio`, `FluentRadioGroup`, `FluentSlider`, `FluentDatePicker<DateTime?>`, `FluentTimePicker<DateTime?>`, `FluentCalendar<DateTime?>`, `FluentColorPicker`, `FluentColorPickerInput`, `FluentField`, `FluentLabel`, `FluentInputFile`.
+In `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`, add one `[TestCase]` per component this task names, driving a single assertion that the component carries at least one slot, parameter preset, variant or scaffold. One case per component, so a missing one is named in the failure rather than hidden in a count:
 
-Most take an `IEnumerable<string>` of items — the sweep counts 15 such parameters — so give those a shared sample list at class scope rather than repeating a literal.
+```csharp
+    [TestCase(typeof(FluentButton))]
+    // … one line per component in this task's list …
+    public void ComponentHasCuration(Type component)
+    {
+        var options = new PlayBlazorOptions();
+        FluentPlaygroundConfig.Configure(options);
 
-### Task 6 — Display and layout
+        var curated = options.GetVariants(component).Count > 0
+            || options.TryGetSlotPreset(component, "ChildContent", out _)
+            || options.TryGetScaffold(component, out _);
 
-`FluentBadge`, `FluentCounterBadge`, `FluentPresenceBadge`, `FluentAvatar`, `FluentCard`, `FluentDivider`, `FluentGrid`, `FluentGridItem`, `FluentStack`, `FluentSpacer`, `FluentLayout`, `FluentLayoutItem`, `FluentText`, `FluentHighlighter`, `FluentImage`, `FluentSkeleton`, `FluentProgress`, `FluentProgressBar`, `FluentProgressRing`, `FluentSpinner`, `FluentRatingDisplay`, `FluentMultiSplitter`, `FluentMultiSplitterPane`.
+        curated.Should().BeTrue($"{component.Name} should carry a preset, slot or variant");
+    }
+```
 
-### Task 7 — Navigation and overlays
+If the file does not exist yet, create it with `using AwesomeAssertions; using Microsoft.FluentUI.AspNetCore.Components; using NUnit.Framework; using PlayBlazor.Demo.FluentUI;` and `namespace PlayBlazor.UnitTests.Shell;`. If a sibling preset task already created it, add your cases to it — never a second file.
 
-`FluentNav`, `FluentNavItem`, `FluentNavCategory`, `FluentNavSectionHeader`, `FluentTabs`, `FluentTab`, `FluentMenu`, `FluentMenuItem`, `FluentMenuList`, `FluentMenuButton`, `FluentSplitButton`, `FluentToggleButton`, `FluentCompoundButton`, `FluentAnchorButton`, `FluentLink`, `FluentAccordion`, `FluentAccordionItem`, `FluentDialog`, `FluentDialogBody`, `FluentMessageBox`, `FluentMessageBar`, `FluentToast`, `FluentTooltip`, `FluentPopover`, `FluentOverlay`, `FluentWizard`, `FluentWizardStep`, `FluentTreeView`, `FluentTreeItem`, `FluentAppBar`, `FluentAppBarItem`.
+- [ ] **Step 2: Run it and watch it fail**
 
-`FluentTooltip` reported *"&lt;FluentTooltipProvider /&gt; needs to be added to the main layout"* in the sweep but the demo's `MainLayout` renders `<FluentProviders />`, which composes it — so check whether it already works in the app before scaffolding it, and record which you found.
+Run: `PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"`
 
-### Task 8 — Data
+Expected: this task's cases FAIL, each naming its component. Capture the output.
 
-`FluentDataGrid<Person>`, `FluentDataGridRow`, `FluentDataGridCell`, `PropertyColumn<Person, string>`, `SelectColumn<Person>`, `TemplateColumn<Person>`, `HierarchicalSelectColumn<Person>`, `FluentPaginator`, `FluentSortableList`, `FluentDragContainer`, `FluentDropZone`, `FluentOverflow`, `FluentPullToRefresh`, `FluentKeyCode`.
+- [ ] **Step 3: Add the entries**
+
+Add them to `FluentPlaygroundConfig.Configure`, grouped under a comment naming the family (form input).
+
+- [ ] **Step 4: Run the filtered test, then the whole suite**
+
+```bash
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests
+```
+
+Expected: the new cases PASS and nothing else regressed.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add demo/PlayBlazor.Demo.FluentUI tests/PlayBlazor.UnitTests
+git commit -m "Feat: preset the Fluent form input components"
+```
+
+---
+
+### Task 6: Presets for display and layout
+
+**Files:**
+- Modify: `demo/PlayBlazor.Demo.FluentUI/FluentPlaygroundConfig.cs`
+- Create or modify: `demo/PlayBlazor.Demo.FluentUI/FluentDemoFragments.razor`, `FluentDemoFragmentSources.cs`
+- Test: `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`
+
+**Interfaces:**
+- Consumes: `ComponentOptionsBuilder<T>.Slot(string, RenderFragment, string?)`, `.Parameter(string, object?, string?)`, `.Variant(string, Action<PlaygroundVariantBuilder>)`; the `Person` record and `SampleRows` list from Task 3.
+- Produces: presets for the components listed below. The other preset tasks add to the same `Configure` method and the same test file.
+
+**The shape, per component:**
+
+1. A **slot preset** for its content parameter, with realistic sample text and its `source` string — so the bench shows something and the generated snippet reproduces it. Mirror `demo/PlayBlazor.Demo.MudBlazor/PlaygroundConfig.cs`'s use of `.Slot(name, fragment, source)`, and its `DemoFragments.razor` / `DemoFragmentSources.cs` pair for anything longer than a line of text.
+2. A **parameter preset** for any value the component needs to look like itself (an icon, a label, a count).
+3. **Two to four variants**, each named after a real configuration from Fluent's own documentation, via `.Variant(name, v => v.Set(...))`.
+
+Worked example, in the style the MudBlazor config already uses:
+
+```csharp
+        options.For<FluentButton>()
+            .Slot(nameof(FluentButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
+            .Variant("Accent", v => v.Set(nameof(FluentButton.Appearance), Appearance.Accent))
+            .Variant("Lightweight", v => v.Set(nameof(FluentButton.Appearance), Appearance.Lightweight))
+            .Variant("Disabled", v => v.Set(nameof(FluentButton.Disabled), true));
+```
+
+**Check each component's real API on the pinned RC before writing its entry.** `Appearance` above is illustrative; v5 may name it differently, and a v4-era guess is exactly what blocked an earlier task in this project — `FluentDesignTheme` and `FluentMenuProvider` turned out not to exist at all.
+
+**The components:** `FluentBadge`, `FluentCounterBadge`, `FluentPresenceBadge`, `FluentAvatar`, `FluentCard`, `FluentDivider`, `FluentGrid`, `FluentGridItem`, `FluentStack`, `FluentSpacer`, `FluentLayout`, `FluentLayoutItem`, `FluentText`, `FluentHighlighter`, `FluentImage`, `FluentSkeleton`, `FluentProgress`, `FluentProgressBar`, `FluentProgressRing`, `FluentSpinner`, `FluentRatingDisplay`, `FluentMultiSplitter`, `FluentMultiSplitterPane`.
+
+`FluentBadge` and `FluentCounterBadge` each carry `OffsetX`/`OffsetY` typed `SByte?`, which the sweep lists as undrivable — leave them alone; a numeric control for `sbyte` is outside this task.
+
+- [ ] **Step 1: Write the failing test**
+
+In `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`, add one `[TestCase]` per component this task names, driving a single assertion that the component carries at least one slot, parameter preset, variant or scaffold. One case per component, so a missing one is named in the failure rather than hidden in a count:
+
+```csharp
+    [TestCase(typeof(FluentButton))]
+    // … one line per component in this task's list …
+    public void ComponentHasCuration(Type component)
+    {
+        var options = new PlayBlazorOptions();
+        FluentPlaygroundConfig.Configure(options);
+
+        var curated = options.GetVariants(component).Count > 0
+            || options.TryGetSlotPreset(component, "ChildContent", out _)
+            || options.TryGetScaffold(component, out _);
+
+        curated.Should().BeTrue($"{component.Name} should carry a preset, slot or variant");
+    }
+```
+
+If the file does not exist yet, create it with `using AwesomeAssertions; using Microsoft.FluentUI.AspNetCore.Components; using NUnit.Framework; using PlayBlazor.Demo.FluentUI;` and `namespace PlayBlazor.UnitTests.Shell;`. If a sibling preset task already created it, add your cases to it — never a second file.
+
+- [ ] **Step 2: Run it and watch it fail**
+
+Run: `PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"`
+
+Expected: this task's cases FAIL, each naming its component. Capture the output.
+
+- [ ] **Step 3: Add the entries**
+
+Add them to `FluentPlaygroundConfig.Configure`, grouped under a comment naming the family (display and layout).
+
+- [ ] **Step 4: Run the filtered test, then the whole suite**
+
+```bash
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests
+```
+
+Expected: the new cases PASS and nothing else regressed.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add demo/PlayBlazor.Demo.FluentUI tests/PlayBlazor.UnitTests
+git commit -m "Feat: preset the Fluent display and layout components"
+```
+
+---
+
+### Task 7: Presets for navigation and overlays
+
+**Files:**
+- Modify: `demo/PlayBlazor.Demo.FluentUI/FluentPlaygroundConfig.cs`
+- Create or modify: `demo/PlayBlazor.Demo.FluentUI/FluentDemoFragments.razor`, `FluentDemoFragmentSources.cs`
+- Test: `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`
+
+**Interfaces:**
+- Consumes: `ComponentOptionsBuilder<T>.Slot(string, RenderFragment, string?)`, `.Parameter(string, object?, string?)`, `.Variant(string, Action<PlaygroundVariantBuilder>)`; the `Person` record and `SampleRows` list from Task 3.
+- Produces: presets for the components listed below. The other preset tasks add to the same `Configure` method and the same test file.
+
+**The shape, per component:**
+
+1. A **slot preset** for its content parameter, with realistic sample text and its `source` string — so the bench shows something and the generated snippet reproduces it. Mirror `demo/PlayBlazor.Demo.MudBlazor/PlaygroundConfig.cs`'s use of `.Slot(name, fragment, source)`, and its `DemoFragments.razor` / `DemoFragmentSources.cs` pair for anything longer than a line of text.
+2. A **parameter preset** for any value the component needs to look like itself (an icon, a label, a count).
+3. **Two to four variants**, each named after a real configuration from Fluent's own documentation, via `.Variant(name, v => v.Set(...))`.
+
+Worked example, in the style the MudBlazor config already uses:
+
+```csharp
+        options.For<FluentButton>()
+            .Slot(nameof(FluentButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
+            .Variant("Accent", v => v.Set(nameof(FluentButton.Appearance), Appearance.Accent))
+            .Variant("Lightweight", v => v.Set(nameof(FluentButton.Appearance), Appearance.Lightweight))
+            .Variant("Disabled", v => v.Set(nameof(FluentButton.Disabled), true));
+```
+
+**Check each component's real API on the pinned RC before writing its entry.** `Appearance` above is illustrative; v5 may name it differently, and a v4-era guess is exactly what blocked an earlier task in this project — `FluentDesignTheme` and `FluentMenuProvider` turned out not to exist at all.
+
+**The components:** `FluentNav`, `FluentNavItem`, `FluentNavCategory`, `FluentNavSectionHeader`, `FluentTabs`, `FluentTab`, `FluentMenu`, `FluentMenuItem`, `FluentMenuList`, `FluentMenuButton`, `FluentSplitButton`, `FluentToggleButton`, `FluentCompoundButton`, `FluentAnchorButton`, `FluentLink`, `FluentAccordion`, `FluentAccordionItem`, `FluentDialog`, `FluentDialogBody`, `FluentMessageBox`, `FluentMessageBar`, `FluentToast`, `FluentTooltip`, `FluentPopover`, `FluentOverlay`, `FluentWizard`, `FluentWizardStep`, `FluentTreeView`, `FluentTreeItem`, `FluentAppBar`, `FluentAppBarItem`.
+
+Five of these already have a scaffold from Task 3 — `FluentNavItem`, `FluentNavCategory`, `FluentNavSectionHeader`, `FluentWizardStep`, `FluentAppBarItem`. Add presets to the SAME `options.For<T>()` chain rather than opening a second one for the same type.
+
+`FluentTooltip` reported *"&lt;FluentTooltipProvider /&gt; needs to be added to the main layout"* in the sweep, but the demo's `MainLayout` renders `<FluentProviders />`, which composes that provider — check whether it already works in the running app before adding anything for it, and record which you found in your report.
+
+- [ ] **Step 1: Write the failing test**
+
+In `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`, add one `[TestCase]` per component this task names, driving a single assertion that the component carries at least one slot, parameter preset, variant or scaffold. One case per component, so a missing one is named in the failure rather than hidden in a count:
+
+```csharp
+    [TestCase(typeof(FluentButton))]
+    // … one line per component in this task's list …
+    public void ComponentHasCuration(Type component)
+    {
+        var options = new PlayBlazorOptions();
+        FluentPlaygroundConfig.Configure(options);
+
+        var curated = options.GetVariants(component).Count > 0
+            || options.TryGetSlotPreset(component, "ChildContent", out _)
+            || options.TryGetScaffold(component, out _);
+
+        curated.Should().BeTrue($"{component.Name} should carry a preset, slot or variant");
+    }
+```
+
+If the file does not exist yet, create it with `using AwesomeAssertions; using Microsoft.FluentUI.AspNetCore.Components; using NUnit.Framework; using PlayBlazor.Demo.FluentUI;` and `namespace PlayBlazor.UnitTests.Shell;`. If a sibling preset task already created it, add your cases to it — never a second file.
+
+- [ ] **Step 2: Run it and watch it fail**
+
+Run: `PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"`
+
+Expected: this task's cases FAIL, each naming its component. Capture the output.
+
+- [ ] **Step 3: Add the entries**
+
+Add them to `FluentPlaygroundConfig.Configure`, grouped under a comment naming the family (navigation and overlay).
+
+- [ ] **Step 4: Run the filtered test, then the whole suite**
+
+```bash
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests
+```
+
+Expected: the new cases PASS and nothing else regressed.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add demo/PlayBlazor.Demo.FluentUI tests/PlayBlazor.UnitTests
+git commit -m "Feat: preset the Fluent navigation and overlay components"
+```
+
+---
+
+### Task 8: Presets for the data components
+
+**Files:**
+- Modify: `demo/PlayBlazor.Demo.FluentUI/FluentPlaygroundConfig.cs`
+- Create or modify: `demo/PlayBlazor.Demo.FluentUI/FluentDemoFragments.razor`, `FluentDemoFragmentSources.cs`
+- Test: `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`
+
+**Interfaces:**
+- Consumes: `ComponentOptionsBuilder<T>.Slot(string, RenderFragment, string?)`, `.Parameter(string, object?, string?)`, `.Variant(string, Action<PlaygroundVariantBuilder>)`; the `Person` record and `SampleRows` list from Task 3.
+- Produces: presets for the components listed below. The other preset tasks add to the same `Configure` method and the same test file.
+
+**The shape, per component:**
+
+1. A **slot preset** for its content parameter, with realistic sample text and its `source` string — so the bench shows something and the generated snippet reproduces it. Mirror `demo/PlayBlazor.Demo.MudBlazor/PlaygroundConfig.cs`'s use of `.Slot(name, fragment, source)`, and its `DemoFragments.razor` / `DemoFragmentSources.cs` pair for anything longer than a line of text.
+2. A **parameter preset** for any value the component needs to look like itself (an icon, a label, a count).
+3. **Two to four variants**, each named after a real configuration from Fluent's own documentation, via `.Variant(name, v => v.Set(...))`.
+
+Worked example, in the style the MudBlazor config already uses:
+
+```csharp
+        options.For<FluentButton>()
+            .Slot(nameof(FluentButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
+            .Variant("Accent", v => v.Set(nameof(FluentButton.Appearance), Appearance.Accent))
+            .Variant("Lightweight", v => v.Set(nameof(FluentButton.Appearance), Appearance.Lightweight))
+            .Variant("Disabled", v => v.Set(nameof(FluentButton.Disabled), true));
+```
+
+**Check each component's real API on the pinned RC before writing its entry.** `Appearance` above is illustrative; v5 may name it differently, and a v4-era guess is exactly what blocked an earlier task in this project — `FluentDesignTheme` and `FluentMenuProvider` turned out not to exist at all.
+
+**The components:** `FluentDataGrid<Person>`, `FluentDataGridRow`, `FluentDataGridCell`, `PropertyColumn<Person, string>`, `SelectColumn<Person>`, `TemplateColumn<Person>`, `HierarchicalSelectColumn<Person>`, `FluentPaginator`, `FluentSortableList`, `FluentDragContainer`, `FluentDropZone`, `FluentOverflow`, `FluentPullToRefresh`, `FluentKeyCode`.
+
+Reuse the `Person` record and the `SampleRows` list Task 3 created — never define new ones. The grid and the four column types already have scaffolds from Task 3; add presets to the same `options.For<T>()` chains.
 
 `FluentErrorBoundary` and `Defer` are deliberately absent: Task 2 puts both in the `Infrastructure` exclusion set, so they are never listed and need no presets.
 
-Reuse the `SampleRows` list and `Person` record from Task 3 rather than defining new ones.
+- [ ] **Step 1: Write the failing test**
+
+In `tests/PlayBlazor.UnitTests/Shell/FluentPresetTests.cs`, add one `[TestCase]` per component this task names, driving a single assertion that the component carries at least one slot, parameter preset, variant or scaffold. One case per component, so a missing one is named in the failure rather than hidden in a count:
+
+```csharp
+    [TestCase(typeof(FluentButton))]
+    // … one line per component in this task's list …
+    public void ComponentHasCuration(Type component)
+    {
+        var options = new PlayBlazorOptions();
+        FluentPlaygroundConfig.Configure(options);
+
+        var curated = options.GetVariants(component).Count > 0
+            || options.TryGetSlotPreset(component, "ChildContent", out _)
+            || options.TryGetScaffold(component, out _);
+
+        curated.Should().BeTrue($"{component.Name} should carry a preset, slot or variant");
+    }
+```
+
+If the file does not exist yet, create it with `using AwesomeAssertions; using Microsoft.FluentUI.AspNetCore.Components; using NUnit.Framework; using PlayBlazor.Demo.FluentUI;` and `namespace PlayBlazor.UnitTests.Shell;`. If a sibling preset task already created it, add your cases to it — never a second file.
+
+- [ ] **Step 2: Run it and watch it fail**
+
+Run: `PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"`
+
+Expected: this task's cases FAIL, each naming its component. Capture the output.
+
+- [ ] **Step 3: Add the entries**
+
+Add them to `FluentPlaygroundConfig.Configure`, grouped under a comment naming the family (data).
+
+- [ ] **Step 4: Run the filtered test, then the whole suite**
+
+```bash
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~FluentPresetTests"
+PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests
+```
+
+Expected: the new cases PASS and nothing else regressed.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add demo/PlayBlazor.Demo.FluentUI tests/PlayBlazor.UnitTests
+git commit -m "Feat: preset the Fluent data components"
+```
 
 ---
 
