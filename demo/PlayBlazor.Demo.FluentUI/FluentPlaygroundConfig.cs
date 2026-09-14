@@ -33,6 +33,15 @@ public static class FluentPlaygroundConfig
     ];
 
     /// <summary>
+    /// Shared items for every list-driven form input closed at <c>&lt;string,string&gt;</c> or
+    /// <c>&lt;string&gt;</c> — <see cref="FluentSelect{TOption,TValue}"/>,
+    /// <see cref="FluentCombobox{TOption,TValue}"/>, <see cref="FluentAutocomplete{TOption,TValue}"/>
+    /// and <see cref="FluentListbox{TOption,TValue}"/> all take an <c>IEnumerable&lt;string&gt;</c>
+    /// Items — one literal, not one per component.
+    /// </summary>
+    private static readonly string[] ListOptions = ["Red", "Green", "Blue", "Yellow", "Purple"];
+
+    /// <summary>
     /// The model behind the <see cref="EditForm"/> nested inside the
     /// <see cref="FluentWizardStepValidator"/> scaffold — its content is irrelevant, only the
     /// <see cref="EditContext"/> it cascades to the validator matters.
@@ -63,10 +72,31 @@ public static class FluentPlaygroundConfig
 
         // Discovery closes an open generic with string, then int. All four of these reject string
         // at construction, naming the types they accept — so declare the closing worth playing.
-        options.For<FluentCalendar<DateTime?>>();
-        options.For<FluentDatePicker<DateTime?>>();
-        options.For<FluentTimePicker<DateTime?>>();
-        options.For<FluentNumberInput<int>>();
+        options.For<FluentCalendar<DateTime?>>()
+            .Parameter(nameof(FluentCalendar<DateTime?>.Label), "Choose a date")
+            .Variant("Multiple selection", v => v.Set(nameof(FluentCalendar<DateTime?>.SelectMode), CalendarSelectMode.Multiple))
+            .Variant("Range selection", v => v.Set(nameof(FluentCalendar<DateTime?>.SelectMode), CalendarSelectMode.Range))
+            .Variant("Years view", v => v.Set(nameof(FluentCalendar<DateTime?>.View), CalendarViews.Years));
+
+        options.For<FluentDatePicker<DateTime?>>()
+            .Parameter(nameof(FluentDatePicker<DateTime?>.Label), "Production date")
+            .Variant("Native", v => v.Set(nameof(FluentDatePicker<DateTime?>.RenderStyle), DatePickerRenderStyle.Native))
+            .Variant("Years view", v => v.Set(nameof(FluentDatePicker<DateTime?>.View), CalendarViews.Years));
+
+        options.For<FluentTimePicker<DateTime?>>()
+            .Parameter(nameof(FluentTimePicker<DateTime?>.Label), "Pick a time")
+            .Parameter(nameof(FluentTimePicker<DateTime?>.Increment), 15)
+            .Variant("Office hours", v => v.Set(nameof(FluentTimePicker<DateTime?>.StartHour), 8).Set(nameof(FluentTimePicker<DateTime?>.EndHour), 20))
+            .Variant("Native", v => v.Set(nameof(FluentTimePicker<DateTime?>.RenderStyle), DatePickerRenderStyle.Native));
+
+        options.For<FluentNumberInput<int>>()
+            .Parameter(nameof(FluentNumberInput<int>.Label), "Quantity")
+            .Parameter(nameof(FluentNumberInput<int>.Value), 42)
+            .Parameter(nameof(FluentNumberInput<int>.Min), 0)
+            .Parameter(nameof(FluentNumberInput<int>.Max), 100)
+            .Variant("Step 5", v => v.Set(nameof(FluentNumberInput<int>.Step), 5))
+            .Variant("Filled darker", v => v.Set(nameof(FluentNumberInput<int>.Appearance), TextInputAppearance.FilledDarker))
+            .Variant("Large", v => v.Set(nameof(FluentNumberInput<int>.Size), TextInputSize.Large));
 
         // Fluent UI icons are Icon OBJECTS, not markup strings: without a catalogue the
         // parameter resolves to ControlKind.Unsupported and gets no control at all.
@@ -128,7 +158,10 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentRadioGroup>\n    {specimen}\n</FluentRadioGroup>")
-            .Related<FluentRadioGroup<string>>();
+            .Related<FluentRadioGroup<string>>()
+            .Parameter(nameof(FluentRadio<string>.Value), "Apple")
+            .Parameter(nameof(FluentRadio<string>.Label), "Apple")
+            .Variant("Disabled", v => v.Set(nameof(FluentRadio<string>.Disabled), true));
 
         // FluentWizard takes its steps through a "Steps" fragment, not ChildContent.
         options.For<FluentWizardStep>()
@@ -307,6 +340,126 @@ public static class FluentPlaygroundConfig
         // instance, so it gets a Parameter preset rather than a Scaffold.
         options.For<FluentPaginator>()
             .Parameter(nameof(FluentPaginator.State), new PaginationState(), "@_paginationState");
+
+        // --- Form inputs: text, choice, value-entry and file components. ---
+        // Verified against the pinned 5.0.0-rc.5 assembly and the official v5 docs site
+        // (fluentui-blazor-v5.azurewebsites.net) rather than assumed — v4-era guesses are exactly
+        // what stalled an earlier task in this project.
+
+        options.For<FluentTextInput>()
+            .Parameter(nameof(FluentTextInput.Label), "Name")
+            .Parameter(nameof(FluentTextInput.Placeholder), "Ada Lovelace")
+            .Variant("Underline", v => v.Set(nameof(FluentTextInput.Appearance), TextInputAppearance.Underline))
+            .Variant("Filled darker", v => v.Set(nameof(FluentTextInput.Appearance), TextInputAppearance.FilledDarker))
+            .Variant("Email", v => v.Set(nameof(FluentTextInput.TextInputType), TextInputType.Email).Set(nameof(FluentTextInput.Label), "Email"));
+
+        options.For<FluentTextArea>()
+            .Parameter(nameof(FluentTextArea.Label), "Description")
+            .Parameter(nameof(FluentTextArea.Value), "A brief description of the specimen.")
+            .Variant("Filled darker", v => v.Set(nameof(FluentTextArea.Appearance), TextAreaAppearance.FilledDarker))
+            .Variant("Small", v => v.Set(nameof(FluentTextArea.Size), TextAreaSize.Small))
+            .Variant("Resizable", v => v.Set(nameof(FluentTextArea.Resize), TextAreaResize.Both));
+
+        options.For<FluentSelect<string, string>>()
+            .Parameter(nameof(FluentSelect<string, string>.Label), "Color")
+            .Parameter(nameof(FluentSelect<string, string>.Placeholder), "Select a color")
+            .Parameter(nameof(FluentSelect<string, string>.Items), ListOptions, "@_colors")
+            .Variant("Filled darker", v => v.Set(nameof(FluentSelect<string, string>.Appearance), ListAppearance.FilledDarker))
+            .Variant("Small", v => v.Set(nameof(FluentSelect<string, string>.Size), ListSize.Small))
+            .Variant("Large", v => v.Set(nameof(FluentSelect<string, string>.Size), ListSize.Large));
+
+        options.For<FluentCombobox<string, string>>()
+            .Parameter(nameof(FluentCombobox<string, string>.Label), "Color")
+            .Parameter(nameof(FluentCombobox<string, string>.Placeholder), "Select your color")
+            .Parameter(nameof(FluentCombobox<string, string>.Items), ListOptions, "@_colors")
+            .Variant("Multiple", v => v.Set(nameof(FluentCombobox<string, string>.Multiple), true))
+            .Variant("Filled darker", v => v.Set(nameof(FluentCombobox<string, string>.Appearance), ListAppearance.FilledDarker));
+
+        options.For<FluentAutocomplete<string, string>>()
+            .Parameter(nameof(FluentAutocomplete<string, string>.Label), "Colors")
+            .Parameter(nameof(FluentAutocomplete<string, string>.Placeholder), "Type to search...")
+            .Parameter(nameof(FluentAutocomplete<string, string>.Items), ListOptions, "@_colors")
+            .Variant("Single selection", v => v.Set(nameof(FluentAutocomplete<string, string>.Multiple), false))
+            .Variant("Max 2 selections", v => v.Set(nameof(FluentAutocomplete<string, string>.MaximumSelectedOptions), 2));
+
+        options.For<FluentListbox<string, string>>()
+            .Parameter(nameof(FluentListbox<string, string>.Label), "Color")
+            .Parameter(nameof(FluentListbox<string, string>.Items), ListOptions, "@_colors")
+            .Variant("Filled darker", v => v.Set(nameof(FluentListbox<string, string>.Appearance), ListAppearance.FilledDarker))
+            .Variant("Transparent", v => v.Set(nameof(FluentListbox<string, string>.Appearance), ListAppearance.Transparent));
+
+        options.For<FluentOption<string>>()
+            .Parameter(nameof(FluentOption<string>.Value), "red")
+            .Parameter(nameof(FluentOption<string>.Text), "Red")
+            .Variant("Selected", v => v.Set(nameof(FluentOption<string>.Selected), true))
+            .Variant("Disabled", v => v.Set(nameof(FluentOption<string>.Disabled), true))
+            .Variant("With description", v => v.Set(nameof(FluentOption<string>.Description), "A warm, vivid color"));
+
+        options.For<FluentCheckbox>()
+            .Parameter(nameof(FluentCheckbox.Label), "I agree to the terms")
+            .Variant("Three-state", v => v.Set(nameof(FluentCheckbox.ThreeState), true))
+            .Variant("Circular", v => v.Set(nameof(FluentCheckbox.Shape), CheckboxShape.Circular))
+            .Variant("Large", v => v.Set(nameof(FluentCheckbox.Size), CheckboxSize.Large));
+
+        options.For<FluentSwitch>()
+            .Parameter(nameof(FluentSwitch.Label), "Notifications")
+            .Variant("Checked", v => v.Set(nameof(FluentSwitch.Value), true))
+            .Variant("Label above", v => v.Set(nameof(FluentSwitch.LabelPosition), LabelPosition.Above))
+            .Variant("Disabled", v => v.Set(nameof(FluentSwitch.Disabled), true));
+
+        // Basic Radio Group example straight off the docs: a Label per FluentRadio, one disabled.
+        options.For<FluentRadioGroup<string>>()
+            .Slot(nameof(FluentRadioGroup<string>.ChildContent), FluentDemoFragments.RadioOptions, FluentDemoFragmentSources.RadioOptions)
+            .Parameter(nameof(FluentRadioGroup<string>.Label), "Favorite fruit")
+            .Parameter(nameof(FluentRadioGroup<string>.Wrap), true)
+            .Variant("Vertical", v => v.Set(nameof(FluentRadioGroup<string>.Orientation), Orientation.Vertical))
+            .Variant("Required", v => v.Set(nameof(FluentRadioGroup<string>.Required), true));
+
+        options.For<FluentSlider<int>>()
+            .Parameter(nameof(FluentSlider<int>.Label), "Volume")
+            .Parameter(nameof(FluentSlider<int>.Value), 50)
+            .Variant("10-40 step 5", v => v.Set(nameof(FluentSlider<int>.Min), 10).Set(nameof(FluentSlider<int>.Max), 40).Set(nameof(FluentSlider<int>.Step), 5))
+            .Variant("Vertical", v => v.Set(nameof(FluentSlider<int>.Orientation), Orientation.Vertical))
+            .Variant("Small", v => v.Set(nameof(FluentSlider<int>.Size), SliderSize.Small));
+
+        options.For<FluentColorPicker>()
+            .Parameter(nameof(FluentColorPicker.SelectedColor), "#6d4aff")
+            .Variant("Color wheel", v => v.Set(nameof(FluentColorPicker.View), ColorPickerView.ColorWheel))
+            .Variant("HSV square", v => v.Set(nameof(FluentColorPicker.View), ColorPickerView.HsvSquare))
+            .Variant("Vertical", v => v.Set(nameof(FluentColorPicker.Orientation), Orientation.Vertical));
+
+        options.For<FluentColorPickerInput>()
+            .Parameter(nameof(FluentColorPickerInput.Value), "#0078D4")
+            .Parameter(nameof(FluentColorPickerInput.Label), "Brand color")
+            .Variant("Color wheel", v => v.Set(nameof(FluentColorPickerInput.View), ColorPickerView.ColorWheel))
+            .Variant("Swatch only", v => v.Set(nameof(FluentColorPickerInput.HideTextInput), true));
+
+        // FluentField wraps an input as its content parameter — IncludeInputSlot (true by
+        // default) does the slot="input" wiring, so a plain specimen is enough.
+        options.For<FluentField>()
+            .Slot(nameof(FluentField.ChildContent), b =>
+            {
+                b.OpenComponent<FluentTextInput>(0);
+                b.AddComponentParameter(1, nameof(FluentTextInput.Placeholder), "you@example.com");
+                b.CloseComponent();
+            }, "<FluentTextInput Placeholder=\"you@example.com\" />")
+            .Parameter(nameof(FluentField.Label), "Email")
+            .Variant("Required", v => v.Set(nameof(FluentField.Required), true))
+            .Variant("Small", v => v.Set(nameof(FluentField.Size), FieldSize.Small))
+            .Variant("Disabled", v => v.Set(nameof(FluentField.Disabled), true));
+
+        options.For<FluentLabel>()
+            .Slot(nameof(FluentLabel.ChildContent), b => b.AddContent(0, "Selected fruit: Banana"), "Selected fruit: Banana")
+            .Variant("Required marker", v => v.Set(nameof(FluentLabel.Required), true))
+            .Variant("Semibold", v => v.Set(nameof(FluentLabel.Weight), LabelWeight.Semibold))
+            .Variant("Large", v => v.Set(nameof(FluentLabel.Size), LabelSize.Large));
+
+        options.For<FluentInputFile>()
+            .Slot(nameof(FluentInputFile.ChildContent), b => b.AddContent(0, "Drag files here, or click to browse."), "Drag files here, or click to browse.")
+            .Parameter(nameof(FluentInputFile.Accept), "image/*")
+            .Parameter(nameof(FluentInputFile.Height), "200px")
+            .Variant("Multiple files", v => v.Set(nameof(FluentInputFile.Multiple), true).Set(nameof(FluentInputFile.MaximumFileCount), 4))
+            .Variant("No drag-drop zone", v => v.Set(nameof(FluentInputFile.DragDropZoneVisible), false));
     }
 
     // StripArity is duplicated from the MudBlazor config on purpose: the two apps share no code

@@ -1,0 +1,10 @@
+@namespace PlayBlazor.Demo.FluentUI
+@* Static example fragments used as slot presets — official-docs-flavored content. *@
+@code {
+    public static RenderFragment RadioOptions => @<text>
+        <FluentRadio TValue="string" Label="Apple" />
+        <FluentRadio TValue="string" Label="Banana" />
+        <FluentRadio TValue="string" Label="Orange" Disabled="true" />
+        <FluentRadio TValue="string" Label="Kiwi" />
+    </text>;
+}
