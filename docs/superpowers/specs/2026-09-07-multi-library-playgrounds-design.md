@@ -282,3 +282,13 @@ c'est le filet de sécurité de la restructuration.
   MudBlazor le sera. `ComponentDescriptor` porte déjà `Warning` pour l'échec d'instanciation ;
   un second signal, lu depuis `ObsoleteAttribute` à la découverte (le message inclus, quand la
   librairie en fournit un), suffirait. À traiter dans le package, pas dans un `PlaygroundConfig`.
+- **Une `Variant` abandonne silencieusement les valeurs `Slot` et `Unsupported`** — découvert
+  en curant la navigation de Fluent v5 (jalon 3, tâche 7), vérifié deux fois dans
+  `ParameterDictionaryBuilder`. Une variante peut poser le *texte* d'un slot (une `string`),
+  mais un `RenderFragment` passé à `v.Set(...)` n'atteint jamais le spécimen, pas plus qu'une
+  valeur de kind `Unsupported`. Rien ne le signale : ni erreur de compilation, ni exception,
+  ni avertissement — la variante s'affiche, la puce se clique, et le rendu ne change pas.
+  C'est aussi indocumenté, ce qui a contraint toute une tâche de curation à ne varier que des
+  scalaires, des enums et des icônes sans que l'auteur sache pourquoi ses premiers essais
+  restaient sans effet. Un avertissement en Debug au moment où la variante est enregistrée
+  attraperait toute cette classe de défauts d'un coup, à l'endroit où l'auteur peut agir.
