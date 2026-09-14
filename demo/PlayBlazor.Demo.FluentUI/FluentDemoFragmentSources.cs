@@ -68,6 +68,15 @@ public static class FluentDemoFragmentSources
 </FluentNavCategory>
 """;
 
+    // Includes its own FluentNav: FluentNavItem throws outside one — see the fragment's comment.
+    public const string HamburgerNav = """
+<FluentNav>
+    <FluentNavItem>Dashboard</FluentNavItem>
+    <FluentNavItem>Reports</FluentNavItem>
+    <FluentNavItem>Settings</FluentNavItem>
+</FluentNav>
+""";
+
     public const string NavCategoryItems = """
 <FluentNavItem>Profile</FluentNavItem>
 <FluentNavItem>Security</FluentNavItem>
@@ -166,14 +175,17 @@ public static class FluentDemoFragmentSources
 <FluentDataGridCell>Analyst</FluentDataGridCell>
 """;
 
+    // Item is typed TItem, not string, so Razor parses a bare quoted value as a C# expression —
+    // `Item="To do"` does not compile. @("To do") is the form the library documents for this shape
+    // (FluentOptionString's XML doc) and the form the fragment itself uses.
     public const string DropZones = """
-<FluentDropZone Item="To do" Droppable="true">
+<FluentDropZone Item="@("To do")" Droppable="true">
     <FluentText Block="true">Design mockups</FluentText>
 </FluentDropZone>
-<FluentDropZone Item="Doing" Droppable="true">
+<FluentDropZone Item="@("Doing")" Droppable="true">
     <FluentText Block="true">Implement API</FluentText>
 </FluentDropZone>
-<FluentDropZone Item="Done" Droppable="true">
+<FluentDropZone Item="@("Done")" Droppable="true">
     <FluentText Block="true">Ship v1</FluentText>
 </FluentDropZone>
 """;

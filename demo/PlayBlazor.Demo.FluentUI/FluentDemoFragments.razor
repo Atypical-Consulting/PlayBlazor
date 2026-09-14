@@ -62,6 +62,17 @@
         </FluentNavCategory>
     </text>;
 
+    // The hamburger drawer is NOT a FluentNav, so its content has to bring its own: FluentNavItem
+    // reads a [CascadingParameter] FluentNav without null-checking it and throws a
+    // NullReferenceException outside one (caught by the render sweep, as an ESCAPED exception).
+    public static RenderFragment HamburgerNav => @<text>
+        <FluentNav>
+            <FluentNavItem>Dashboard</FluentNavItem>
+            <FluentNavItem>Reports</FluentNavItem>
+            <FluentNavItem>Settings</FluentNavItem>
+        </FluentNav>
+    </text>;
+
     public static RenderFragment NavCategoryItems => @<text>
         <FluentNavItem>Profile</FluentNavItem>
         <FluentNavItem>Security</FluentNavItem>
@@ -175,21 +186,21 @@
 
     // FluentDropZone.Item is typed TItem (an open generic parameter), so Razor cannot treat a
     // quoted value as a string literal the way it does for a property declared as plain `string`
-    // — it parses "To do" as a C# expression instead. Hoisting to fields sidesteps that.
-    private static readonly string ToDoZone = "To do";
-    private static readonly string DoingZone = "Doing";
-    private static readonly string DoneZone = "Done";
-
+    // — it parses `To do` as a C# expression instead, which is CS1003 on the space and CS0103
+    // without one. The explicit-expression form @("To do") is what the library documents for this
+    // shape itself (see FluentOptionString's XML doc), and it is what the source string beside
+    // this fragment publishes verbatim — keep the two identical.
+    //
     // Same standalone-vs-nested reasoning as RowCells: FluentDragContainer cascades TItem to its
     // FluentDropZone children, so the source string omits the explicit TItem this fragment needs.
     public static RenderFragment DropZones => @<text>
-        <FluentDropZone TItem="string" Item="@ToDoZone" Droppable="true">
+        <FluentDropZone TItem="string" Item="@("To do")" Droppable="true">
             <FluentText Block="true">Design mockups</FluentText>
         </FluentDropZone>
-        <FluentDropZone TItem="string" Item="@DoingZone" Droppable="true">
+        <FluentDropZone TItem="string" Item="@("Doing")" Droppable="true">
             <FluentText Block="true">Implement API</FluentText>
         </FluentDropZone>
-        <FluentDropZone TItem="string" Item="@DoneZone" Droppable="true">
+        <FluentDropZone TItem="string" Item="@("Done")" Droppable="true">
             <FluentText Block="true">Ship v1</FluentText>
         </FluentDropZone>
     </text>;

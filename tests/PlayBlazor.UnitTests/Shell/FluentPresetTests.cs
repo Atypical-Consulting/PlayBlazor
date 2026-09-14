@@ -73,6 +73,10 @@ public class FluentPresetTests
     [TestCase(typeof(FluentMultiSplitterPane))]
 
     // --- Task 7: navigation and overlays ---
+    [TestCase(typeof(FluentButton))]
+    [TestCase(typeof(FluentErrorBoundary))]
+    [TestCase(typeof(FluentLabelInfo))]
+    [TestCase(typeof(FluentLayoutHamburger))]
     [TestCase(typeof(FluentNav))]
     [TestCase(typeof(FluentNavItem))]
     [TestCase(typeof(FluentNavCategory))]

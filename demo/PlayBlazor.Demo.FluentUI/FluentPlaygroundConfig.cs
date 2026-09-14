@@ -8,8 +8,12 @@ using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 namespace PlayBlazor.Demo.FluentUI;
 
 /// <summary>
-/// Curation for the Fluent UI showcase. A seed only: the curated surface, presets, scaffolds
-/// and variants land in milestone 3, driven by the [Explicit] sweep's inventory.
+/// Curation for the Fluent UI showcase: the listed surface, and a preset, scaffold, slot or
+/// variant for every component on it. Each block carries the reasoning for its choices, argued
+/// from the pinned 5.0.0-rc.5 assembly (decompiled <c>BuildRenderTree</c>, the shipped
+/// <c>lib.module.js</c> and <c>bundle.scp.css</c>) rather than from the XML docs, which
+/// disagree with the code in places. A few components are deliberately left imperfect rather
+/// than faked — the comment beside each says exactly what does not work and why.
 /// </summary>
 public static class FluentPlaygroundConfig
 {
@@ -201,7 +205,9 @@ public static class FluentPlaygroundConfig
                 builder.AddAttribute(1, nameof(FluentRadioGroup<string>.ChildContent), specimen);
                 builder.CloseComponent();
             },
-            "<FluentRadioGroup>\n    {specimen}\n</FluentRadioGroup>")
+            // TValue is spelled out: a parent cannot infer its type argument from a child, and
+            // FluentRadioGroup has no Value here to infer it from either (RZ10001 without it).
+            "<FluentRadioGroup TValue=\"string\">\n    {specimen}\n</FluentRadioGroup>")
             .Related<FluentRadioGroup<string>>()
             .Parameter(nameof(FluentRadio<string>.Value), "Apple")
             .Parameter(nameof(FluentRadio<string>.Label), "Apple")
@@ -333,7 +339,11 @@ public static class FluentPlaygroundConfig
         // SelectColumn.Property decides checked state; its own default always returns false, so a
         // Parameter preset is what makes the sample grid open with a row already checked.
         options.For<SelectColumn<Person>>()
-            .Parameter(nameof(SelectColumn<Person>.Property), (Func<Person, bool>)(p => p.Name == SampleRows[0].Name))
+            // Named source: the auto-generated placeholder would be `@_property`, which collides
+            // with PropertyColumn's Expression<Func<Person, string>> of the same parameter name —
+            // a reader copying both snippets into one file would need two `_property` fields of
+            // different types. `Func<TGridItem, bool>` is a predicate, so name it like one.
+            .Parameter(nameof(SelectColumn<Person>.Property), (Func<Person, bool>)(p => p.Name == SampleRows[0].Name), "@_isSelected")
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<FluentDataGrid<Person>>(0);
@@ -374,7 +384,7 @@ public static class FluentPlaygroundConfig
         // SelectMode must stay Multiple — HierarchicalSelectColumn.OnParametersSet throws otherwise —
         // so variants vary other real selection-chrome axes instead.
         options.For<HierarchicalSelectColumn<Person>>()
-            .Parameter(nameof(HierarchicalSelectColumn<Person>.Property), (Func<Person, bool>)(p => p.Name == SampleRows[0].Name))
+            .Parameter(nameof(HierarchicalSelectColumn<Person>.Property), (Func<Person, bool>)(p => p.Name == SampleRows[0].Name), "@_isSelected")
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<FluentDataGrid<Person>>(0);
@@ -502,7 +512,9 @@ public static class FluentPlaygroundConfig
                 builder.AddAttribute(1, nameof(FluentDragContainer<string>.ChildContent), specimen);
                 builder.CloseComponent();
             },
-            "<FluentDragContainer>\n    {specimen}\n</FluentDragContainer>")
+            // Same as FluentRadioGroup above: TItem cascades DOWN from the container, so the
+            // container itself has to be told what it is (RZ10001 without the explicit TItem).
+            "<FluentDragContainer TItem=\"string\">\n    {specimen}\n</FluentDragContainer>")
             .Related<FluentDragContainer<string>>()
             .Parameter(nameof(FluentDropZone<string>.Item), "Design mockups")
             .Parameter(nameof(FluentDropZone<string>.Draggable), true)
@@ -623,7 +635,9 @@ public static class FluentPlaygroundConfig
                 b.OpenComponent<FluentTextInput>(0);
                 b.AddComponentParameter(1, nameof(FluentTextInput.Placeholder), "you@example.com");
                 b.CloseComponent();
-            }, "<FluentTextInput Placeholder=\"you@example.com\" />")
+                // "@@" is the Razor escape for a literal "@": pasted unescaped, `you@example.com`
+                // is parsed as the implicit expression `@example.com` and does not compile.
+            }, "<FluentTextInput Placeholder=\"you@@example.com\" />")
             .Parameter(nameof(FluentField.Label), "Email")
             .Variant("Required", v => v.Set(nameof(FluentField.Required), true))
             .Variant("Small", v => v.Set(nameof(FluentField.Size), FieldSize.Small))
@@ -634,6 +648,21 @@ public static class FluentPlaygroundConfig
             .Variant("Required marker", v => v.Set(nameof(FluentLabel.Required), true))
             .Variant("Semibold", v => v.Set(nameof(FluentLabel.Weight), LabelWeight.Semibold))
             .Variant("Large", v => v.Set(nameof(FluentLabel.Size), LabelSize.Large));
+
+        // FluentLabelInfo only renders its info button when HasInfoContent holds — InfoTemplate,
+        // InfoText or InfoActionLink must be non-empty — so without a preset the specimen is
+        // indistinguishable from a bare FluentLabel. Note what is NOT curated here: OnInitialized
+        // THROWS ("must be used within a FluentField") if Size, Weight, Disabled or Required is
+        // set while the cascading FluentField is null, which is exactly the standalone bench, so
+        // the four axes FluentLabel above varies are the four this subclass must not touch.
+        options.For<FluentLabelInfo>()
+            .Slot(nameof(FluentLabelInfo.ChildContent), b => b.AddContent(0, "Retention period"), "Retention period")
+            .Parameter(nameof(FluentLabelInfo.InfoText), "Deleted items are recoverable until this period elapses.")
+            .Variant("With a learn-more link", v => v
+                .Set(nameof(FluentLabelInfo.InfoActionLink), "https://learn.microsoft.com/fluentui-blazor")
+                .Set(nameof(FluentLabelInfo.InfoActionText), "Read the retention policy"))
+            .Variant("Narrow popover", v => v.Set(nameof(FluentLabelInfo.MaxWidth), "180px"))
+            .Variant("Filled info icon", v => v.Set(nameof(FluentLabelInfo.InfoIcon), FluentIconCatalogue.All["Circle"]));
 
         options.For<FluentInputFile>()
             .Slot(nameof(FluentInputFile.ChildContent), b => b.AddContent(0, "Drag files here, or click to browse."), "Drag files here, or click to browse.")
@@ -655,20 +684,28 @@ public static class FluentPlaygroundConfig
             .Variant("Danger", v => v.Set(nameof(FluentBadge.Color), BadgeColor.Danger))
             .Variant("Rounded, large", v => v.Set(nameof(FluentBadge.Shape), BadgeShape.Rounded).Set(nameof(FluentBadge.Size), BadgeSize.Large));
 
-        // FluentCounterBadge.Count defaults to null, and ShowWhen only renders it once Count > 0
-        // (verified in BuildRenderTree: _render is false without a dot, a pattern or a positive
-        // count) — without a preset the bench would show an empty badge shell.
+        // FluentCounterBadge.Count defaults to null. The shell always renders (ShowEmpty defaults
+        // to true, which short-circuits _render), but GetCount() returns Count only when
+        // ShowWhen(Count) holds, and the default ShowWhen is `Count => Count > 0` — so with no
+        // Count the "count" attribute is omitted, the web component falls back to its own
+        // `count = 0` with `showZero = false`, and displayValue() returns "": an empty badge
+        // shell. The Count preset is what puts a number on the stage.
         options.For<FluentCounterBadge>()
             .Parameter(nameof(FluentCounterBadge.Count), 4)
             .Variant("Overflow", v => v.Set(nameof(FluentCounterBadge.Count), 128).Set(nameof(FluentCounterBadge.OverflowCount), 99))
             .Variant("Dot", v => v.Set(nameof(FluentCounterBadge.Dot), true))
-            // GetCount() (decompiled) returns Count only when ShowWhen(Count) is true, and the
-            // default ShowWhen is `Count => Count > 0` — Count=0 always fails that predicate, so
-            // ShowZero alone (it only gates whether the badge SHELL renders, via _render) never
-            // makes the "count" attribute appear. ShowWhen must be overridden too.
+            // Count=0 + ShowZero=true is the whole mechanism, and it works on the JS side rather
+            // than the C# one: 0 fails the default ShowWhen predicate, so GetCount() returns null
+            // and Blazor omits "count" entirely — whereupon <fluent-counter-badge>'s constructor
+            // default `this.count = 0` takes over and, with `show-zero` present, displayValue()
+            // renders "0" (verified in the shipped lib.module.js). ShowWhen is deliberately NOT
+            // overridden here: its type is Func<int?, bool>, which discovery classifies as
+            // ControlKind.Unsupported, and ParameterDictionaryBuilder's Unsupported branch reads
+            // only the host preset — never PlaygroundState — so a Variant value for it would be
+            // silently discarded, exactly as the FluentPaginator comment above records. This chip
+            // needs no such value, which is why it is not asking for one.
             .Variant("Show zero", v => v.Set(nameof(FluentCounterBadge.Count), 0)
-                .Set(nameof(FluentCounterBadge.ShowZero), true)
-                .Set(nameof(FluentCounterBadge.ShowWhen), (Func<int?, bool>)(count => count.HasValue)));
+                .Set(nameof(FluentCounterBadge.ShowZero), true));
 
         // FluentPresenceBadge.Status already defaults to Available and picks its own icon
         // internally (GetPresenceIcon), so it looks like itself with no preset — only variants.
@@ -816,6 +853,22 @@ public static class FluentPlaygroundConfig
             .Variant("Header", v => v.Set(nameof(FluentLayoutItem.Area), LayoutArea.Header))
             .Variant("Sticky", v => v.Set(nameof(FluentLayoutItem.Sticky), true));
 
+        // FluentLayoutHamburger renders its toggle button plus a closed <fluent-drawer>, and
+        // NavigationContent falls back to the parent FluentLayout's Navigation area whenever
+        // ChildContent is null — there is no parent on a standalone bench, so without the slot the
+        // drawer would open empty. It is deliberately NOT scaffolded inside a FluentLayout: the
+        // stylesheet's hiding rule is scoped to `.fluent-layout-item[area=header]
+        // .fluent-layout-hamburger { display: none }`, so putting the specimen where it belongs is
+        // exactly what would make it invisible, while standalone it shows.
+        options.For<FluentLayoutHamburger>()
+            .Parameter(nameof(FluentLayoutHamburger.PanelHeader), "Navigation")
+            .Slot(nameof(FluentLayoutHamburger.ChildContent), FluentDemoFragments.HamburgerNav, FluentDemoFragmentSources.HamburgerNav)
+            .Related<FluentLayout>()
+            .Variant("Panel from the end", v => v.Set(nameof(FluentLayoutHamburger.PanelPosition), DialogAlignment.End))
+            .Variant("Small panel", v => v.Set(nameof(FluentLayoutHamburger.PanelSize), DialogSize.Small))
+            .Variant("Shown on desktop too", v => v.Set(nameof(FluentLayoutHamburger.Display), HamburgerDisplay.DesktopMobile))
+            .Variant("Custom icon", v => v.Set(nameof(FluentLayoutHamburger.Icon), FluentIconCatalogue.All["Settings"]));
+
         options.For<FluentText>()
             .Slot(nameof(FluentText.ChildContent), b => b.AddContent(0, "The quick brown fox jumps over the lazy dog"), "The quick brown fox jumps over the lazy dog")
             .Variant("Heading", v => v.Set(nameof(FluentText.As), TextTag.H4).Set(nameof(FluentText.Size), TextSize.Size600).Set(nameof(FluentText.Weight), TextWeight.Semibold))
@@ -848,16 +901,23 @@ public static class FluentPlaygroundConfig
         // preset storage is keyed by exact Type, not walked up the inheritance chain. The
         // pragma is scoped to this block only; TreatWarningsAsErrors would otherwise fail the
         // build on the very obsolescence this task's brief asks us to curate around.
+        // No Value preset, and no "Indeterminate" chip, on purpose. Value is int? and null is how
+        // this component says "indeterminate" (BuildRenderTree passes Value straight to the
+        // `value` attribute; omitted, the web component animates) — but a Variant CANNOT carry
+        // null: both ApplyVariant implementations skip null values (PlaygroundView.razor.cs,
+        // PlaygroundWorkspace.razor.cs), and even if they did not, OnControlChanged treats null
+        // from a control as Reset, which falls back to the host preset. So a Value preset would
+        // make the indeterminate state unreachable from the bench entirely. Leaving Value unset
+        // puts the component's own default — the indeterminate bar — on the stage, and makes the
+        // determinate state a chip that really does change the render.
 #pragma warning disable CS0618
         options.For<FluentProgress>()
-            .Parameter(nameof(FluentProgress.Value), 65)
-            .Variant("Indeterminate", v => v.Set(nameof(FluentProgress.Value), null))
+            .Variant("Determinate, 65%", v => v.Set(nameof(FluentProgress.Value), 65))
             .Variant("Success", v => v.Set(nameof(FluentProgress.State), ProgressState.Success));
 #pragma warning restore CS0618
 
         options.For<FluentProgressBar>()
-            .Parameter(nameof(FluentProgressBar.Value), 65)
-            .Variant("Indeterminate", v => v.Set(nameof(FluentProgressBar.Value), null))
+            .Variant("Determinate, 65%", v => v.Set(nameof(FluentProgressBar.Value), 65))
             .Variant("Error state", v => v.Set(nameof(FluentProgressBar.State), ProgressState.Error))
             .Variant("Large, square", v => v.Set(nameof(FluentProgressBar.Thickness), ProgressThickness.Large).Set(nameof(FluentProgressBar.Shape), ProgressShape.Square));
 
@@ -990,6 +1050,24 @@ public static class FluentPlaygroundConfig
             .Variant("Primary", v => v.Set(nameof(FluentMenuButton.Appearance), ButtonAppearance.Primary))
             .Variant("Icon only", v => v.Set(nameof(FluentMenuButton.IconOnly), true).Set(nameof(FluentMenuButton.IconStart), FluentIconCatalogue.All["Settings"]))
             .Variant("Disabled", v => v.Set(nameof(FluentMenuButton.Disabled), true));
+
+        // The flagship bench on the landing page, and the base class of FluentToggleButton and
+        // FluentCompoundButton below. BuildRenderTree emits `icon-only` whenever BOTH ChildContent
+        // and Label are null, so an uncurated FluentButton renders as a bare icon-sized box with
+        // nothing in it — the ChildContent slot is what makes the specimen a button at all.
+        // Appearance is the widest visible axis, but ButtonAppearance.Default is written out as a
+        // null `appearance` attribute, so a "Default" chip would be indistinguishable from the
+        // base; the three chips below are the appearances that actually change the element.
+        // Loading swaps IconStart for a <fluent-spinner> and forces `disabled`, which is why it is
+        // its own chip rather than a combination.
+        options.For<FluentButton>()
+            .Slot(nameof(FluentButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
+            .Variant("Primary", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Primary))
+            .Variant("Outline", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Outline))
+            .Variant("Subtle", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Subtle))
+            .Variant("With icon", v => v.Set(nameof(FluentButton.IconStart), FluentIconCatalogue.All["Checkmark"]))
+            .Variant("Loading", v => v.Set(nameof(FluentButton.Loading), true))
+            .Variant("Disabled", v => v.Set(nameof(FluentButton.Disabled), true));
 
         options.For<FluentSplitButton>()
             .Slot(nameof(FluentSplitButton.ChildContent), FluentDemoFragments.SplitButtonItems, FluentDemoFragmentSources.SplitButtonItems)
@@ -1175,6 +1253,19 @@ public static class FluentPlaygroundConfig
             .Variant("Interactive", v => v.Set(nameof(FluentOverlay.Interactive), true))
             .Variant("Full screen", v => v.Set(nameof(FluentOverlay.FullScreen), true))
             .Variant("Low opacity", v => v.Set(nameof(FluentOverlay.Opacity), 15));
+
+        // FluentErrorBoundary renders ChildContent in a plain <div> until something below it
+        // throws — the slot is therefore the whole of what the bench can show, and without it the
+        // specimen is an empty div. Its error chrome (a <fluent-dialog type="alert"> shown by an
+        // inline script) is reachable only from a real exception in a real child, which no preset
+        // can stage, so DisplayErrorDetails and HideChildContentOnError are honest parameters whose
+        // effect this static bench cannot display. They still drive the real component, and the
+        // generated snippet reflects them — that is what the chips are for here.
+        options.For<FluentErrorBoundary>()
+            .Slot(nameof(FluentErrorBoundary.ChildContent), b => b.AddContent(0, "Everything below this line is guarded."), "Everything below this line is guarded.")
+            .Variant("Show the error message", v => v.Set(nameof(FluentErrorBoundary.DisplayErrorDetails), ErrorBoundaryDetails.ErrorMessage))
+            .Variant("Show the stack trace", v => v.Set(nameof(FluentErrorBoundary.DisplayErrorDetails), ErrorBoundaryDetails.ErrorStack))
+            .Variant("Keep content on error", v => v.Set(nameof(FluentErrorBoundary.HideChildContentOnError), false));
 
         options.For<FluentWizard>()
             .Slot(nameof(FluentWizard.Steps), FluentDemoFragments.WizardSteps, FluentDemoFragmentSources.WizardSteps)
