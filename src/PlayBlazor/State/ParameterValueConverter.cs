@@ -13,9 +13,21 @@ public static class ParameterValueConverter
     /// <summary>Formats a value as the text a control shows and a permalink carries.</summary>
     /// <param name="parameter">The parameter, whose kind disambiguates types recognized structurally.</param>
     /// <param name="value">The value to format.</param>
+    /// <param name="catalogue">
+    /// The host catalogue for this parameter's type, when one exists. A catalogued value is
+    /// carried as its NAME, which keeps a permalink short and survives the value changing shape.
+    /// The caller is responsible for supplying a catalogue only for a parameter it actually
+    /// drives — one passed for an unrelated parameter lets a colliding name win.
+    /// </param>
     /// <returns>The invariant-culture text, or <c>null</c> when the type has no text form.</returns>
-    public static string? Format(ParameterDescriptor parameter, object? value)
-        => value switch
+    public static string? Format(ParameterDescriptor parameter, object? value, CatalogueDefinition? catalogue = null)
+    {
+        if (catalogue is not null && catalogue.TryGetName(value, out var name))
+        {
+            return name;
+        }
+
+        return value switch
         {
             null => null,
             bool boolean => boolean ? "true" : "false",
@@ -33,15 +45,34 @@ public static class ParameterValueConverter
             _ when parameter.Kind == ControlKind.Color => value.ToString(),
             _ => null,
         };
+    }
 
     /// <summary>Parses text back into a parameter value — the exact inverse of <see cref="Format" />.</summary>
     /// <param name="parameter">The parameter whose type and kind drive the conversion.</param>
     /// <param name="text">The text to parse, in invariant culture.</param>
     /// <param name="value">The parsed value, when parsing succeeded.</param>
+    /// <param name="catalogue">
+    /// The host catalogue for this parameter's type, when one exists. A catalogue name wins;
+    /// anything else falls through to the type-based parsing, so permalinks written before a
+    /// catalogue existed still resolve. The caller is responsible for supplying a catalogue only
+    /// for a parameter it actually drives — one passed for an unrelated parameter lets a
+    /// colliding name win.
+    /// </param>
     /// <returns><c>false</c> for text that does not convert, leaving the caller's value untouched.</returns>
-    public static bool TryParse(ParameterDescriptor parameter, string text, out object? value)
+    public static bool TryParse(
+        ParameterDescriptor parameter,
+        string text,
+        out object? value,
+        CatalogueDefinition? catalogue = null)
     {
         value = null;
+
+        if (catalogue is not null && catalogue.Named.TryGetValue(text, out var catalogued) && catalogued is not null)
+        {
+            value = catalogued;
+            return true;
+        }
+
         var type = Nullable.GetUnderlyingType(parameter.Type) ?? parameter.Type;
         try
         {

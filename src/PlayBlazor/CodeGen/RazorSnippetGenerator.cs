@@ -188,19 +188,23 @@ public static class RazorSnippetGenerator
 
             if (state.IsModified(parameter.Name))
             {
-                if (state.GetValue(parameter) is { } value)
+                if (state.GetValue(parameter) is { } value && FormatValue(value, parameter.Kind) is { } text)
                 {
-                    attributes.Add((parameter.Name, FormatValue(value)));
+                    attributes.Add((parameter.Name, text));
                 }
             }
             else if (options is not null
                      && options.TryGetParameterPreset(component.Type, parameter.Name, out var preset)
                      && preset is not null)
             {
-                attributes.Add((parameter.Name,
-                    options.TryGetParameterSource(component.Type, parameter.Name, out var src)
-                        ? src
-                        : FormatValue(preset)));
+                if (options.TryGetParameterSource(component.Type, parameter.Name, out var src))
+                {
+                    attributes.Add((parameter.Name, src));
+                }
+                else if (FormatValue(preset, parameter.Kind) is { } text)
+                {
+                    attributes.Add((parameter.Name, text));
+                }
             }
         }
 
@@ -428,7 +432,15 @@ public static class RazorSnippetGenerator
     private static string EscapeContent(string text)
         => text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
 
-    private static string FormatValue(object value)
+    /// <summary>
+    /// The value's Razor-attribute literal, or <c>null</c> when nothing honest can be shown.
+    /// A catalogued icon value (<see cref="ControlKind.Icon"/> driving a host's own type, not a
+    /// recognized string) has no defined Razor text form — falling through to
+    /// <see cref="object.ToString"/> would quote whatever that override happens to produce
+    /// (often just the type's own name), which looks authoritative and does not compile. A
+    /// missing attribute is what a host with no catalogue registered would produce instead.
+    /// </summary>
+    private static string? FormatValue(object value, ControlKind kind)
         => value switch
         {
             bool boolean => boolean ? "true" : "false",
@@ -437,6 +449,7 @@ public static class RazorSnippetGenerator
             Array array => string.Join(", ", array.Cast<object?>()
                 .Select(static item => Convert.ToString(item, CultureInfo.InvariantCulture))),
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ when kind == ControlKind.Icon => null,
             _ => value.ToString() ?? string.Empty,
         };
 }

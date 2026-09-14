@@ -19,8 +19,13 @@ public static class PlaygroundStateSerializer
     /// <param name="descriptor">The played component's descriptor.</param>
     /// <param name="state">The modifications to capture; values with no text form are skipped.</param>
     /// <param name="environment">The environment flags; only non-default ones are written.</param>
+    /// <param name="options">The host configuration, consulted for value catalogues. Omit it and values are carried in their raw text form.</param>
     /// <returns>A base64url string safe to use as a query-string value.</returns>
-    public static string Encode(ComponentDescriptor descriptor, PlaygroundState state, PlaygroundEnvironment environment)
+    public static string Encode(
+        ComponentDescriptor descriptor,
+        PlaygroundState state,
+        PlaygroundEnvironment environment,
+        PlayBlazorOptions? options = null)
     {
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var parameter in descriptor.Parameters)
@@ -30,7 +35,7 @@ public static class PlaygroundStateSerializer
                 continue;
             }
 
-            var text = ParameterValueConverter.Format(parameter, state.GetValue(parameter));
+            var text = ParameterValueConverter.Format(parameter, state.GetValue(parameter), CatalogueFor(options, parameter));
 
             if (text is not null)
             {
@@ -54,11 +59,17 @@ public static class PlaygroundStateSerializer
     /// <param name="descriptor">The played component's descriptor.</param>
     /// <param name="state">The state to populate.</param>
     /// <param name="environment">The environment to populate.</param>
+    /// <param name="options">The host configuration, consulted for value catalogues. Omit it and values are carried in their raw text form.</param>
     /// <remarks>
     /// Never throws: malformed input, unknown parameter names and values that no longer parse are
     /// each ignored, so a permalink shared before an API change still opens.
     /// </remarks>
-    public static void Decode(string encoded, ComponentDescriptor descriptor, PlaygroundState state, PlaygroundEnvironment environment)
+    public static void Decode(
+        string encoded,
+        ComponentDescriptor descriptor,
+        PlaygroundState state,
+        PlaygroundEnvironment environment,
+        PlayBlazorOptions? options = null)
     {
         PermalinkPayload? payload;
         try
@@ -98,12 +109,24 @@ public static class PlaygroundStateSerializer
             }
 
             // Mismatched values in a stale permalink simply fail to parse and are skipped.
-            if (ParameterValueConverter.TryParse(parameter, text, out var value))
+            if (ParameterValueConverter.TryParse(parameter, text, out var value, CatalogueFor(options, parameter)))
             {
                 state.Set(name, value);
             }
         }
     }
+
+    // Gated on Icon so a catalogue registered for a shared type (typically `string`) never widens
+    // beyond the kind it was meant to fill: without this check, a string catalogue would reach
+    // every ordinary ControlKind.Text parameter in the library too — a permalink carrying
+    // Label=Save would decode to the "Save" icon's markup instead of the literal text "Save".
+    // Mirrors the identical gate at discovery time in ReflectionCatalogProvider.
+    private static CatalogueDefinition? CatalogueFor(PlayBlazorOptions? options, ParameterDescriptor parameter)
+        => parameter.Kind == ControlKind.Icon
+           && options is not null
+           && options.TryGetCatalogue(parameter.Type, out var catalogue)
+            ? catalogue
+            : null;
 }
 
 internal sealed record PermalinkPayload(

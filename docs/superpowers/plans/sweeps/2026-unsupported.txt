@@ -1,0 +1,147 @@
+[16:44:04.246] SynchronizedRunTestsAsync: ENTRY
+[16:44:04.251] SynchronizedRunTestsAsync: Creating executor
+NUnit Adapter 1.0.0.0: Test execution started
+Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
+   NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Explicit run
+=== MudBlazor ===
+ 178 × Object                                                       e.g. Bar.Tag, DataGridGroupRow.Tag, DataGridVirtualizeRow.Tag, Donut.Tag
+ 156 × Dictionary<String,Object>                                    e.g. Bar.UserAttributes, DataGridGroupRow.UserAttributes, DataGridVirtualizeRow.UserAttributes, Donut.UserAttributes
+  23 × CultureInfo                                                  e.g. MudAutocomplete.Culture, MudBooleanInput.Culture, MudCheckBox.Culture, MudColorPicker.Culture
+  16 × Func<String,Boolean>                                         e.g. HierarchyColumn.ButtonDisabledFunc, HierarchyColumn.InitiallyExpandedFunc, MudAutocomplete.ItemDisabledFunc, MudDataGrid.QuickFilter
+  14 × Func<IEnumerable<String>,String>                             e.g. HierarchyColumn.HeaderClassFunc, HierarchyColumn.HeaderStyleFunc, PropertyColumn.HeaderClassFunc, PropertyColumn.HeaderStyleFunc
+  13 × List<ChartSeries<Int32>>                                     e.g. Bar.ChartSeries, Donut.ChartSeries, HeatMap.ChartSeries, Legend.ChartSeries
+  13 × Func<SvgPath,ValueTuple<Double,Double>>                      e.g. Bar.TooltipPositionFunc, Donut.TooltipPositionFunc, HeatMap.TooltipPositionFunc, Legend.TooltipPositionFunc
+  13 × Expression<Func<String>>                                     e.g. MudAutocomplete.For, MudBooleanInput.For, MudCheckBox.For, MudFileUpload.For
+  10 × Func<String,String>                                          e.g. MudAutocomplete.ToStringFunc, MudDropZone.ItemsClassSelector, MudSelect.ToStringFunc, PropertyColumn.CellClassFunc
+   9 × IConverter<String,String>                                    e.g. MudAutocomplete.Converter, MudFileUpload.Converter, MudInput.Converter, MudInputString.Converter
+   8 × IEnumerable<String>                                          e.g. FooterCell.CurrentItems, FooterCell.GroupItems, MudCarousel.ItemsSource, MudDataGrid.Items
+   7 × Func<String,Object>                                          e.g. MudTableSortLabel.SortBy, PropertyColumn.GroupBy, PropertyColumn.SortBy, SelectColumn.GroupBy
+   6 × IEqualityComparer<String>                                    e.g. MudChipSet.Comparer, MudDataGrid.Comparer, MudList.Comparer, MudSelect.Comparer
+   6 × IMask                                                        e.g. MudColorPicker.Mask, MudDatePicker.Mask, MudDateRangePicker.Mask, MudMask.Mask
+   5 × HashSet<String>                                              e.g. MudDataGrid.SelectedItems, MudTable.SelectedItems, PropertyColumn.FilterOperators, SelectColumn.FilterOperators
+   4 × Func<GroupDefinition<String>,String>                         e.g. DataGridGroupRow.GroupClassFunc, DataGridGroupRow.GroupStyleFunc, MudDataGrid.GroupClassFunc, MudDataGrid.GroupStyleFunc
+   4 × IConverter<String,Boolean?>                                  e.g. MudBooleanInput.Converter, MudCheckBox.Converter, MudRadio.Converter, MudSwitch.Converter
+   4 × IReadOnlyCollection<String>                                  e.g. MudChipSet.SelectedValues, MudList.SelectedValues, MudSelect.SelectedValues, MudTreeView.SelectedValues
+   4 × Func<String,Int32,String>                                    e.g. MudDataGrid.RowClassFunc, MudDataGrid.RowStyleFunc, MudTable.RowClassFunc, MudTable.RowStyleFunc
+   3 × IGrouping<Object,String>                                     e.g. DataGridGroupRow.Items, DataGridVirtualizeRow.GroupedItems, MudTableGroupRow.Items
+   3 × Column<String>                                               e.g. FilterHeaderCell.Column, FooterCell.Column, HeaderCell.Column
+   3 × DialogOptions                                                e.g. MudDataGrid.EditDialogOptions, MudDialog.Options, MudDialogContainer.Options
+   3 × Action<Object>                                               e.g. MudTable.RowEditPreview, MudTable.RowEditCommit, MudTable.RowEditCancel
+   3 × IComparer<Object>                                            e.g. PropertyColumn.Comparer, SelectColumn.Comparer, TemplateColumn.Comparer
+   3 × AggregateDefinition<String>                                  e.g. PropertyColumn.AggregateDefinition, SelectColumn.AggregateDefinition, TemplateColumn.AggregateDefinition
+   2 × MudDataGrid<String>                                          e.g. DataGridGroupRow.DataGrid, DataGridVirtualizeRow.DataGrid
+   2 × IChartOptions                                                e.g. Legend.ChartOptions, MudChart.ChartOptions
+   2 × Func<DateTime,Boolean>                                       e.g. MudDatePicker.IsDateDisabledFunc, MudDateRangePicker.IsDateDisabledFunc
+   2 × Func<DateTime,String>                                        e.g. MudDatePicker.AdditionalDateClassesFunc, MudDateRangePicker.AdditionalDateClassesFunc
+   2 × IConverter<DateTime?,String>                                 e.g. MudDatePicker.Converter, MudDateRangePicker.Converter
+   2 × Expression<Func<DateTime?>>                                  e.g. MudDatePicker.For, MudDateRangePicker.For
+   2 × Func<String,String,Boolean>                                  e.g. MudDropContainer.ItemsSelector, MudDropContainer.CanDrop
+   2 × Func<TabInteractionEventArgs,Task>                           e.g. MudDynamicTabs.OnPreviewInteraction, MudTabs.OnPreviewInteraction
+   2 × IComparer<MudTabPanel>                                       e.g. MudDynamicTabs.SortComparer, MudTabs.SortComparer
+   2 × TableGroupDefinition<String>                                 e.g. MudTable.GroupBy, MudTableGroupRow.GroupDefinition
+   2 × IReadOnlyCollection<ITreeItemData<String>>                   e.g. MudTreeView.Items, MudTreeViewItem.Items
+   1 × BarChartOptions                                              e.g. Bar.ChartOptions
+   1 × BreadcrumbItem                                               e.g. BreadcrumbLink.Item
+   1 × GroupDefinition<String>                                      e.g. DataGridGroupRow.GroupDefinition
+   1 × DonutChartOptions                                            e.g. Donut.ChartOptions
+   1 × HeatMapChartOptions                                          e.g. HeatMap.ChartOptions
+   1 × List<SvgLegend>                                              e.g. Legend.Data
+   1 × LineChartOptions                                             e.g. Line.ChartOptions
+   1 × Func<String,CancellationToken,Task<IEnumerable<String>>>     e.g. MudAutocomplete.SearchFunc
+   1 × IReadOnlyList<BreadcrumbItem>                                e.g. MudBreadcrumbs.Items
+   1 × IEnumerable<MudColor>                                        e.g. MudColorPicker.Palette
+   1 × IConverter<MudColor,String>                                  e.g. MudColorPicker.Converter
+   1 × Expression<Func<MudColor>>                                   e.g. MudColorPicker.For
+   1 × Func<String,Task<DataGridEditFormAction>>                    e.g. MudDataGrid.CommittedItemChanges
+   1 × List<IFilterDefinition<String>>                              e.g. MudDataGrid.FilterDefinitions
+   1 × Dictionary<String,SortDefinition<String>>                    e.g. MudDataGrid.SortDefinitions
+   1 × ICloneStrategy<String>                                       e.g. MudDataGrid.CloneStrategy
+   1 × Func<GridState<String>,CancellationToken,Task<GridData<String>>> e.g. MudDataGrid.ServerData
+   1 × Func<GridStateVirtualize<String>,CancellationToken,Task<GridData<String>>> e.g. MudDataGrid.VirtualizeServerData
+   1 × IForm                                                        e.g. MudDataGrid.Validator
+   1 × DateRange                                                    e.g. MudDateRangePicker.DateRange
+   1 × Guid                                                         e.g. MudDialogContainer.Id
+   1 × Func<String,String,String>                                   e.g. MudDropContainer.ItemsClassSelector
+   1 × ElementReference?                                            e.g. MudElement.Ref
+   1 × IEnumerable<JsKeyModifier>                                   e.g. MudHotkey.KeyModifiers
+   1 × IDictionary<String,Int32>                                    e.g. MudPageContentNavigation.HierarchyMapper
+   1 × Range<String>                                                e.g. MudRangeInput.Value
+   1 × IConverter<Range<String>,String>                             e.g. MudRangeInput.Converter
+   1 × Expression<Func<Range<String>>>                              e.g. MudRangeInput.For
+   1 × Func<IReadOnlyList<String>,String>                           e.g. MudSelect.MultiSelectionTextFunc
+   1 × Snackbar                                                     e.g. MudSnackbarElement.Snackbar
+   1 × Func<StepperInteractionEventArgs,Task>                       e.g. MudStepper.OnPreviewInteraction
+   1 × Func<TableState,CancellationToken,Task<TableData<String>>>   e.g. MudTable.ServerData
+   1 × MudTheme                                                     e.g. MudThemeProvider.Theme
+   1 × Palette                                                      e.g. MudThemeProvider.CurrentPalette
+   1 × IConverter<TimeSpan?,String>                                 e.g. MudTimePicker.Converter
+   1 × Expression<Func<TimeSpan?>>                                  e.g. MudTimePicker.For
+   1 × Func<ITreeItemData<String>,Task<Boolean>>                    e.g. MudTreeView.FilterFunc
+   1 × Func<String,Task<IReadOnlyCollection<TreeItemData<String>>>> e.g. MudTreeView.ServerData
+   1 × ICollection<String>                                          e.g. MudVirtualize.Items
+   1 × ItemsProviderDelegate<String>                                e.g. MudVirtualize.ItemsProvider
+   1 × PieChartOptions                                              e.g. Pie.ChartOptions
+   1 × Expression<Func<String,String>>                              e.g. PropertyColumn.Property
+   1 × RadarChartOptions                                            e.g. Radar.ChartOptions
+   1 × RoseChartOptions                                             e.g. Rose.ChartOptions
+   1 × SankeyChartOptions                                           e.g. Sankey.ChartOptions
+   1 × ScatterPlotChartOptions                                      e.g. ScatterPlot.ChartOptions
+   1 × StackedBarChartOptions                                       e.g. StackedBar.ChartOptions
+   1 × TimeSeriesChartOptions                                       e.g. TimeSeries.ChartOptions
+
+=== Microsoft.FluentUI.AspNetCore.Components ===
+  98 × IReadOnlyDictionary<String,Object>                           e.g. AddTag.AdditionalAttributes, FluentAccordion.AdditionalAttributes, FluentAccordionItem.AdditionalAttributes, FluentAnchorButton.AdditionalAttributes
+  97 × Object                                                       e.g. FluentAccordion.Data, FluentAccordionItem.Data, FluentAnchorButton.Data, FluentAppBar.Data
+  20 × Func<String,String>                                          e.g. FluentAutocomplete.OptionValue, FluentAutocomplete.OptionValueToString, FluentAutocomplete.OptionText, FluentCombobox.OptionValue
+  16 × Func<IFluentField,Boolean>                                   e.g. FluentAutocomplete.MessageCondition, FluentCalendar.MessageCondition, FluentCheckbox.MessageCondition, FluentColorPickerInput.MessageCondition
+  16 × ILabelInfo                                                   e.g. FluentAutocomplete.LabelInfo, FluentCalendar.LabelInfo, FluentCheckbox.LabelInfo, FluentColorPickerInput.LabelInfo
+  16 × LambdaExpression                                             e.g. FluentAutocomplete.ValidationFieldFor, FluentCalendar.ValidationFieldFor, FluentCheckbox.ValidationFieldFor, FluentColorPickerInput.ValidationFieldFor
+  15 × IEnumerable<String>                                          e.g. FluentAutocomplete.SelectedItems, FluentAutocomplete.Items, FluentCalendar.SelectedDates, FluentCombobox.Items
+  14 × Expression<Func<String>>                                     e.g. FluentAutocomplete.SelectedItemExpression, FluentAutocomplete.ValueExpression, FluentCalendar.ValueExpression, FluentColorPickerInput.ValueExpression
+  14 × Func<String,Boolean>                                         e.g. FluentAutocomplete.OptionDisabled, FluentCalendar.DisabledDateFunc, FluentCombobox.OptionDisabled, FluentDataGrid.HasRowDetails
+   8 × ElementReference                                             e.g. FluentCheckbox.Element, FluentKeyCode.Element, FluentMultiSplitter.Element, FluentNumberInput.Element
+   6 × IEqualityComparer<String>                                    e.g. FluentAutocomplete.OptionSelectedComparer, FluentCombobox.OptionSelectedComparer, FluentListbox.OptionSelectedComparer, FluentSelect.OptionSelectedComparer
+   4 × Expression<Func<IEnumerable<String>>>                        e.g. FluentAutocomplete.SelectedItemsExpression, FluentCombobox.SelectedItemsExpression, FluentListbox.SelectedItemsExpression, FluentSelect.SelectedItemsExpression
+   4 × SByte?                                                       e.g. FluentBadge.OffsetX, FluentBadge.OffsetY, FluentCounterBadge.OffsetX, FluentCounterBadge.OffsetY
+   4 × CultureInfo                                                  e.g. FluentCalendar.Culture, FluentDatePicker.Culture, FluentNumberInput.Culture, FluentTimePicker.Culture
+   4 × ColumnMenuSettings                                           e.g. FluentDataGrid.ColumnResizeMenuSettings, FluentDataGrid.ColumnReorderMenuSettings, FluentDataGrid.ColumnSortMenuSettings, FluentDataGrid.ColumnOptionsMenuSettings
+   4 × IGridSort<String>                                            e.g. HierarchicalSelectColumn.SortBy, PropertyColumn.SortBy, SelectColumn.SortBy, TemplateColumn.SortBy
+   3 × Func<Boolean>                                                e.g. AddTag.TagWhen, AddTag.ContentWhen, FluentMenu.RenderWhen
+   3 × IReadOnlyList<String>                                        e.g. FluentColorPicker.Palette, FluentColorPickerInput.Palette, FluentDataGrid.ColumnOrder
+   3 × KeyCode[]                                                    e.g. FluentKeyCode.Only, FluentKeyCode.Ignore, FluentKeyCode.PreventDefaultOnly
+   3 × IEnumerable<ITreeViewItem>                                   e.g. FluentTreeItem.Items, FluentTreeView.Items, FluentTreeView.SelectedItems
+   2 × Expression<Func<Boolean>>                                    e.g. FluentCheckbox.ValueExpression, FluentSwitch.ValueExpression
+   2 × PaginationState                                              e.g. FluentDataGrid.Pagination, FluentPaginator.State
+   2 × KeyPress[]                                                   e.g. FluentTextArea.ChangeAfterKeyPress, FluentTextInput.ChangeAfterKeyPress
+   1 × ColumnBase<String>                                           e.g. ColumnReorderOptions.Column
+   1 × IEnumerable<IAppBarItem>                                     e.g. FluentAppBar.Items
+   1 × Func<String,IEnumerable<String>>                             e.g. FluentCalendar.SelectDatesHover
+   1 × Func<Int32?,Boolean>                                         e.g. FluentCounterBadge.ShowWhen
+   1 × IQueryable<String>                                           e.g. FluentDataGrid.Items
+   1 × Func<GridItemsProviderRequest<String>,Task>                  e.g. FluentDataGrid.RefreshItems
+   1 × GridItemsProvider<String>                                    e.g. FluentDataGrid.ItemsProvider
+   1 × Func<String,Object>                                          e.g. FluentDataGrid.ItemKey
+   1 × Func<Exception,Boolean>                                      e.g. FluentDataGrid.HandleLoadingError
+   1 × IDialogInstance                                              e.g. FluentDialog.Instance
+   1 × IFluentField                                                 e.g. FluentField.InputComponent
+   1 × UInt32                                                       e.g. FluentInputFile.BufferSize
+   1 × MarkupStringSanitized?                                       e.g. FluentMessageBox.Message
+   1 × Func<Task<Boolean>>                                          e.g. FluentPullToRefresh.OnRefreshAsync
+   1 × UInt16                                                       e.g. FluentSlider.ImmediateDelay
+   1 × Expression<Func<Int32>>                                      e.g. FluentSlider.ValueExpression
+   1 × FluentTab                                                    e.g. FluentTabs.ActiveTab
+   1 × ToastOptionsAction                                           e.g. FluentToast.DismissAction
+   1 × FluentTreeItem                                               e.g. FluentTreeView.CurrentSelected
+   1 × ITreeViewItem                                                e.g. FluentTreeView.SelectedItem
+   1 × Func<ITreeViewItem,TreeSelectionVisibility>                  e.g. FluentTreeView.MultipleSelectionVisibility
+   1 × FieldIdentifier?                                             e.g. FluentValidationMessage.Field
+   1 × Expression<Func<String,String>>                              e.g. PropertyColumn.Property
+   1 × IComparer<String>                                            e.g. PropertyColumn.Comparer
+
+
+Test run summary: Passed! - /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
+  total: 2
+  failed: 0
+  succeeded: 2
+  skipped: 0
+  duration: 370ms

@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- The namespace stays PlayBlazor.DemoHost even though the project and assembly are
+         PlayBlazor.Demo.MudBlazor: renaming it would churn every file (namespace declarations,
+         @namespace directives, using statements) for no gain. Without this, the SDK defaults
+         RootNamespace to the project file name, which breaks every .razor file that has no
+         explicit @namespace (App, MainLayout, Pages/*) — they'd resolve to the wrong namespace. -->
+    <RootNamespace>PlayBlazor.DemoHost</RootNamespace>
   </PropertyGroup>
 
   <!--
@@ -25,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PlayBlazor\PlayBlazor.csproj" />
+    <ProjectReference Include="..\PlayBlazor.Demo.Shared\PlayBlazor.Demo.Shared.csproj" />
   </ItemGroup>
 
 </Project>

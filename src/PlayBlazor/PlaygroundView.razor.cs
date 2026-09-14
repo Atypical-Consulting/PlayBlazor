@@ -115,14 +115,14 @@ public partial class PlaygroundView : ComponentBase, IDisposable
             }
 
             PlaygroundStateSerializer.Decode(
-                Uri.UnescapeDataString(pair[(separator + 1)..]), _descriptor, _state, _environment);
+                Uri.UnescapeDataString(pair[(separator + 1)..]), _descriptor, _state, _environment, Options);
             return;
         }
     }
 
     private async Task CopyShareLink()
     {
-        var encoded = PlaygroundStateSerializer.Encode(_descriptor, _state, _environment);
+        var encoded = PlaygroundStateSerializer.Encode(_descriptor, _state, _environment, Options);
         var uri = Navigation.GetUriWithQueryParameter(PermalinkParameterName, encoded);
         await Js.InvokeVoidAsync("navigator.clipboard.writeText", uri);
     }

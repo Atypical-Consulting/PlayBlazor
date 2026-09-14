@@ -23,7 +23,8 @@ public static class PlayBlazorServiceCollectionExtensions
         var options = new PlayBlazorOptions();
         configure?.Invoke(options);
         services.TryAddSingleton(options);
-        services.TryAddSingleton<IComponentCatalogProvider>(static _ => new ReflectionCatalogProvider());
+        // Not `static`: the provider needs the options this call just configured.
+        services.TryAddSingleton<IComponentCatalogProvider>(_ => new ReflectionCatalogProvider(options: options));
         return services;
     }
 }

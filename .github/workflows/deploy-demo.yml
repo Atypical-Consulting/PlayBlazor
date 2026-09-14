@@ -30,6 +30,18 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - app: mud
+            project: demo/PlayBlazor.Demo.MudBlazor/PlayBlazor.Demo.MudBlazor.csproj
+          - app: fluent
+            project: demo/PlayBlazor.Demo.FluentUI/PlayBlazor.Demo.FluentUI.csproj
+          # A third entry for the DaisyBlazor app belongs here once it exists, pointing at its
+          # .csproj under demo/PlayBlazor.Demo.Daisy — plus a Node setup step and a Tailwind CSS
+          # build step ahead of publish, since daisyUI is a Tailwind plugin and its stylesheet is
+          # generated, not shipped. Blocked on phmatray/blazor-tailwind-ui#20 (DaisyBlazor.Components
+          # 1.0.0 not on NuGet, @daisyblazor/tailwind not on npm).
     steps:
       - uses: actions/checkout@v6
 
@@ -37,39 +49,74 @@ jobs:
         with:
           dotnet-version: 10.x
 
-      - name: Publish the demo
-        run: dotnet publish demo/PlayBlazor.DemoHost/PlayBlazor.DemoHost.csproj -c Release -o publish
+      - name: Publish the app
+        run: dotnet publish ${{ matrix.project }} -c Release -o publish
 
-      # The site is served from https://atypical-consulting.github.io/PlayBlazor/, not from a
-      # domain root, so every asset URL Blazor resolves — _framework, _content, the scoped CSS —
+      # The site is served from https://atypical-consulting.github.io/PlayBlazor/<app>/, not from
+      # a domain root, so every asset URL Blazor resolves — _framework, _content, the scoped CSS —
       # has to be rooted at that prefix.
       - name: Rewrite the base href for the project subpath
-        run: sed -i 's|<base href="/" />|<base href="/PlayBlazor/" />|' publish/wwwroot/index.html
+        run: sed -i 's|<base href="/" />|<base href="/PlayBlazor/${{ matrix.app }}/" />|' publish/wwwroot/index.html
 
       # sed reports success when it matches nothing, which would ship a site whose every asset
       # 404s and whose failure only shows up in a browser. Fail the build here instead.
       - name: Verify the base href was rewritten
         run: |
-          grep -q '<base href="/PlayBlazor/" />' publish/wwwroot/index.html \
+          grep -q '<base href="/PlayBlazor/${{ matrix.app }}/" />' publish/wwwroot/index.html \
             || { echo "::error::base href was not rewritten — did index.html change shape?"; exit 1; }
 
-      # Pages serves 404.html for any path it holds no file for. The demo routes /explorer on the
-      # client, and a PlayBlazor permalink IS a deep link, so an unknown path must return the app
-      # shell and let the Blazor router take it from there.
+      # Pages serves 404.html for any path it holds no file for. Each app routes on the client,
+      # and a PlayBlazor permalink IS a deep link, so an unknown path must return the app shell
+      # and let the Blazor router take it from there.
       - name: Install the SPA fallback
         run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: app-${{ matrix.app }}
+          path: publish/wwwroot
+          retention-days: 1
+
+  assemble:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: app-*
+          path: staging
+
+      - name: Lay the site out
+        run: |
+          mkdir -p site
+          cp demo/landing/index.html demo/landing/favicon.png site/
+          # Add "daisy" to this loop once demo/PlayBlazor.Demo.Daisy exists — see the build job's
+          # matrix comment for what unblocks it.
+          for app in mud fluent; do
+            mv "staging/app-$app" "site/$app"
+          done
 
       # Belt and braces: the Pages artifact is served as-is today, but should this ever be served
       # through Jekyll it would strip _framework/ and _content/ for starting with an underscore.
       - name: Disable Jekyll processing
-        run: touch publish/wwwroot/.nojekyll
+        run: touch site/.nojekyll
+
+      - name: Verify all apps landed
+        run: |
+          # Extend this loop alongside the one above when the daisy app is restored.
+          for app in mud fluent; do
+            test -f "site/$app/index.html" \
+              || { echo "::error::$app is missing from the assembled site"; exit 1; }
+          done
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: publish/wwwroot
+          path: site
 
   deploy:
-    needs: build
+    needs: assemble
     runs-on: ubuntu-latest
     environment:
       name: github-pages

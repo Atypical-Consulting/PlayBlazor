@@ -1,7 +1,9 @@
-@page "/"
+@using System.Reflection
 @using PlayBlazor.Discovery
 @inject IComponentCatalogProvider Catalog
 @inject PlayBlazorOptions Options
+
+<LibrarySwitcher Current="@Current" />
 
 <header class="demo-hero">
     <div class="demo-wordmark"><span class="demo-mark">▶</span> PlayBlazor</div>
@@ -17,31 +19,15 @@
 </header>
 
 <main class="demo-main">
-    <section class="demo-section">
-        <h2 class="demo-tag">MudButton</h2>
-        <p class="demo-note">The flagship demo — try the example chips, flip parameters, watch the snippet follow.</p>
-        <PlaygroundView Component="typeof(MudButton)" />
-    </section>
-
-    <section class="demo-section">
-        <h2 class="demo-tag">MudDataGrid&lt;Person&gt;</h2>
-        <p class="demo-note">Sample rows and columns come from host presets — Dense, Striped, Hover… stay yours to play with.</p>
-        <PlaygroundView Component="typeof(MudDataGrid<Person>)" />
-    </section>
-
-    <section class="demo-section">
-        <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
-        <p class="demo-note">A column cannot live outside its grid: the host scaffold renders the played column inside a real MudDataGrid.</p>
-        <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
-    </section>
+    @Flagships
 
     <section class="demo-section">
         <h2 class="demo-covered-title">The documented surface, discovered</h2>
-        <p class="demo-note">@_covered.Count MudBlazor components pass the render sweep — each tile opens its playground.</p>
+        <p class="demo-note">@_covered.Count @LibraryName components were discovered here — each tile opens its playground.</p>
         <div class="demo-tiles">
             @foreach (var component in _covered)
             {
-                <a class="demo-tile" href="explorer?pb-@component.DisplayName=e30">
+                <a class="demo-tile" href="@($"explorer?pb-{component.DisplayName}=e30")">
                     @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
                     {
                         <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
@@ -53,14 +39,29 @@
     </section>
 </main>
 <footer class="demo-footer">
-    MudBlazor is the library this playground is pointed at, not a dependency of it.
+    <a href="@DocsUrl">@LibraryName</a> is the library this playground is pointed at, not a dependency of it.
 </footer>
 
 @code {
     private IReadOnlyList<PlayBlazor.Model.ComponentDescriptor> _covered = [];
 
+    /// <summary>The assembly whose components this app explores.</summary>
+    [Parameter, EditorRequired] public Assembly Assembly { get; set; } = default!;
+
+    /// <summary>The hand-picked benches shown above the tile grid.</summary>
+    [Parameter] public RenderFragment? Flagships { get; set; }
+
+    /// <summary>The explored library's display name.</summary>
+    [Parameter, EditorRequired] public string LibraryName { get; set; } = default!;
+
+    /// <summary>The explored library's documentation site.</summary>
+    [Parameter, EditorRequired] public string DocsUrl { get; set; } = default!;
+
+    /// <summary>This app's slug, for the library switcher.</summary>
+    [Parameter, EditorRequired] public string Current { get; set; } = default!;
+
     protected override void OnInitialized()
-        => _covered = Catalog.Discover(typeof(MudButton).Assembly)
+        => _covered = Catalog.Discover(Assembly)
             .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
             .OrderBy(c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();

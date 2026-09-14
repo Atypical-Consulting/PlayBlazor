@@ -15,9 +15,9 @@ MudBlazor appears only in `demo/` and `tests/`, as the library being *pointed at
 
 ```bash
 dotnet build -c Release
-dotnet test -c Release                                     # 220 tests, ~2s
+dotnet test -c Release                                     # 252 tests, 4 skipped, ~1s
 dotnet test -c Release -- --filter "FullyQualifiedName~X"  # single suite (MTP, note the `--`)
-dotnet run --project demo/PlayBlazor.DemoHost              # showcase on / and /explorer
+dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and /explorer
 ```
 
 Tests run on Microsoft.Testing.Platform (see `global.json`), not VSTest — VSTest-era flags such as
@@ -25,6 +25,8 @@ Tests run on Microsoft.Testing.Platform (see `global.json`), not VSTest — VSTe
 
 Two `[Explicit]` suites (`RenderSweep`, `ListUnsupportedParameterTypes`) are diagnostic inventories
 that print a report instead of asserting; run them on demand when auditing a component library.
+They are parametrized per explored library (currently MudBlazor and Fluent UI), so a normal run
+discovers all 252 tests but skips these 4 (2 suites × 2 libraries) rather than executing them.
 
 ## Layout
 
@@ -32,7 +34,9 @@ that print a report instead of asserting; run them on demand when auditing a com
 |------|------|
 | `src/PlayBlazor` | The package. `Discovery/` (reflection → descriptors), `Model/`, `Rendering/` (specimen, interception, scaffolds), `CodeGen/` (Razor snippet), `State/` (playground + workspace state, permalink serialization), `Shell/` (UI: `Workspace/`, `Controls/`). |
 | `tests/PlayBlazor.UnitTests` | bUnit + NUnit + AwesomeAssertions. |
-| `demo/PlayBlazor.DemoHost` | `PlaygroundConfig.cs` holds every preset, scaffold, variant and exclusion for the MudBlazor showcase. |
+| `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (`DemoLanding`, `LibrarySwitcher`) shared by every showcase app. Zero UI dependencies — same constraint as `src/PlayBlazor`. |
+| `demo/PlayBlazor.Demo.MudBlazor` | `PlaygroundConfig.cs` holds every preset, scaffold, variant and exclusion for the MudBlazor showcase. Namespace stays `PlayBlazor.DemoHost` even though the project and assembly are `PlayBlazor.Demo.MudBlazor`. |
+| `demo/PlayBlazor.Demo.FluentUI` | Fluent UI Blazor showcase. An uncurated scaffold: `FluentPlaygroundConfig.cs` registers only the hand-written `FluentIconCatalogue` (24 SVGs, no dependency on the 23 MB icons package); presets, scaffolds, variants and exclusion land in milestone 3 from a sweep inventory. |
 | `docs/superpowers` | Incubation-era design spec, milestone plans, and the UX concept prototypes (A→G) whose concept G v2 is the shell that exists today. Paths quoted inside them predate the `src`/`tests`/`demo` split. |
 
 ## Traps learned the hard way

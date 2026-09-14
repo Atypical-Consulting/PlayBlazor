@@ -15,14 +15,23 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
 {
     private readonly ConcurrentDictionary<Type, ComponentDescriptor> _cache = new();
     private readonly XmlDocSummaryReader? _xmlDocs;
+    private readonly PlayBlazorOptions? _options;
 
     /// <summary>Creates a provider, optionally enriching descriptors with XML doc summaries.</summary>
     /// <param name="xmlDocs">
     /// Summaries for the scanned library, used as component and parameter tooltips. Omit it and
     /// descriptors simply carry no summary.
     /// </param>
-    public ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null)
-        => _xmlDocs = xmlDocs;
+    /// <param name="options">
+    /// The host configuration, consulted for value catalogues: a parameter whose type no control
+    /// fits becomes an icon picker when the host registered a catalogue for that type. Omit it
+    /// and no catalogue is ever consulted.
+    /// </param>
+    public ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null, PlayBlazorOptions? options = null)
+    {
+        _xmlDocs = xmlDocs;
+        _options = options;
+    }
 
     /// <inheritdoc />
     public ComponentDescriptor Describe(Type componentType)
@@ -93,6 +102,14 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
                 && property.Name.EndsWith("Icon", StringComparison.Ordinal))
             {
                 // Icon strings (SVG markup in MudBlazor) deserve a preview, not a blob field.
+                kind = ControlKind.Icon;
+            }
+            else if (kind == ControlKind.Unsupported
+                     && _options?.TryGetCatalogue(property.PropertyType, out _) == true)
+            {
+                // A host catalogue is the only thing that can drive a library's own value type
+                // (Fluent UI's Icon object). Gated on Unsupported so a catalogue never widens a
+                // kind a control already fits — a string catalogue must not swallow every text field.
                 kind = ControlKind.Icon;
             }
 

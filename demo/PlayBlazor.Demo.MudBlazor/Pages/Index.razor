@@ -1,0 +1,26 @@
+@page "/"
+@using PlayBlazor.Demo.Shared
+<DemoLanding Assembly="typeof(MudButton).Assembly"
+             LibraryName="MudBlazor"
+             DocsUrl="https://mudblazor.com/docs/overview"
+             Current="mud">
+    <Flagships>
+        <section class="demo-section">
+            <h2 class="demo-tag">MudButton</h2>
+            <p class="demo-note">The flagship demo — try the example chips, flip parameters, watch the snippet follow.</p>
+            <PlaygroundView Component="typeof(MudButton)" />
+        </section>
+
+        <section class="demo-section">
+            <h2 class="demo-tag">MudDataGrid&lt;Person&gt;</h2>
+            <p class="demo-note">Sample rows and columns come from host presets — Dense, Striped, Hover… stay yours to play with.</p>
+            <PlaygroundView Component="typeof(MudDataGrid<Person>)" />
+        </section>
+
+        <section class="demo-section">
+            <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
+            <p class="demo-note">A column cannot live outside its grid: the host scaffold renders the played column inside a real MudDataGrid.</p>
+            <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
+        </section>
+    </Flagships>
+</DemoLanding>

@@ -65,12 +65,15 @@ See [the package README](src/PlayBlazor/README.md) for the full configuration AP
 
 ## Try it
 
-**[atypical-consulting.github.io/PlayBlazor](https://atypical-consulting.github.io/PlayBlazor/)** — the demo runs in your browser, nothing to install.
+**[atypical-consulting.github.io/PlayBlazor](https://atypical-consulting.github.io/PlayBlazor/)** — the
+same playground pointed at two libraries, running in your browser:
+[MudBlazor](https://atypical-consulting.github.io/PlayBlazor/mud/),
+[Fluent UI](https://atypical-consulting.github.io/PlayBlazor/fluent/).
 
 Or locally:
 
 ```bash
-dotnet run --project demo/PlayBlazor.DemoHost
+dotnet run --project demo/PlayBlazor.Demo.MudBlazor
 ```
 
 The demo points PlayBlazor at MudBlazor's component set — 65 curated components on `/`, the full
@@ -82,8 +85,11 @@ dockable workspace on `/explorer`. MudBlazor is the **demo subject, not a depend
 | Path | What it is |
 |------|-----------|
 | `src/PlayBlazor` | The shipped Razor class library (the `PlayBlazor` NuGet package). |
-| `tests/PlayBlazor.UnitTests` | 220 bUnit/NUnit tests, plus `[Explicit]` diagnostic sweeps over a whole component library. |
-| `demo/PlayBlazor.DemoHost` | Blazor WebAssembly showcase driving MudBlazor. |
+| `tests/PlayBlazor.UnitTests` | 252 bUnit/NUnit tests (4 skipped by default — `[Explicit]` diagnostic sweeps over a whole component library, once per explored library). |
+| `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (landing page, library switcher) shared by every showcase app. |
+| `demo/PlayBlazor.Demo.MudBlazor` | Blazor WebAssembly showcase driving MudBlazor. |
+| `demo/PlayBlazor.Demo.FluentUI` | Blazor WebAssembly showcase driving Fluent UI Blazor. Uncurated scaffold — lists every discovered component, providers and base types included — pending milestone 3. |
+| `demo/landing` | Plain static HTML served at the Pages site root — picks a library, no WASM to boot. |
 | `docs/superpowers` | Design spec, milestone plans and the UX concept prototypes (A→G) that produced the current shell. |
 
 ## Building
@@ -98,12 +104,13 @@ and the package builds as `0.1.0`; untagged builds are `-preview`.
 
 ## Status
 
-v1 is complete and exercised: 220 tests green, and a browser sweep of 165 MudBlazor components
-renders clean. Next up:
+v1 is complete and exercised: 248 of 252 tests green (the other 4 are diagnostic sweeps, skipped
+by default and run on demand), and a browser sweep of 165 MudBlazor components renders clean.
+Next up:
 
 - **v2** — edit the snippet itself, parsed back into the controls (no arbitrary compilation).
 - **v3** — full in-browser REPL (Roslyn).
-- Multi-node composition graphs in a single bench, and a richer icon picker.
+- Multi-node composition graphs in a single bench.
 
 PlayBlazor was incubated inside a MudBlazor fork — that history is preserved here, which is why
 the earliest commits describe paths under a MudBlazor tree.

@@ -13,7 +13,7 @@ public enum ControlKind
     Number,
     /// <summary>Library color types recognized structurally (R/G/B properties + string constructor).</summary>
     Color,
-    /// <summary>Reserved for host-registered rich mappers (icon pickers…).</summary>
+    /// <summary>An icon-shaped parameter — a recognized string or a host-catalogued type; a searchable picker with a catalogue, else a text box with a live SVG preview.</summary>
     Icon,
     /// <summary>DateTime / DateOnly.</summary>
     Date,

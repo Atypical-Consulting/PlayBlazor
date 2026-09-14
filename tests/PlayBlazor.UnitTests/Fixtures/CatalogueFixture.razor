@@ -1,0 +1,10 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<span>@Label</span>
+@code {
+    /// <summary>A library type reflection cannot drive on its own.</summary>
+    public sealed record Glyph(string Markup);
+
+    [Parameter] public Glyph? Icon { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? TrailingIcon { get; set; }
+}

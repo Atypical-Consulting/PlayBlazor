@@ -340,7 +340,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
                        && _environment.ViewportWidth is null;
         var self = pristine
             ? Uri.EscapeDataString(PermalinkParameterName)
-            : $"{Uri.EscapeDataString(PermalinkParameterName)}={PlaygroundStateSerializer.Encode(_selected, _state, _environment)}";
+            : $"{Uri.EscapeDataString(PermalinkParameterName)}={PlaygroundStateSerializer.Encode(_selected, _state, _environment, Options)}";
         var kept = QueryPairs()
             .Where(static pair => !pair.Key.StartsWith("pb-", StringComparison.Ordinal))
             .Select(static pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}")
@@ -374,7 +374,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         {
             if (key == PermalinkParameterName && value.Length > 0)
             {
-                PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment);
+                PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment, Options);
                 return;
             }
         }
