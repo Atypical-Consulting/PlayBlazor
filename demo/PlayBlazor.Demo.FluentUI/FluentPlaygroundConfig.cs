@@ -8,24 +8,30 @@ namespace PlayBlazor.Demo.FluentUI;
 /// </summary>
 public static class FluentPlaygroundConfig
 {
-    /// <summary>Not components a user plays with: providers, internal helpers, settings objects.</summary>
+    /// <summary>
+    /// Not components a user plays with: providers, internal helpers, settings objects — plus
+    /// <c>FluentOptionString</c>, a convenience subclass of the already-listed
+    /// <c>FluentOption&lt;T&gt;</c> that would otherwise show the same widget twice.
+    /// </summary>
     private static readonly HashSet<string> Infrastructure =
     [
         "ColumnReorderOptions", "ColumnResizeOptions", "Defer", "FluentDialogProvider",
-        "FluentErrorBoundary", "FluentKeyCodeProvider", "FluentLabelInfo", "FluentLayoutHamburger",
-        "FluentMessageBarProvider", "FluentOptionString", "FluentProviders", "FluentToastProvider",
-        "FluentTooltipProvider", "FreeOptionOutput",
+        "FluentKeyCodeProvider", "FluentMessageBarProvider", "FluentOptionString", "FluentProviders",
+        "FluentToastProvider", "FluentTooltipProvider", "FreeOptionOutput",
     ];
 
     /// <summary>Applies the Fluent UI curation to the playground options.</summary>
     /// <param name="options">The options to configure.</param>
     public static void Configure(PlayBlazorOptions options)
     {
-        // Fluent exposes 108 public components, of which ~94 are things a user actually plays with.
+        // Fluent exposes 108 public components, of which ~97 are things a user actually plays with.
         // MudBlazor's config uses an allow-list because most of ITS surface is internal; here the
         // reverse holds, so name what to drop. These are stable categories, not a list that rots:
-        // service providers, internal render helpers, and settings objects that are ComponentBase
-        // by inheritance rather than by intent.
+        // service providers, internal render helpers, settings objects that are ComponentBase by
+        // inheritance rather than by intent, and FluentOptionString (a duplicate widget, not
+        // infrastructure by category — see its own comment above). A component that is documented,
+        // parameterised and written by users in their own markup stays listed even if it needs a
+        // later preset to demo well — that's a presets question, not a listing one.
         options.ComponentFilter = type => !Infrastructure.Contains(StripArity(type.Name));
 
         // Discovery closes an open generic with string, then int. All four of these reject string

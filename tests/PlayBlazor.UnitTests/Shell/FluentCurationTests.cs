@@ -51,6 +51,10 @@ public class FluentCurationTests
         // Discovery closes an open generic with string first; all four reject it at construction.
         options.ResolvePreferredClosing(typeof(FluentCalendar<>).MakeGenericType(typeof(string)))
             .Should().Be(typeof(FluentCalendar<DateTime?>));
+        options.ResolvePreferredClosing(typeof(FluentDatePicker<>).MakeGenericType(typeof(string)))
+            .Should().Be(typeof(FluentDatePicker<DateTime?>));
+        options.ResolvePreferredClosing(typeof(FluentTimePicker<>).MakeGenericType(typeof(string)))
+            .Should().Be(typeof(FluentTimePicker<DateTime?>));
         options.ResolvePreferredClosing(typeof(FluentNumberInput<>).MakeGenericType(typeof(string)))
             .Should().Be(typeof(FluentNumberInput<int>));
     }
