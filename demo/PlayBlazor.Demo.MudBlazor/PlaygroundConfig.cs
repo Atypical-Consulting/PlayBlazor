@@ -122,7 +122,9 @@ public static class PlaygroundConfig
 
         // The explorer closes MudChart<T> (T : INumber) with int — presets target that closing.
         options.For<MudChart<int>>()
-            .Parameter("ChartLabels", new[] { "Jan", "Feb", "Mar", "Apr", "May" })
+            // Named source: an array has no Razor attribute literal — `ChartLabels="Jan, Feb"` is
+            // parsed as C# and fails on the first identifier — so publish the field a host declares.
+            .Parameter("ChartLabels", new[] { "Jan", "Feb", "Mar", "Apr", "May" }, "@_chartLabels")
             .Parameter("ChartSeries", SampleSeries)
             .Variant("Donut", v => v.Set("ChartType", ChartType.Donut))
             .Variant("Pie", v => v.Set("ChartType", ChartType.Pie))
@@ -148,6 +150,17 @@ public static class PlaygroundConfig
 
         options.For<MudDateRangePicker>()
             .Parameter(nameof(MudDateRangePicker.Label), "Period");
+
+        // Like MudDatePicker, the inline variant shows only a text field until it is clicked
+        // open — PickerVariant.Static is what puts the actual swatch/spectrum surface on the
+        // bench. The chips then turn off one panel of it each, which is what the parameter
+        // surface is mostly made of.
+        options.For<MudColorPicker>()
+            .Parameter(nameof(MudColorPicker.Label), "Brand color")
+            .Parameter(nameof(MudColorPicker.PickerVariant), PickerVariant.Static)
+            .Variant("Palette only", v => v.Set(nameof(MudColorPicker.ColorPickerView), ColorPickerView.Palette))
+            .Variant("Grid picker", v => v.Set(nameof(MudColorPicker.ColorPickerView), ColorPickerView.Grid))
+            .Variant("No alpha, no inputs", v => v.Set(nameof(MudColorPicker.ShowAlpha), false).Set(nameof(MudColorPicker.ShowInputs), false));
 
         options.For<MudTimePicker>()
             .Parameter(nameof(MudTimePicker.Label), "Pick a time")
@@ -234,6 +247,13 @@ public static class PlaygroundConfig
             .Parameter(nameof(MudAppBar.Fixed), false)
             .Slot(nameof(MudAppBar.ChildContent), b => b.AddContent(0, "My application"), "My application");
 
+        // MudDivider renders a bare <hr> whose whole parameter surface is CSS classes — no
+        // content, no preset worth making. The chips are the classes, which is all there is.
+        options.For<MudDivider>()
+            .Variant("Inset", v => v.Set(nameof(MudDivider.DividerType), DividerType.Inset))
+            .Variant("Middle", v => v.Set(nameof(MudDivider.DividerType), DividerType.Middle))
+            .Variant("Light", v => v.Set(nameof(MudDivider.Light), true));
+
         options.For<MudDrawer>()
             .Parameter(nameof(MudDrawer.Fixed), false)
             .Slot(nameof(MudDrawer.ChildContent), DemoFragments.NavLinks, DemoFragmentSources.NavLinks)
@@ -258,10 +278,16 @@ public static class PlaygroundConfig
             .Variant("Elevation 8", v => v.Set(nameof(MudPaper.Elevation), 8))
             .Variant("Outlined", v => v.Set(nameof(MudPaper.Outlined), true));
 
+        // Open is already presetted to true — a popover that renders closed shows nothing at all —
+        // so it is NOT also a variant: a chip setting a parameter to the value the preset already
+        // gives it highlights and changes nothing. The chips below vary the surface the open
+        // popover actually draws.
         options.For<MudPopover>()
             .Parameter(nameof(MudPopover.Open), true)
             .Slot("ChildContent", b => b.AddContent(0, "Popover content"), "Popover content")
-            .Variant("Open", v => v.Set(nameof(MudPopover.Open), true));
+            .Variant("Square, flat", v => v.Set(nameof(MudPopover.Square), true).Set(nameof(MudPopover.DropShadow), false))
+            .Variant("Elevation 16", v => v.Set(nameof(MudPopover.Elevation), 16))
+            .Variant("No paper", v => v.Set(nameof(MudPopover.Paper), false));
 
         options.For<MudProgressCircular>()
             .Parameter(nameof(MudProgressCircular.Color), Color.Primary)
@@ -285,6 +311,34 @@ public static class PlaygroundConfig
             .Slot("ChildContent", DemoFragments.SelectItems, DemoFragmentSources.SelectItems)
             .Variant("Filled", v => v.Set("Variant", Variant.Filled))
             .Variant("Outlined", v => v.Set("Variant", Variant.Outlined));
+
+        // MudTable's rows come from RowTemplate, a RenderFragment<T> —
+        // ParameterDictionaryBuilder.BuildSlot accepts only the literal non-generic RenderFragment,
+        // so no preset can fill it and the body stays empty however many Items are supplied. That
+        // is a src/PlayBlazor gap, not a curation one. HeaderContent IS a plain RenderFragment and
+        // fills, so the bench shows a real header over its own chrome, and the chips vary the
+        // chrome — which is where most of MudTable's parameter surface lives anyway. Use
+        // MudSimpleTable above for a fully-populated table.
+        options.For<MudTable<Person>>()
+            .Parameter(nameof(MudTable<Person>.Items), Person.Samples, "@_people")
+            .Slot(nameof(MudTable<Person>.HeaderContent), DemoFragments.TableHeader, DemoFragmentSources.TableHeader)
+            .Variant("Dense striped", v => v.Set(nameof(MudTable<Person>.Dense), true).Set(nameof(MudTable<Person>.Striped), true))
+            .Variant("Hover bordered", v => v.Set(nameof(MudTable<Person>.Hover), true).Set(nameof(MudTable<Person>.Bordered), true))
+            .Variant("Outlined, flat", v => v.Set(nameof(MudTable<Person>.Outlined), true).Set(nameof(MudTable<Person>.Elevation), 0));
+
+        // MudFileUpload's only content parameters are CustomContent (RenderFragment<MudFileUpload<T>>)
+        // and SelectedTemplate (RenderFragment<T?>) — both GENERIC render fragments, unfillable for
+        // the same reason as MudTable.RowTemplate above, so the usual "give it an activator button"
+        // curation is out of reach. Hidden defaults to TRUE, which hides the underlying <InputFile>
+        // on the assumption that a CustomContent activator stands in for it: with no activator that
+        // is an invisible bench, so show the native input instead. Honest, if not handsome.
+        options.For<MudFileUpload<IBrowserFile>>()
+            .Parameter(nameof(MudFileUpload<IBrowserFile>.Hidden), false)
+            .Parameter(nameof(MudFileUpload<IBrowserFile>.Accept), "image/*")
+            .Variant("Multiple files", v => v.Set(nameof(MudFileUpload<IBrowserFile>.AppendMultipleFiles), true)
+                .Set(nameof(MudFileUpload<IBrowserFile>.MaximumFileCount), 4))
+            .Variant("Drag and drop", v => v.Set(nameof(MudFileUpload<IBrowserFile>.DragAndDrop), true))
+            .Variant("Disabled", v => v.Set(nameof(MudFileUpload<IBrowserFile>.Disabled), true));
 
         options.For<MudSimpleTable>()
             .Slot("ChildContent", DemoFragments.SimpleTableContent, DemoFragmentSources.SimpleTableContent)

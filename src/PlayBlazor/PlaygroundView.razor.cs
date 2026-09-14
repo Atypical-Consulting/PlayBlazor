@@ -49,7 +49,8 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     private IEnumerable<ParameterDescriptor> Uncontrollable
         => _descriptor.Parameters.Where(static p =>
-            (p.Kind is ControlKind.Slot && !IsTextSlot(p)) || p.Kind is ControlKind.Unsupported);
+            (p.Kind is ControlKind.Slot && !IsTextSlot(p))
+            || p.Kind is ControlKind.Unsupported or ControlKind.Undrivable);
 
     private IEnumerable<ParameterDescriptor> Events
         => _descriptor.Parameters.Where(static p => p.Kind is ControlKind.Event);

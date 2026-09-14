@@ -1,11 +1,9 @@
-[16:44:04.246] SynchronizedRunTestsAsync: ENTRY
-[16:44:04.251] SynchronizedRunTestsAsync: Creating executor
+[16:35:06.708] SynchronizedRunTestsAsync: ENTRY
+[16:35:06.714] SynchronizedRunTestsAsync: Creating executor
 NUnit Adapter 1.0.0.0: Test execution started
 Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
    NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Explicit run
 === MudBlazor ===
- 178 × Object                                                       e.g. Bar.Tag, DataGridGroupRow.Tag, DataGridVirtualizeRow.Tag, Donut.Tag
- 156 × Dictionary<String,Object>                                    e.g. Bar.UserAttributes, DataGridGroupRow.UserAttributes, DataGridVirtualizeRow.UserAttributes, Donut.UserAttributes
   23 × CultureInfo                                                  e.g. MudAutocomplete.Culture, MudBooleanInput.Culture, MudCheckBox.Culture, MudColorPicker.Culture
   16 × Func<String,Boolean>                                         e.g. HierarchyColumn.ButtonDisabledFunc, HierarchyColumn.InitiallyExpandedFunc, MudAutocomplete.ItemDisabledFunc, MudDataGrid.QuickFilter
   14 × Func<IEnumerable<String>,String>                             e.g. HierarchyColumn.HeaderClassFunc, HierarchyColumn.HeaderStyleFunc, PropertyColumn.HeaderClassFunc, PropertyColumn.HeaderStyleFunc
@@ -31,6 +29,7 @@ Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBl
    3 × AggregateDefinition<String>                                  e.g. PropertyColumn.AggregateDefinition, SelectColumn.AggregateDefinition, TemplateColumn.AggregateDefinition
    2 × MudDataGrid<String>                                          e.g. DataGridGroupRow.DataGrid, DataGridVirtualizeRow.DataGrid
    2 × IChartOptions                                                e.g. Legend.ChartOptions, MudChart.ChartOptions
+   2 × Dictionary<String,Object>                                    e.g. MudDataGrid.TableAttributes, MudTable.TableAttributes
    2 × Func<DateTime,Boolean>                                       e.g. MudDatePicker.IsDateDisabledFunc, MudDateRangePicker.IsDateDisabledFunc
    2 × Func<DateTime,String>                                        e.g. MudDatePicker.AdditionalDateClassesFunc, MudDateRangePicker.AdditionalDateClassesFunc
    2 × IConverter<DateTime?,String>                                 e.g. MudDatePicker.Converter, MudDateRangePicker.Converter
@@ -89,9 +88,8 @@ Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBl
    1 × StackedBarChartOptions                                       e.g. StackedBar.ChartOptions
    1 × TimeSeriesChartOptions                                       e.g. TimeSeries.ChartOptions
 
+passed MudBlazor (183ms)
 === Microsoft.FluentUI.AspNetCore.Components ===
-  98 × IReadOnlyDictionary<String,Object>                           e.g. AddTag.AdditionalAttributes, FluentAccordion.AdditionalAttributes, FluentAccordionItem.AdditionalAttributes, FluentAnchorButton.AdditionalAttributes
-  97 × Object                                                       e.g. FluentAccordion.Data, FluentAccordionItem.Data, FluentAnchorButton.Data, FluentAppBar.Data
   20 × Func<String,String>                                          e.g. FluentAutocomplete.OptionValue, FluentAutocomplete.OptionValueToString, FluentAutocomplete.OptionText, FluentCombobox.OptionValue
   16 × Func<IFluentField,Boolean>                                   e.g. FluentAutocomplete.MessageCondition, FluentCalendar.MessageCondition, FluentCheckbox.MessageCondition, FluentColorPickerInput.MessageCondition
   16 × ILabelInfo                                                   e.g. FluentAutocomplete.LabelInfo, FluentCalendar.LabelInfo, FluentCheckbox.LabelInfo, FluentColorPickerInput.LabelInfo
@@ -138,10 +136,11 @@ Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBl
    1 × Expression<Func<String,String>>                              e.g. PropertyColumn.Property
    1 × IComparer<String>                                            e.g. PropertyColumn.Comparer
 
+passed FluentUI (45ms)
 
 Test run summary: Passed! - /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
   total: 2
   failed: 0
   succeeded: 2
   skipped: 0
-  duration: 370ms
+  duration: 419ms

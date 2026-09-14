@@ -25,4 +25,11 @@ public enum ControlKind
     Event,
     /// <summary>No control maps to this parameter's type; a host preset can still supply a value.</summary>
     Unsupported,
+    /// <summary>
+    /// A parameter no generated control can ever drive, whatever the library: Blazor's splatting
+    /// dictionary (<c>CaptureUnmatchedValues</c>), or an opaque <see cref="object" /> payload a
+    /// host attaches in code. Distinct from <see cref="Unsupported" />, which means "no control
+    /// fits this type yet" and which a host catalogue can still rescue.
+    /// </summary>
+    Undrivable,
 }
