@@ -23,6 +23,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The corpus files are compiled as ordinary Razor components (that IS the test: invalid
+         markup breaks the build) and ALSO embedded, so SnippetCorpusTests can read back the exact
+         checked-in bytes without naming a path on disk. It used to resolve them through
+         [CallerFilePath], which works on a dev machine and never on CI: ContinuousIntegrationBuild
+         turns on DeterministicSourcePaths, which rewrites compile-time source paths to /_/... so
+         binaries are reproducible. A resource name is immune to that rewriting. -->
+    <EmbeddedResource Include="CodeGen\Corpus\*.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="bunit" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using AwesomeAssertions;
 using NUnit.Framework;
@@ -26,8 +25,9 @@ namespace PlayBlazor.UnitTests.CodeGen;
 /// that has drifted away from what the generator now emits.
 /// </para>
 /// <para>
-/// When it fails, it writes the regenerated corpus beside the checked-in one and names the path:
-/// review the diff, copy it over, and rebuild — the build is what re-checks the new snippets.
+/// When it fails, it writes the regenerated corpus into the test working directory and names the
+/// path: review the diff, copy it over the checked-in file, and rebuild — the build is what
+/// re-checks the new snippets.
 /// </para>
 /// <para>
 /// Two snippets in the corpus trip RZ2012 (<c>[EditorRequired]</c> with no value), which is why
@@ -46,13 +46,11 @@ public class SnippetCorpusTests
     [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.All))]
     public void CheckedInCorpus_MatchesWhatTheGeneratorEmits(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
-        var corpusPath = CorpusPath(assembly);
-        File.Exists(corpusPath).Should().BeTrue($"the corpus {corpusPath} should be checked in");
-
-        var checkedIn = Normalize(File.ReadAllText(corpusPath));
+        var fileName = CorpusFileName(assembly);
+        var checkedIn = Normalize(ReadEmbeddedCorpus(fileName));
         var beginAt = checkedIn.IndexOf(Begin, StringComparison.Ordinal);
         var endAt = checkedIn.IndexOf(End, StringComparison.Ordinal);
-        (beginAt >= 0 && endAt > beginAt).Should().BeTrue($"{corpusPath} should carry both markers");
+        (beginAt >= 0 && endAt > beginAt).Should().BeTrue($"{fileName} should carry both markers");
 
         var present = checkedIn[(beginAt + Begin.Length)..endAt];
         var expected = Generate(assembly, configure);
@@ -62,13 +60,40 @@ public class SnippetCorpusTests
         }
 
         var regenerated = checkedIn[..(beginAt + Begin.Length)] + expected + checkedIn[endAt..];
-        var updated = corpusPath + ".regenerated";
+        var updated = Path.Combine(TestContext.CurrentContext.WorkDirectory, fileName + ".regenerated");
         File.WriteAllText(updated, regenerated);
         Assert.Fail(
             $"The {assembly.GetName().Name} snippet corpus is stale. A regenerated copy is at{Environment.NewLine}"
             + $"  {updated}{Environment.NewLine}"
-            + "Review the diff, replace the checked-in file with it, and rebuild — the build is "
-            + "what compiles the new snippets.");
+            + $"Review the diff, copy it over tests/PlayBlazor.UnitTests/CodeGen/Corpus/{fileName}, "
+            + "and rebuild — the build is what compiles the new snippets.");
+    }
+
+    /// <summary>
+    /// The corpus as it was checked in, read out of the assembly rather than off disk.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately NOT a source path. Resolving the file through <c>[CallerFilePath]</c> (or any
+    /// other compile-time path) passes on a dev machine and can never pass on CI: setting
+    /// <c>ContinuousIntegrationBuild</c> turns on <c>DeterministicSourcePaths</c>, which rewrites
+    /// every compile-time path to <c>/_/…</c> so the binaries are reproducible — a directory that
+    /// exists on no machine. Embedding keeps the assertion exactly as strong, because the embedded
+    /// bytes ARE the checked-in file: the same build that compiles the corpus as Razor embeds it.
+    /// </remarks>
+    private static string ReadEmbeddedCorpus(string fileName)
+    {
+        var self = typeof(SnippetCorpusTests).Assembly;
+        var resource = self.GetManifestResourceNames()
+            .SingleOrDefault(name => name.EndsWith("." + fileName, StringComparison.Ordinal));
+
+        resource.Should().NotBeNull(
+            "{0} should be embedded — see the EmbeddedResource item in the test project. Embedded: {1}",
+            fileName,
+            string.Join(", ", self.GetManifestResourceNames()));
+
+        using var stream = self.GetManifestResourceStream(resource!)!;
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     /// <summary>Every listed component's snippet, each under a comment naming it.</summary>
@@ -89,13 +114,8 @@ public class SnippetCorpusTests
         return corpus.ToString();
     }
 
-    private static string CorpusPath(Assembly assembly)
-        => Path.Combine(
-            Path.GetDirectoryName(ThisFile())!,
-            "Corpus",
-            assembly.GetName().Name == "MudBlazor" ? "MudBlazorSnippets.razor" : "FluentUiSnippets.razor");
-
-    private static string ThisFile([CallerFilePath] string path = "") => path;
+    private static string CorpusFileName(Assembly assembly)
+        => assembly.GetName().Name == "MudBlazor" ? "MudBlazorSnippets.razor" : "FluentUiSnippets.razor";
 
     private static string Normalize(string text) => text.Replace("\r\n", "\n");
 }
