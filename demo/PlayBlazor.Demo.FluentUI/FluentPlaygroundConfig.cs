@@ -1,3 +1,6 @@
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace PlayBlazor.Demo.FluentUI;
@@ -19,6 +22,17 @@ public static class FluentPlaygroundConfig
         "FluentKeyCodeProvider", "FluentMessageBarProvider", "FluentOptionString", "FluentProviders",
         "FluentToastProvider", "FluentTooltipProvider", "FreeOptionOutput",
     ];
+
+    /// <summary>Sample rows for the data-grid scaffolds, so a grid has something to show.</summary>
+    private static readonly List<Person> SampleRows =
+    [
+        new("Ada Lovelace", "Analyst", 36),
+        new("Grace Hopper", "Rear Admiral", 45),
+        new("Alan Turing", "Cryptanalyst", 41),
+    ];
+
+    /// <summary>The model an <see cref="EditForm"/> scaffold binds to — its content is irrelevant, only its <see cref="EditContext"/> matters.</summary>
+    private static readonly object ValidatorModel = new();
 
     /// <summary>Applies the Fluent UI curation to the playground options.</summary>
     /// <param name="options">The options to configure.</param>
@@ -45,6 +59,197 @@ public static class FluentPlaygroundConfig
         // parameter resolves to ControlKind.Unsupported and gets no control at all.
         options.Catalogue(FluentIconCatalogue.All, static icon => builder
             => builder.AddContent(0, icon.ToMarkup()));
+
+        // --- Scaffolds: components that cannot live outside their required parent. ---
+        // The render sweep (sweeps/2026-render.txt) found eleven such components; five escaped
+        // the error boundary. Each scaffold wraps the played specimen in the parent the library
+        // demands, verified against the pinned 5.0.0-rc.5 assembly rather than assumed.
+
+        options.For<FluentAppBarItem>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentAppBar>(0);
+                builder.AddAttribute(1, nameof(FluentAppBar.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentAppBar>\n    {specimen}\n</FluentAppBar>")
+            .Related<FluentAppBar>();
+
+        options.For<FluentNavItem>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentNav>(0);
+                builder.AddAttribute(1, nameof(FluentNav.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentNav>\n    {specimen}\n</FluentNav>")
+            .Related<FluentNav>();
+
+        options.For<FluentNavCategory>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentNav>(0);
+                builder.AddAttribute(1, nameof(FluentNav.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentNav>\n    {specimen}\n</FluentNav>")
+            .Related<FluentNav>();
+
+        options.For<FluentNavSectionHeader>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentNav>(0);
+                builder.AddAttribute(1, nameof(FluentNav.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentNav>\n    {specimen}\n</FluentNav>")
+            .Related<FluentNav>();
+
+        // FluentRadio<TValue> cascades from a FluentRadioGroup<TValue> of the SAME TValue —
+        // discovery already closes the placeholder with string, so play that same closing here.
+        options.For<FluentRadio<string>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentRadioGroup<string>>(0);
+                builder.AddAttribute(1, nameof(FluentRadioGroup<string>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentRadioGroup>\n    {specimen}\n</FluentRadioGroup>")
+            .Related<FluentRadioGroup<string>>();
+
+        // FluentWizard takes its steps through a "Steps" fragment, not ChildContent.
+        options.For<FluentWizardStep>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentWizard>(0);
+                builder.AddAttribute(1, nameof(FluentWizard.Steps), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentWizard>\n    <Steps>\n        {specimen}\n    </Steps>\n</FluentWizard>")
+            .Related<FluentWizard>();
+
+        // FluentWizardStepValidator needs BOTH a FluentWizardStep ancestor and an EditContext
+        // from an EditForm — one parent is not enough, so the scaffold nests two.
+        options.For<FluentWizardStepValidator>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentWizard>(0);
+                builder.AddAttribute(1, nameof(FluentWizard.Steps), (RenderFragment)(stepsBuilder =>
+                {
+                    stepsBuilder.OpenComponent<FluentWizardStep>(0);
+                    stepsBuilder.AddAttribute(1, nameof(FluentWizardStep.Label), "Step 1");
+                    stepsBuilder.AddAttribute(2, nameof(FluentWizardStep.ChildContent), (RenderFragment)(stepBuilder =>
+                    {
+                        stepBuilder.OpenComponent<EditForm>(0);
+                        stepBuilder.AddAttribute(1, nameof(EditForm.Model), ValidatorModel);
+                        stepBuilder.AddAttribute(2, nameof(EditForm.ChildContent), (RenderFragment<EditContext>)(_ => specimen));
+                        stepBuilder.CloseComponent();
+                    }));
+                    stepsBuilder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            },
+            """
+            <FluentWizard>
+                <Steps>
+                    <FluentWizardStep Label="Step 1">
+                        <EditForm Model="_model">
+                            {specimen}
+                        </EditForm>
+                    </FluentWizardStep>
+                </Steps>
+            </FluentWizard>
+            """)
+            .Related<FluentWizardStep>();
+
+        // FluentDataGridRow<TGridItem> registers itself as "OwningRow" for its own ChildContent,
+        // and the grid falls back to a manual (row-driven) layout whenever ChildContent collects
+        // no columns — placing a row (rather than a column) there is what triggers that mode.
+        options.For<FluentDataGridRow<Person>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDataGrid<Person>>(0);
+                builder.AddAttribute(1, nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable());
+                builder.AddAttribute(2, nameof(FluentDataGrid<Person>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
+            .Related<FluentDataGrid<Person>>();
+
+        options.For<FluentDataGridCell<Person>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDataGrid<Person>>(0);
+                builder.AddAttribute(1, nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable());
+                builder.AddAttribute(2, nameof(FluentDataGrid<Person>.ChildContent), (RenderFragment)(rowBuilder =>
+                {
+                    rowBuilder.OpenComponent<FluentDataGridRow<Person>>(0);
+                    rowBuilder.AddAttribute(1, nameof(FluentDataGridRow<Person>.ChildContent), specimen);
+                    rowBuilder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            },
+            """
+            <FluentDataGrid Items="@_people">
+                <FluentDataGridRow>
+                    {specimen}
+                </FluentDataGridRow>
+            </FluentDataGrid>
+            """)
+            .Related<FluentDataGridRow<Person>>();
+
+        // PropertyColumn.Property is [EditorRequired] with no default — without a preset,
+        // OnParametersSet NullReferenceExceptions compiling a null expression.
+        options.For<PropertyColumn<Person, string>>()
+            .Parameter(nameof(PropertyColumn<Person, string>.Property),
+                (Expression<Func<Person, string>>)(p => p.Name))
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDataGrid<Person>>(0);
+                builder.AddAttribute(1, nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable());
+                builder.AddAttribute(2, nameof(FluentDataGrid<Person>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
+            .Related<FluentDataGrid<Person>>();
+
+        options.For<SelectColumn<Person>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDataGrid<Person>>(0);
+                builder.AddAttribute(1, nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable());
+                builder.AddAttribute(2, nameof(FluentDataGrid<Person>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
+            .Related<FluentDataGrid<Person>>();
+
+        options.For<TemplateColumn<Person>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDataGrid<Person>>(0);
+                builder.AddAttribute(1, nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable());
+                builder.AddAttribute(2, nameof(FluentDataGrid<Person>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
+            .Related<FluentDataGrid<Person>>();
+
+        options.For<HierarchicalSelectColumn<Person>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDataGrid<Person>>(0);
+                builder.AddAttribute(1, nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable());
+                builder.AddAttribute(2, nameof(FluentDataGrid<Person>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
+            .Related<FluentDataGrid<Person>>();
+
+        // FluentPaginator's sweep failure is not a missing parent — it wants a PaginationState
+        // instance, so it gets a Parameter preset rather than a Scaffold.
+        options.For<FluentPaginator>()
+            .Parameter(nameof(FluentPaginator.State), new PaginationState(), "@_paginationState");
     }
 
     // StripArity is duplicated from the MudBlazor config on purpose: the two apps share no code
