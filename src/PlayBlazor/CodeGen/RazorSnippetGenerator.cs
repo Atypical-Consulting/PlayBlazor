@@ -169,10 +169,12 @@ public static class RazorSnippetGenerator
                 continue;
             }
 
-            if (parameter.Kind is ControlKind.Unsupported)
+            if (parameter.Kind is ControlKind.Unsupported or ControlKind.Undrivable)
             {
                 // A preset on a non-drivable parameter has no literal form — show it as the
-                // field the host would declare (<MudDataGrid Items="@_items">).
+                // field the host would declare (<MudDataGrid Items="@_items">). Undrivable is
+                // included here for the same reason: Dictionary<,>.ToString() and a plain
+                // object.ToString() are not valid Razor attribute literals either.
                 if (options is not null
                     && options.TryGetParameterPreset(component.Type, parameter.Name, out var opaque)
                     && opaque is not null)

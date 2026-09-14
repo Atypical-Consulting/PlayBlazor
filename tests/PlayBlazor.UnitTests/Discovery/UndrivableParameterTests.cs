@@ -1,4 +1,3 @@
-using System.Reflection;
 using AwesomeAssertions;
 using NUnit.Framework;
 using PlayBlazor.Discovery;
@@ -35,11 +34,15 @@ public class UndrivableParameterTests
     public void SplattingIsRecognisedByItsAttribute_NotItsName()
     {
         // MudBlazor calls it UserAttributes and types it Dictionary<,>; Fluent calls it
-        // AdditionalAttributes and types it IReadOnlyDictionary<,>. Only the attribute is common.
-        var property = typeof(SplattingFixture).GetProperty("Extra")!;
-        var attribute = property.GetCustomAttribute<Microsoft.AspNetCore.Components.ParameterAttribute>()!;
+        // AdditionalAttributes and types it IReadOnlyDictionary<,>. This fixture's property is
+        // named neither — a rule that special-cased those two names would resolve it as
+        // Unsupported (no other resolver rule fits a Dictionary/IReadOnlyDictionary type), so
+        // seeing Undrivable here proves recognition rides on
+        // ParameterAttribute.CaptureUnmatchedValues, not on the property being one of the names
+        // this repo happens to have already seen.
+        typeof(SplattingFixture).GetProperty("Extra")!.Name
+            .Should().NotBe("AdditionalAttributes").And.NotBe("UserAttributes");
 
-        attribute.CaptureUnmatchedValues.Should().BeTrue();
-        property.Name.Should().NotBe("AdditionalAttributes");
+        Parameter("Extra").Kind.Should().Be(ControlKind.Undrivable);
     }
 }

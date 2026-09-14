@@ -106,6 +106,23 @@ public class RazorSnippetGeneratorTests
     }
 
     [Test]
+    public void Generate_PresetOnUndrivableParameter_SynthesizesFieldReference_NotAStringifiedType()
+    {
+        // Extra (splatting) and Payload (opaque object) are ControlKind.Undrivable. Neither has a
+        // literal Razor form — a Dictionary<,> or a bare object stringifies to something like
+        // "System.Collections.Generic.Dictionary`2[...]", which is not valid attribute syntax.
+        // A host preset must synthesize the same @_fieldName reference Unsupported already gets.
+        var descriptor = new ReflectionCatalogProvider().Describe(typeof(SplattingFixture));
+        var options = new PlayBlazorOptions();
+        options.For<SplattingFixture>()
+            .Parameter(nameof(SplattingFixture.Extra), new Dictionary<string, object> { ["style"] = "color:red" })
+            .Parameter(nameof(SplattingFixture.Payload), new object());
+
+        RazorSnippetGenerator.Generate(descriptor, new PlaygroundState(), options)
+            .Should().Be("""<SplattingFixture Extra="@_extra" Payload="@_payload" />""");
+    }
+
+    [Test]
     public void Generate_UserModification_WinsOverThePreset()
     {
         var options = new PlayBlazorOptions();

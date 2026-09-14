@@ -28,7 +28,8 @@ public static class ParameterSignature
     private static string? Initializer(ParameterDescriptor parameter)
     {
         if (!parameter.HasDefault || parameter.DefaultValue is null
-            || parameter.Kind is ControlKind.Event or ControlKind.Slot or ControlKind.Unsupported)
+            || parameter.Kind is ControlKind.Event or ControlKind.Slot
+                or ControlKind.Unsupported or ControlKind.Undrivable)
         {
             return null;
         }
