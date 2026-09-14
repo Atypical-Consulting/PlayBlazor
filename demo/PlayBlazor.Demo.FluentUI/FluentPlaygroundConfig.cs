@@ -34,25 +34,22 @@ public static class FluentPlaygroundConfig
     ];
 
     /// <summary>
-    /// A live <see cref="PaginationState"/> for the paginator preset: on page 1 of a
+    /// A live <see cref="PaginationState"/> for the paginator preset: page 1 of a
     /// <see cref="SampleRows"/>-sized set, two items per page.
     /// </summary>
-    private static readonly PaginationState SamplePaginationState = CreateSamplePaginationState(currentPageIndex: 0);
+    /// <remarks>
+    /// <see cref="PaginationState.TotalItemCount"/> starts null and only
+    /// <see cref="PaginationState.SetTotalItemCountAsync"/> sets it — until it does,
+    /// <see cref="FluentPaginator"/> renders a bare, empty &lt;div&gt; with no summary and no
+    /// buttons. Calling it once here, synchronously, is what gives the preset below real
+    /// pagination chrome to show, rather than an empty box that merely fails to throw.
+    /// </remarks>
+    private static readonly PaginationState SamplePaginationState = CreateSamplePaginationState();
 
-    /// <summary>The same state, advanced to page 2 — demonstrates Previous/First becoming enabled.</summary>
-    private static readonly PaginationState SamplePaginationStateMidway = CreateSamplePaginationState(currentPageIndex: 1);
-
-    /// <summary>
-    /// <see cref="PaginationState.TotalItemCount"/> starts null and only <see cref="PaginationState.SetTotalItemCountAsync"/>
-    /// sets it — until it does, <see cref="FluentPaginator"/> renders a bare, empty &lt;div&gt; with
-    /// no summary and no buttons. Calling it once here, synchronously, is what gives the presets
-    /// above real pagination chrome to show.
-    /// </summary>
-    private static PaginationState CreateSamplePaginationState(int currentPageIndex)
+    private static PaginationState CreateSamplePaginationState()
     {
         var state = new PaginationState { ItemsPerPage = 2 };
         state.SetTotalItemCountAsync(SampleRows.Count).GetAwaiter().GetResult();
-        state.SetCurrentPageIndexAsync(currentPageIndex).GetAwaiter().GetResult();
         return state;
     }
 
@@ -444,10 +441,16 @@ public static class FluentPlaygroundConfig
         // null until SetTotalItemCountAsync runs — an unset total renders a bare, empty <div> with
         // nothing in it. SamplePaginationState below calls that once, synchronously, so the bench
         // shows real pagination chrome instead of an empty box that merely fails to throw.
+        //
+        // State is the ONLY other axis worth varying (SummaryTemplate/PaginationTextTemplate are
+        // RenderFragment — a Variant can never carry one), but State is ControlKind.Unsupported:
+        // ParameterDictionaryBuilder's Unsupported branch reads only the static Parameter preset
+        // above and never consults live PlaygroundState, so `.Variant().Set(nameof(State), ...)`
+        // would silently no-op — confirmed by rendering it and finding the "variant" reference-equal
+        // to the base preset. Disabled is the only real, live-drivable parameter left.
         options.For<FluentPaginator>()
             .Parameter(nameof(FluentPaginator.State), SamplePaginationState, "@_paginationState")
-            .Variant("Disabled", v => v.Set(nameof(FluentPaginator.Disabled), true))
-            .Variant("On a later page", v => v.Set(nameof(FluentPaginator.State), SamplePaginationStateMidway));
+            .Variant("Disabled", v => v.Set(nameof(FluentPaginator.Disabled), true));
 
         // --- Data: sortable lists, drag-and-drop, overflow, pull-to-refresh ---
 
