@@ -23,6 +23,11 @@ dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and 
 Tests run on Microsoft.Testing.Platform (see `global.json`), not VSTest — VSTest-era flags such as
 `--collect:"XPlat Code Coverage"` are silently ignored. Use `--coverage` and friends.
 
+**Never pass `--nologo` to `dotnet test`.** MTP rejects unrecognised arguments by exiting 5 and
+printing `Zero tests ran` — which reads like a discovery failure and sends you hunting the test
+project. The migration guide claims `--nologo` still works; it does not. Exit code 5 means
+*invalid arguments*, never *no tests found*.
+
 Two `[Explicit]` suites (`RenderSweep`, `ListUnsupportedParameterTypes`) are diagnostic inventories
 that print a report instead of asserting; run them on demand when auditing a component library.
 They are parametrized per explored library (currently MudBlazor and Fluent UI), so a normal run

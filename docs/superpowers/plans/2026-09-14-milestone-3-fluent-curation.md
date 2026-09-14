@@ -21,11 +21,11 @@
 - **The pinned Fluent package is a release candidate.** Its API moved between v4 and v5 in ways that already cost this project a blocked task: `FluentDesignTheme` and `FluentMenuProvider` do not exist, theming is a service (`IThemeService`, `ThemeSettings`), and `Icon.ToMarkup()` returns `MarkupString`. **Check the assembly before assuming a v4-era API exists.**
 - **The starting measurement, from `af31885`:** Fluent 108 components — 83 healthy, 20 contained errors, 5 escaped exceptions; 47 distinct undrivable parameter types over 382 occurrences. MudBlazor 169 components — 158 healthy, 11 contained, 0 escaped.
 
-**Commands used throughout.** The pinned SDK is shadowed by a Homebrew shim, so every dotnet command needs the prefix; and `dotnet test` is broken for this project under SDK 10.0.401 ("Zero tests ran", exit 5, a known regression), so tests run through the built executable:
+**Commands used throughout.** The pinned SDK is shadowed by a Homebrew shim on at least one developer machine, so every dotnet command carries the prefix below. **Never pass `--nologo`:** Microsoft.Testing.Platform rejects it and reports the rejection as `Zero tests ran` with exit code 5, which reads like a discovery failure and is not one. Either invocation works:
 
 ```bash
 PATH="$HOME/.dotnet:$PATH" dotnet build -c Release
-PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests
+PATH="$HOME/.dotnet:$PATH" dotnet test --configuration Release
 PATH="$HOME/.dotnet:$PATH" ./tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter "FullyQualifiedName~X"
 ```
 
