@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using PlayBlazor.Model;
 
 namespace PlayBlazor.Discovery;
@@ -16,6 +17,7 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
     private readonly ConcurrentDictionary<Type, ComponentDescriptor> _cache = new();
     private readonly XmlDocSummaryReader? _xmlDocs;
     private readonly PlayBlazorOptions? _options;
+    private readonly IServiceProvider? _services;
 
     /// <summary>Creates a provider, optionally enriching descriptors with XML doc summaries.</summary>
     /// <param name="xmlDocs">
@@ -27,10 +29,20 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
     /// fits becomes an icon picker when the host registered a catalogue for that type. Omit it
     /// and no catalogue is ever consulted.
     /// </param>
-    public ReflectionCatalogProvider(XmlDocSummaryReader? xmlDocs = null, PlayBlazorOptions? options = null)
+    /// <param name="services">
+    /// The host's container, used to construct a component whose constructor takes dependencies —
+    /// Fluent UI v5 is the motivating case, where nearly every component wants a
+    /// <c>LibraryConfiguration</c>. Omit it, or leave a dependency unregistered, and construction
+    /// falls back to a parameterless <see cref="Activator" />, exactly as it behaved before.
+    /// </param>
+    public ReflectionCatalogProvider(
+        XmlDocSummaryReader? xmlDocs = null,
+        PlayBlazorOptions? options = null,
+        IServiceProvider? services = null)
     {
         _xmlDocs = xmlDocs;
         _options = options;
+        _services = services;
     }
 
     /// <inheritdoc />
@@ -77,16 +89,16 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
 
     private ComponentDescriptor Build(Type type)
     {
-        string? warning = null;
-        object? instance = null;
-        try
-        {
-            instance = Activator.CreateInstance(type);
-        }
-        catch (Exception)
-        {
-            warning = "Defaults not captured: the component could not be instantiated.";
-        }
+        // A library's dependencies are usually SCOPED — Fluent UI registers LibraryConfiguration
+        // that way — and this provider is a singleton holding the root container. Resolving a
+        // scoped service from a root provider throws in any container with scope validation on,
+        // which is every real Blazor host. So open a scope, and keep it open until the defaults
+        // have been read off the instance.
+        using var scope = _services?.CreateScope();
+        var instance = TryCreate(type, scope?.ServiceProvider);
+        var warning = instance is null
+            ? "Defaults not captured: the component could not be instantiated."
+            : null;
 
         var parameters = new List<ParameterDescriptor>();
         var nullability = new NullabilityInfoContext();
@@ -147,7 +159,7 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
                 GroupOrder: groupOrder));
         }
 
-        return new ComponentDescriptor(
+        var descriptor = new ComponentDescriptor(
             Type: type,
             DisplayName: StripArity(type.Name),
             Category: type.Namespace ?? string.Empty,
@@ -155,6 +167,64 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
             Parameters: parameters,
             Warning: warning,
             CanInstantiate: instance is not null);
+
+        // The instance existed only to read defaults off. A DI-built component may hold resources,
+        // and this runs once per type at startup, so let it go rather than keeping 169 of them.
+        Dispose(instance);
+        return descriptor;
+    }
+
+    /// <summary>
+    /// Builds the throwaway instance whose property values become the captured defaults. The
+    /// host's container comes first, because a library may demand constructor dependencies
+    /// (Fluent UI v5 gives nearly every component a <c>LibraryConfiguration</c>); a parameterless
+    /// <see cref="Activator" /> is the fallback, which is what every host had before.
+    /// </summary>
+    private static object? TryCreate(Type type, IServiceProvider? scoped)
+    {
+        if (scoped is not null)
+        {
+            try
+            {
+                return ActivatorUtilities.CreateInstance(scoped, type);
+            }
+            catch (Exception)
+            {
+                // An unregistered dependency simply means this container cannot build this
+                // component. Fall through to the parameterless path, do not fail discovery.
+            }
+        }
+
+        try
+        {
+            return Activator.CreateInstance(type);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private static void Dispose(object? instance)
+    {
+        try
+        {
+            switch (instance)
+            {
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+                case IAsyncDisposable asyncDisposable:
+                    // Nothing awaits this throwaway; a component whose async disposal matters
+                    // is beyond what reading a default value can promise.
+                    _ = asyncDisposable.DisposeAsync();
+                    break;
+            }
+        }
+        catch (Exception)
+        {
+            // A component that throws while being thrown away must not break discovery.
+        }
     }
 
     /// <summary>

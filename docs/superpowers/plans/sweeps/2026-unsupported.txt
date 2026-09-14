@@ -1,5 +1,5 @@
-[16:44:04.246] SynchronizedRunTestsAsync: ENTRY
-[16:44:04.251] SynchronizedRunTestsAsync: Creating executor
+[11:53:17.514] SynchronizedRunTestsAsync: ENTRY
+[11:53:17.520] SynchronizedRunTestsAsync: Creating executor
 NUnit Adapter 1.0.0.0: Test execution started
 Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
    NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Explicit run
@@ -144,4 +144,4 @@ Test run summary: Passed! - /Users/philippe/repo/Atypical-Consulting/public/Play
   failed: 0
   succeeded: 2
   skipped: 0
-  duration: 370ms
+  duration: 400ms

@@ -43,11 +43,42 @@ public class RenderSweepTests
         }
     }
 
+    /// <summary>
+    /// Registers the explored library's own services. DaisyBlazor is not yet a sweep case: a third
+    /// branch will register its services once the DaisyBlazor demo app exists — see the note in
+    /// ExploredLibraries for the blocker.
+    /// </summary>
+    private static void AddLibraryServices(IServiceCollection services, Assembly assembly)
+    {
+        switch (assembly.GetName().Name)
+        {
+            case "MudBlazor":
+                services.AddMudServices();
+                break;
+            case "Microsoft.FluentUI.AspNetCore.Components":
+                services.AddFluentUIComponents();
+                break;
+        }
+    }
+
+    /// <summary>The container the catalog constructs from, matching what a real host provides.</summary>
+    private static IServiceProvider ContainerFor(Assembly assembly)
+    {
+        var services = new ServiceCollection();
+        AddLibraryServices(services, assembly);
+        return services.BuildServiceProvider();
+    }
+
     private static async Task RunSweepAsync(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
         var options = new PlayBlazorOptions();
         configure(options);
-        var catalog = new ReflectionCatalogProvider(options: options);
+
+        // Capturing defaults means constructing each component, and a library may demand its own
+        // services through the constructor (Fluent UI v5 wants a LibraryConfiguration). Give the
+        // catalog the same container a real host would, or every such component reports
+        // "could not be instantiated" and the sweep measures the harness instead of the library.
+        var catalog = new ReflectionCatalogProvider(options: options, services: ContainerFor(assembly));
         var components = catalog.Discover(assembly);
         var contained = new List<(string Name, string Error)>();
         var escaped = new List<(string Name, string Error)>();
@@ -59,13 +90,11 @@ public class RenderSweepTests
             context.JSInterop.Mode = JSRuntimeMode.Loose;
 
             // Each library needs its own service registrations before its components will render.
-            if (assembly.GetName().Name == "MudBlazor") { context.Services.AddMudServices(); }
-            else if (assembly.GetName().Name == "Microsoft.FluentUI.AspNetCore.Components") { context.Services.AddFluentUIComponents(); }
-            // DaisyBlazor is not yet a sweep case: the third branch will call AddDaisyBlazor()
-            // once the DaisyBlazor demo app exists — see the note in ExploredLibraries for the
-            // blocker.
+            AddLibraryServices(context.Services, assembly);
 
-            context.Services.AddPlayBlazor();
+            // With the host's own configuration, so presets, scaffolds and catalogues apply —
+            // without it the sweep reports failures that curation would already have fixed.
+            context.Services.AddPlayBlazor(configure);
 
             try
             {

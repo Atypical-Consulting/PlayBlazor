@@ -1,0 +1,20 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div class="injected-fixture">@Label (@_config.Prefix)</div>
+@code {
+    /// <summary>
+    /// A dependency the component demands through its constructor — the shape Fluent UI v5 uses,
+    /// where FluentComponentBase takes a LibraryConfiguration and 187 of 222 constructors take
+    /// arguments. Activator.CreateInstance cannot build such a component; DI can.
+    /// </summary>
+    public sealed class Config
+    {
+        public string Prefix { get; set; } = "cfg";
+    }
+
+    private readonly Config _config;
+
+    public InjectedCtorFixture(Config config) => _config = config;
+
+    [Parameter] public string Label { get; set; } = "from-ctor";
+    [Parameter] public bool Dense { get; set; } = true;
+}

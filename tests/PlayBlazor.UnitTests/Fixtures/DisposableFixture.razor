@@ -1,0 +1,11 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+@implements IDisposable
+<span>@Label</span>
+@code {
+    /// <summary>Counts disposals so a test can prove the throwaway instance does not leak.</summary>
+    internal static int Disposals { get; set; }
+
+    [Parameter] public string Label { get; set; } = "disposable";
+
+    public void Dispose() => Disposals++;
+}
