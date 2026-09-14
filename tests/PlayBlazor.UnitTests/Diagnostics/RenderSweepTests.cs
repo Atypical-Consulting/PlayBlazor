@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using AwesomeAssertions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using NUnit.Framework;
 using PlayBlazor.Discovery;
+using PlayBlazor.Model;
 
 namespace PlayBlazor.UnitTests.Diagnostics;
 
@@ -41,6 +43,21 @@ public class RenderSweepTests
             Trace.Listeners.Clear();
             Trace.Listeners.AddRange(originalListeners);
         }
+    }
+
+    [Test]
+    public void SweptName_NamesTheClosingActuallyRendered()
+    {
+        // A generic reports its closing, so a transcript never reads "FluentCalendar" for both
+        // the placeholder Discovery picked and a closing the host declared with options.For<T>().
+        SweptName("FluentCalendar", typeof(FluentCalendar<>).MakeGenericType(typeof(string)))
+            .Should().Be("FluentCalendar<string>");
+        SweptName("FluentCalendar", typeof(FluentCalendar<DateTime?>)).Should().Be("FluentCalendar<DateTime?>");
+        SweptName("FluentNumberInput", typeof(FluentNumberInput<int>)).Should().Be("FluentNumberInput<int>");
+        SweptName("MudChart", typeof(MudChart<int>)).Should().Be("MudChart<int>");
+
+        // A non-generic reports bare — nothing to disambiguate.
+        SweptName("FluentButton", typeof(FluentButton)).Should().Be("FluentButton");
     }
 
     /// <summary>
@@ -79,7 +96,18 @@ public class RenderSweepTests
         // catalog the same container a real host would, or every such component reports
         // "could not be instantiated" and the sweep measures the harness instead of the library.
         var catalog = new ReflectionCatalogProvider(options: options, services: ContainerFor(assembly));
-        var components = catalog.Discover(assembly);
+
+        // Discovery closes an open generic with string, then int — but the host may have declared
+        // a different closing worth playing (options.For<T>()). Resolve each to the same closing
+        // PlaygroundWorkspace.OnParametersSet would pick, or the sweep measures a type the real
+        // explorer never renders, and a host closing (Task 2's FluentCalendar<DateTime?>, say)
+        // never moves the numbers no matter how correct it is.
+        IReadOnlyList<ComponentDescriptor> components = catalog.Discover(assembly)
+            .Select(c => options.ResolvePreferredClosing(c.Type) is var preferred && preferred != c.Type
+                ? catalog.Describe(preferred)
+                : c)
+            .ToArray();
+
         var contained = new List<(string Name, string Error)>();
         var escaped = new List<(string Name, string Error)>();
         var healthy = 0;
@@ -95,6 +123,11 @@ public class RenderSweepTests
             // With the host's own configuration, so presets, scaffolds and catalogues apply —
             // without it the sweep reports failures that curation would already have fixed.
             context.Services.AddPlayBlazor(configure);
+
+            // Bare DisplayName is ambiguous once a generic can be swept under more than one
+            // closing (the placeholder Discovery picked, or one the host declared) — name the
+            // closing actually rendered, not just the open generic's name.
+            var sweptAs = SweptName(component.DisplayName, component.Type);
 
             try
             {
@@ -114,7 +147,7 @@ public class RenderSweepTests
                 var errors = cut.FindAll(".pb-error pre");
                 if (errors.Count > 0)
                 {
-                    contained.Add((component.DisplayName, FirstLine(errors[0].TextContent)));
+                    contained.Add((sweptAs, FirstLine(errors[0].TextContent)));
                 }
                 else
                 {
@@ -124,7 +157,7 @@ public class RenderSweepTests
             catch (Exception exception)
             {
                 var root = Root(exception);
-                escaped.Add((component.DisplayName, $"{root.GetType().Name}: {FirstLine(root.Message)}"));
+                escaped.Add((sweptAs, $"{root.GetType().Name}: {FirstLine(root.Message)}"));
             }
         }
 
@@ -162,6 +195,34 @@ public class RenderSweepTests
         public override void WriteLine(string? message)
         {
         }
+    }
+
+    /// <summary>Names the closing actually rendered — bare for a non-generic, closed for a generic.</summary>
+    private static string SweptName(string displayName, Type type)
+        => type.IsConstructedGenericType
+            ? $"{displayName}<{string.Join(", ", type.GetGenericArguments().Select(FriendlyArgumentName))}>"
+            : displayName;
+
+    private static string FriendlyArgumentName(Type type)
+    {
+        if (Nullable.GetUnderlyingType(type) is { } underlying)
+        {
+            return FriendlyArgumentName(underlying) + "?";
+        }
+
+        return type switch
+        {
+            _ when type == typeof(bool) => "bool",
+            _ when type == typeof(int) => "int",
+            _ when type == typeof(long) => "long",
+            _ when type == typeof(short) => "short",
+            _ when type == typeof(byte) => "byte",
+            _ when type == typeof(double) => "double",
+            _ when type == typeof(float) => "float",
+            _ when type == typeof(decimal) => "decimal",
+            _ when type == typeof(string) => "string",
+            _ => type.Name,
+        };
     }
 
     private static Exception Root(Exception exception)
