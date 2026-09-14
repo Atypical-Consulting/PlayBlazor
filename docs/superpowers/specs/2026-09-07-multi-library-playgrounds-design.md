@@ -272,3 +272,13 @@ c'est le filet de sécurité de la restructuration.
   librairie. Préexistant à cette branche (présent bien avant les premiers commits multi-lib) et
   sans effet visible grâce au fallback `inherit`. À généraliser ou retirer la prochaine fois que
   ce fichier est touché pour une autre raison.
+- **Rien ne signale qu'un composant est `[Obsolete]`** — découvert en curant l'affichage de
+  Fluent v5 (jalon 3, tâche 6) : `FluentProgress` et `FluentProgressRing` portent l'attribut,
+  et leur remplaçant `FluentProgressBar` figure dans la même vitrine. La curation a dû poser un
+  `#pragma warning disable CS0618` pour seulement les mentionner en configuration. Le bench les
+  présente exactement comme les autres : un visiteur ne peut pas deviner lequel des trois est
+  déprécié, et la démo enseigne donc une API morte à côté de la vivante. Ce n'est pas propre à
+  Fluent — toute librairie assez vieille pour avoir déprécié quelque chose est concernée, et
+  MudBlazor le sera. `ComponentDescriptor` porte déjà `Warning` pour l'échec d'instanciation ;
+  un second signal, lu depuis `ObsoleteAttribute` à la découverte (le message inclus, quand la
+  librairie en fournit un), suffirait. À traiter dans le package, pas dans un `PlaygroundConfig`.
