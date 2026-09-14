@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using NUnit.Framework;
 using PlayBlazor.Discovery;
+using PlayBlazor.Model;
 using PlayBlazor.Shell.Workspace;
 using PlayBlazor.UnitTests.Fixtures;
 
@@ -47,5 +48,16 @@ public class ParameterSignatureTests
             with { DefaultValue = "Hi", HasDefault = true };
         ParameterSignature.Format(label)
             .Should().Be("[Parameter] public string? Label { get; set; } = \"Hi\";");
+    }
+
+    [Test]
+    public void Undrivable_WithDefault_OmitsInitializer()
+    {
+        var descriptor = _provider.Describe(typeof(BasicFixture));
+        var label = descriptor.Parameters.Single(p => p.Name == nameof(BasicFixture.Label))
+            with { Kind = ControlKind.Undrivable, DefaultValue = "Hi", HasDefault = true };
+
+        ParameterSignature.Format(label)
+            .Should().Be("[Parameter] public string? Label { get; set; }");
     }
 }
