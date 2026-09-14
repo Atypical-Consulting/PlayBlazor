@@ -310,3 +310,26 @@ c'est le filet de sécurité de la restructuration.
   demande une surcharge générique publique de `Slot(…)`, donc de la documentation XML sous
   `CS1591`, des tests, et une décision sur ce que devient un tel slot dans un permalien : c'est
   une fonctionnalité, pas un correctif, et elle mérite son propre jalon.
+- **Les deux filets mécaniques ont un plancher, pas un plafond** — écrits en clôture du jalon 3
+  après que le défaut « compile, passe les tests et le sweep, et n'affiche rien » soit ressorti
+  dix fois. Ils valent largement leur coût : le test de vivacité a échoué à sa première
+  exécution sur un no-op MudBlazor antérieur au jalon, et le test de compilation a trouvé cinq
+  extraits invalides de plus. Trois limites connues, mesurées en re-revue, à relever quand ce
+  domaine sera rouvert :
+  - *La vivacité est asservie à l'entrée du rendu, pas à sa sortie.* L'assertion porte sur le
+    dictionnaire de paramètres. Elle attrape les trois chemins d'abandon silencieux
+    (`RenderFragment`, kind `Unsupported`, `null`), mais une puce peut modifier une entrée sans
+    déplacer un pixel — `FluentErrorBoundary` en a trois qui passent pour cette raison.
+    Remède : ajouter une passe au niveau du DOM sous le harnais bUnit existant, en normalisant
+    les identifiants générés, avec une liste d'exemption **nommée** pour les puces dont on a
+    établi qu'elles ne peuvent rien déplacer. Garder l'assertion dictionnaire comme plancher.
+  - *Le test de compilation couvre les 162 extraits d'état de base, pas les 321 à variante
+    appliquée.* Un visiteur peut copier les deux. Le trou est aujourd'hui latent — les 30
+    `.Set(...)` à valeur chaîne visent tous un paramètre déclaré `string` — mais rien ne
+    l'empêche de s'ouvrir au prochain preset.
+  - *La suppression `RZ2012` du projet de test est non bornée.* Elle couvre les deux trous
+    connus (`RenderFragment<T>` et icônes) et **ne peut pas** être resserrée : les diagnostics
+    Razor n'acceptent pas de `#pragma` et MSBuild n'offre pas de `NoWarn` par élément. Un
+    troisième cas d'extrait omettant un paramètre `[EditorRequired]` passera donc en silence.
+    Remède : compiler chaque extrait dans sa propre unité plutôt qu'en corpus, ou assertion
+    explicite sur la liste des paramètres attendus.
