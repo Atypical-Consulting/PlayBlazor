@@ -460,6 +460,226 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentInputFile.Height), "200px")
             .Variant("Multiple files", v => v.Set(nameof(FluentInputFile.Multiple), true).Set(nameof(FluentInputFile.MaximumFileCount), 4))
             .Variant("No drag-drop zone", v => v.Set(nameof(FluentInputFile.DragDropZoneVisible), false));
+
+        // --- Display and layout: badges, avatar, card, typography, progress, grid/stack/layout/splitter. ---
+        // Verified against the pinned 5.0.0-rc.5 assembly with ilspycmd rather than assumed.
+
+        // FluentBadge.Content is real display text (unlike AddTag.Name, which the container
+        // wrapping it passes to OpenElement as an element name — see AddTag's own comment above).
+        // OffsetX/OffsetY are sbyte and left alone per the brief: a numeric control for sbyte is
+        // out of scope for this task.
+        options.For<FluentBadge>()
+            .Parameter(nameof(FluentBadge.Content), "New")
+            .Variant("Brand tint", v => v.Set(nameof(FluentBadge.Appearance), BadgeAppearance.Tint).Set(nameof(FluentBadge.Color), BadgeColor.Brand))
+            .Variant("Danger", v => v.Set(nameof(FluentBadge.Color), BadgeColor.Danger))
+            .Variant("Rounded, large", v => v.Set(nameof(FluentBadge.Shape), BadgeShape.Rounded).Set(nameof(FluentBadge.Size), BadgeSize.Large));
+
+        // FluentCounterBadge.Count defaults to null, and ShowWhen only renders it once Count > 0
+        // (verified in BuildRenderTree: _render is false without a dot, a pattern or a positive
+        // count) — without a preset the bench would show an empty badge shell.
+        options.For<FluentCounterBadge>()
+            .Parameter(nameof(FluentCounterBadge.Count), 4)
+            .Variant("Overflow", v => v.Set(nameof(FluentCounterBadge.Count), 128).Set(nameof(FluentCounterBadge.OverflowCount), 99))
+            .Variant("Dot", v => v.Set(nameof(FluentCounterBadge.Dot), true))
+            .Variant("Show zero", v => v.Set(nameof(FluentCounterBadge.Count), 0).Set(nameof(FluentCounterBadge.ShowZero), true));
+
+        // FluentPresenceBadge.Status already defaults to Available and picks its own icon
+        // internally (GetPresenceIcon), so it looks like itself with no preset — only variants.
+        options.For<FluentPresenceBadge>()
+            .Variant("Busy", v => v.Set(nameof(FluentPresenceBadge.Status), PresenceStatus.Busy))
+            .Variant("Away, out of office", v => v.Set(nameof(FluentPresenceBadge.Status), PresenceStatus.Away).Set(nameof(FluentPresenceBadge.OutOfOffice), true))
+            .Variant("Large", v => v.Set(nameof(FluentPresenceBadge.Size), BadgeSize.Large));
+
+        // FluentAvatar.Name both feeds the accessible name AND drives the web component's own
+        // initials generation (GetInitialsValue only overrides it when Initials is set explicitly).
+        options.For<FluentAvatar>()
+            .Parameter(nameof(FluentAvatar.Name), "Ada Lovelace")
+            .Variant("Colorful", v => v.Set(nameof(FluentAvatar.Color), AvatarColor.Colorful))
+            .Variant("Square, large", v => v.Set(nameof(FluentAvatar.Shape), AvatarShape.Square).Set(nameof(FluentAvatar.Size), AvatarSize.Size48))
+            .Variant("Active ring", v => v.Set(nameof(FluentAvatar.Active), true).Set(nameof(FluentAvatar.ActiveAppearance), AvatarActiveAppearance.Ring));
+
+        options.For<FluentCard>()
+            .Slot(nameof(FluentCard.ChildContent), FluentDemoFragments.CardBody, FluentDemoFragmentSources.CardBody)
+            .Parameter(nameof(FluentCard.Width), "280px")
+            .Variant("Filled", v => v.Set(nameof(FluentCard.Appearance), CardAppearance.Filled))
+            .Variant("Outline", v => v.Set(nameof(FluentCard.Appearance), CardAppearance.Outline))
+            .Variant("Large shadow", v => v.Set(nameof(FluentCard.Shadow), CardShadow.Large));
+
+        options.For<FluentDivider>()
+            .Slot(nameof(FluentDivider.ChildContent), b => b.AddContent(0, "OR"), "OR")
+            .Variant("Vertical", v => v.Set(nameof(FluentDivider.Vertical), true))
+            .Variant("Brand", v => v.Set(nameof(FluentDivider.Appearance), DividerAppearance.Brand))
+            .Variant("Inset", v => v.Set(nameof(FluentDivider.Inset), true));
+
+        // FluentGrid cascades ITSELF (CascadingValue<FluentGrid>) around ChildContent so its
+        // FluentGridItem children can read layout state — confirmed in BuildRenderTree. The grid
+        // itself never throws without items, but Slot gives it real columns to show.
+        options.For<FluentGrid>()
+            .Slot(nameof(FluentGrid.ChildContent), FluentDemoFragments.GridItems, FluentDemoFragmentSources.GridItems)
+            .Parameter(nameof(FluentGrid.Spacing), 2)
+            .Variant("Centered", v => v.Set(nameof(FluentGrid.Justify), JustifyContent.Center))
+            .Variant("Space between", v => v.Set(nameof(FluentGrid.Justify), JustifyContent.SpaceBetween))
+            .Variant("Adaptive rendering", v => v.Set(nameof(FluentGrid.AdaptiveRendering), true));
+
+        // FluentGridItem's [CascadingParameter] Grid is nullable and never null-checked before
+        // use, so it renders standalone without throwing (confirmed in BuildRenderTree) — but a
+        // lone item shows no column proportions without a FluentGrid around it. Scaffold nests it
+        // in one alongside its own Slot/Parameter so the standalone bench still looks reasonable.
+        options.For<FluentGridItem>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentGrid>(0);
+                builder.AddAttribute(1, nameof(FluentGrid.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentGrid>\n    {specimen}\n</FluentGrid>")
+            .Related<FluentGrid>()
+            .Slot(nameof(FluentGridItem.ChildContent), b => b.AddContent(0, "Column content"), "Column content")
+            .Parameter(nameof(FluentGridItem.Xs), 6)
+            .Variant("Quarter width", v => v.Set(nameof(FluentGridItem.Xs), 3))
+            .Variant("Hidden on small screens", v => v.Set(nameof(FluentGridItem.HiddenWhen), GridItemHidden.Xs));
+
+        options.For<FluentStack>()
+            .Slot(nameof(FluentStack.ChildContent), FluentDemoFragments.StackItems, FluentDemoFragmentSources.StackItems)
+            .Variant("Vertical", v => v.Set(nameof(FluentStack.Orientation), Orientation.Vertical))
+            .Variant("Centered", v => v.Set(nameof(FluentStack.HorizontalAlignment), HorizontalAlignment.Center).Set(nameof(FluentStack.VerticalAlignment), VerticalAlignment.Center))
+            .Variant("Wrap", v => v.Set(nameof(FluentStack.Wrap), true));
+
+        // FluentSpacer renders an empty div: its whole job is to occupy space inside a flex
+        // parent (FluentStack), so there is no meaningful ChildContent to preset — only Width,
+        // the value that actually makes it occupy something on a bare bench.
+        options.For<FluentSpacer>()
+            .Parameter(nameof(FluentSpacer.Width), "40px")
+            .Variant("Vertical", v => v.Set(nameof(FluentSpacer.Orientation), Orientation.Vertical).Set(nameof(FluentSpacer.Height), "40px"))
+            .Variant("Wide", v => v.Set(nameof(FluentSpacer.Width), "120px"));
+
+        // FluentLayout defaults Height to "100dvh" when unset (OnParametersSet-free — see
+        // StyleValue), which would blow out the workspace stage; bound it for the bench.
+        options.For<FluentLayout>()
+            .Slot(nameof(FluentLayout.ChildContent), FluentDemoFragments.LayoutAreas, FluentDemoFragmentSources.LayoutAreas)
+            .Parameter(nameof(FluentLayout.Height), "320px")
+            .Variant("Global scrollbar", v => v.Set(nameof(FluentLayout.GlobalScrollbar), true))
+            .Variant("Mobile breakdown 480px", v => v.Set(nameof(FluentLayout.MobileBreakdownWidth), 480));
+
+        // FluentLayoutItem's [CascadingParameter] LayoutContainer is likewise null-safe
+        // throughout (RenderThisArea, AddGridAreaStyles, AddStickyStyle all null-check it), so it
+        // never throws alone — Scaffold gives it the grid-template-areas context it needs to look
+        // like a real layout panel rather than a bare div.
+        options.For<FluentLayoutItem>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentLayout>(0);
+                builder.AddAttribute(1, nameof(FluentLayout.Height), "200px");
+                builder.AddAttribute(2, nameof(FluentLayout.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentLayout Height=\"200px\">\n    {specimen}\n</FluentLayout>")
+            .Related<FluentLayout>()
+            .Slot(nameof(FluentLayoutItem.ChildContent), b => b.AddContent(0, "Panel content"), "Panel content")
+            .Parameter(nameof(FluentLayoutItem.Area), LayoutArea.Content)
+            .Variant("Header", v => v.Set(nameof(FluentLayoutItem.Area), LayoutArea.Header))
+            .Variant("Sticky", v => v.Set(nameof(FluentLayoutItem.Sticky), true));
+
+        options.For<FluentText>()
+            .Slot(nameof(FluentText.ChildContent), b => b.AddContent(0, "The quick brown fox jumps over the lazy dog"), "The quick brown fox jumps over the lazy dog")
+            .Variant("Heading", v => v.Set(nameof(FluentText.As), TextTag.H4).Set(nameof(FluentText.Size), TextSize.Size600).Set(nameof(FluentText.Weight), TextWeight.Semibold))
+            .Variant("Subtle", v => v.Set(nameof(FluentText.Size), TextSize.Size200))
+            .Variant("Italic underline", v => v.Set(nameof(FluentText.Italic), true).Set(nameof(FluentText.Underline), true));
+
+        options.For<FluentHighlighter>()
+            .Parameter(nameof(FluentHighlighter.Text), "The quick brown fox jumps over the lazy dog")
+            .Parameter(nameof(FluentHighlighter.HighlightedText), "fox")
+            .Variant("Case sensitive", v => v.Set(nameof(FluentHighlighter.CaseSensitive), true))
+            .Variant("Multiple terms", v => v.Set(nameof(FluentHighlighter.HighlightedText), "quick brown").Set(nameof(FluentHighlighter.Delimiters), " "));
+
+        options.For<FluentImage>()
+            // Self-contained data URI: the bench must not depend on an external image host.
+            .Parameter(nameof(FluentImage.Source), "data:image/svg+xml," + Uri.EscapeDataString(
+                """<svg xmlns="http://www.w3.org/2000/svg" width="280" height="160"><rect width="280" height="160" fill="#0078d4"/><circle cx="70" cy="55" r="28" fill="#50a0e0"/><path d="M0 160 90 80l60 50 50-36 80 66z" fill="#004c8c"/><text x="14" y="146" font-family="monospace" font-size="13" fill="#fff">playblazor.svg</text></svg>"""))
+            .Parameter(nameof(FluentImage.AlternateText), "Sample image")
+            .Parameter(nameof(FluentImage.Width), "280px")
+            .Variant("Rounded, bordered", v => v.Set(nameof(FluentImage.Shape), ImageShape.Rounded).Set(nameof(FluentImage.Bordered), true))
+            .Variant("Cover, shadow", v => v.Set(nameof(FluentImage.Fit), ImageFit.Cover).Set(nameof(FluentImage.Shadow), true));
+
+        options.For<FluentSkeleton>()
+            .Parameter(nameof(FluentSkeleton.Width), "220px")
+            .Variant("Circle", v => v.Set(nameof(FluentSkeleton.Circular), true).Set(nameof(FluentSkeleton.Width), "48px").Set(nameof(FluentSkeleton.Height), "48px"))
+            .Variant("Icon + title", v => v.Set(nameof(FluentSkeleton.Pattern), SkeletonPattern.IconTitle))
+            .Variant("No shimmer", v => v.Set(nameof(FluentSkeleton.Shimmer), false));
+
+        // FluentProgress is [Obsolete] (renamed to FluentProgressBar) but still a real,
+        // documented, instantiable component — presets live on their own type, since variant and
+        // preset storage is keyed by exact Type, not walked up the inheritance chain. The
+        // pragma is scoped to this block only; TreatWarningsAsErrors would otherwise fail the
+        // build on the very obsolescence this task's brief asks us to curate around.
+#pragma warning disable CS0618
+        options.For<FluentProgress>()
+            .Parameter(nameof(FluentProgress.Value), 65)
+            .Variant("Indeterminate", v => v.Set(nameof(FluentProgress.Value), null))
+            .Variant("Success", v => v.Set(nameof(FluentProgress.State), ProgressState.Success));
+#pragma warning restore CS0618
+
+        options.For<FluentProgressBar>()
+            .Parameter(nameof(FluentProgressBar.Value), 65)
+            .Variant("Indeterminate", v => v.Set(nameof(FluentProgressBar.Value), null))
+            .Variant("Error state", v => v.Set(nameof(FluentProgressBar.State), ProgressState.Error))
+            .Variant("Large, square", v => v.Set(nameof(FluentProgressBar.Thickness), ProgressThickness.Large).Set(nameof(FluentProgressBar.Shape), ProgressShape.Square));
+
+        // FluentProgressRing is likewise [Obsolete] (renamed to FluentSpinner) but still real;
+        // it already shows a spinning ring with its own defaults, so only variants are needed.
+#pragma warning disable CS0618
+        options.For<FluentProgressRing>()
+            .Variant("Large", v => v.Set(nameof(FluentProgressRing.Size), SpinnerSize.Large))
+            .Variant("Tiny", v => v.Set(nameof(FluentProgressRing.Size), SpinnerSize.Tiny))
+            .Variant("Inverted", v => v.Set(nameof(FluentProgressRing.AppearanceInverted), true));
+#pragma warning restore CS0618
+
+        options.For<FluentSpinner>()
+            .Variant("Large", v => v.Set(nameof(FluentSpinner.Size), SpinnerSize.Large))
+            .Variant("Tiny", v => v.Set(nameof(FluentSpinner.Size), SpinnerSize.Tiny))
+            .Variant("Inverted", v => v.Set(nameof(FluentSpinner.AppearanceInverted), true));
+
+        options.For<FluentRatingDisplay>()
+            .Parameter(nameof(FluentRatingDisplay.Value), 3.5)
+            .Parameter(nameof(FluentRatingDisplay.Max), (byte)5)
+            .Parameter(nameof(FluentRatingDisplay.Count), 128.0)
+            .Variant("Compact", v => v.Set(nameof(FluentRatingDisplay.Compact), true))
+            .Variant("Large, brand", v => v.Set(nameof(FluentRatingDisplay.Size), RatingSize.Large).Set(nameof(FluentRatingDisplay.Color), RatingDisplayColor.Brand));
+
+        options.For<FluentMultiSplitter>()
+            .Slot(nameof(FluentMultiSplitter.ChildContent), FluentDemoFragments.SplitterPanes, FluentDemoFragmentSources.SplitterPanes)
+            .Parameter(nameof(FluentMultiSplitter.Height), "200px")
+            .Variant("Vertical", v => v.Set(nameof(FluentMultiSplitter.Orientation), Orientation.Vertical))
+            .Variant("Thick bar", v => v.Set(nameof(FluentMultiSplitter.BarSize), "12"));
+
+        // FluentMultiSplitterPane's [CascadingParameter] Splitter is nullable and null-checked
+        // throughout (Next(), IsLast, IsResizable, …), so it renders alone without throwing — but
+        // Scaffold gives it a real sibling pane so the split itself is visible on the bench.
+        options.For<FluentMultiSplitterPane>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentMultiSplitter>(0);
+                builder.AddAttribute(1, nameof(FluentMultiSplitter.Height), "200px");
+                builder.AddAttribute(2, nameof(FluentMultiSplitter.ChildContent), (RenderFragment)(paneBuilder =>
+                {
+                    paneBuilder.AddContent(0, specimen);
+                    paneBuilder.OpenComponent<FluentMultiSplitterPane>(1);
+                    paneBuilder.AddAttribute(2, nameof(FluentMultiSplitterPane.ChildContent), (RenderFragment)(b => b.AddContent(0, "Other pane")));
+                    paneBuilder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            },
+            """
+            <FluentMultiSplitter Height="200px">
+                {specimen}
+                <FluentMultiSplitterPane>Other pane</FluentMultiSplitterPane>
+            </FluentMultiSplitter>
+            """)
+            .Related<FluentMultiSplitter>()
+            .Slot(nameof(FluentMultiSplitterPane.ChildContent), b => b.AddContent(0, "Pane content"), "Pane content")
+            .Parameter(nameof(FluentMultiSplitterPane.Size), "50%")
+            .Variant("Collapsible", v => v.Set(nameof(FluentMultiSplitterPane.Collapsible), true))
+            .Variant("Fixed 200px", v => v.Set(nameof(FluentMultiSplitterPane.Size), "200px"));
     }
 
     // StripArity is duplicated from the MudBlazor config on purpose: the two apps share no code

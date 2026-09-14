@@ -41,6 +41,33 @@ public class FluentPresetTests
     [TestCase(typeof(FluentField))]
     [TestCase(typeof(FluentLabel))]
     [TestCase(typeof(FluentInputFile))]
+
+    // --- Task 6: display and layout ---
+    [TestCase(typeof(FluentBadge))]
+    [TestCase(typeof(FluentCounterBadge))]
+    [TestCase(typeof(FluentPresenceBadge))]
+    [TestCase(typeof(FluentAvatar))]
+    [TestCase(typeof(FluentCard))]
+    [TestCase(typeof(FluentDivider))]
+    [TestCase(typeof(FluentGrid))]
+    [TestCase(typeof(FluentGridItem))]
+    [TestCase(typeof(FluentStack))]
+    [TestCase(typeof(FluentSpacer))]
+    [TestCase(typeof(FluentLayout))]
+    [TestCase(typeof(FluentLayoutItem))]
+    [TestCase(typeof(FluentText))]
+    [TestCase(typeof(FluentHighlighter))]
+    [TestCase(typeof(FluentImage))]
+    [TestCase(typeof(FluentSkeleton))]
+#pragma warning disable CS0618 // FluentProgress/FluentProgressRing are obsolete (renamed) but still curated per the brief.
+    [TestCase(typeof(FluentProgress))]
+    [TestCase(typeof(FluentProgressBar))]
+    [TestCase(typeof(FluentProgressRing))]
+#pragma warning restore CS0618
+    [TestCase(typeof(FluentSpinner))]
+    [TestCase(typeof(FluentRatingDisplay))]
+    [TestCase(typeof(FluentMultiSplitter))]
+    [TestCase(typeof(FluentMultiSplitterPane))]
     public void ComponentHasCuration(Type component)
     {
         var options = Configured();
