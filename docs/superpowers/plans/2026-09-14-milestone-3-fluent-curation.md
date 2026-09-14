@@ -586,7 +586,10 @@ In `FluentPlaygroundConfig.Configure`. The validation pair needs a real `EditCon
             "<EditForm Model=\"@_model\">\n    {specimen}\n</EditForm>");
 
         options.For<AddTag>()
-            .Parameter(nameof(AddTag.Name), "priority");
+            // Name is the HTML ELEMENT AddTag opens, not a label — Fluent's own call sites
+            // pass real custom element names. A word like "priority" renders an empty,
+            // meaningless <priority> and throws nothing, so nothing would catch it.
+            .Parameter(nameof(AddTag.Name), "fluent-badge-container");
 ```
 
 with, at class scope:
