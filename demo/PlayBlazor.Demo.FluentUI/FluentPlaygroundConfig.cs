@@ -553,19 +553,60 @@ public static class FluentPlaygroundConfig
 
         // FluentSpacer renders an empty div: its whole job is to occupy space inside a flex
         // parent (FluentStack), so there is no meaningful ChildContent to preset. Its StyleValue
-        // (decompiled) only ever writes "width" when Orientation is Horizontal and "height" when
-        // Orientation is Vertical — Horizontal's default, paired with a Width-only preset, NEVER
-        // gets a height style at all, so the standalone div collapses to zero height and is
-        // invisible (this was the actual bug: setting Width alone did not "need a second
-        // attribute", it needed the ONE orientation whose own dimension a bare div renders).
-        // Vertical is the only orientation whose dimension (Height) is written unconditionally on
-        // a bare div — a <div style="height:40px"> is a full-width band regardless of any flex
-        // parent — so that is the one that actually shows something standalone.
+        // (decompiled) writes "width" ONLY for Horizontal orientation and "height" ONLY for
+        // Vertical. A plain block <div> already gives Vertical a full-width band with no parent
+        // at all (block width:auto == 100% of container) — that is why Orientation=Vertical +
+        // Height alone is genuinely visible standalone. Horizontal has no such rescue: it is
+        // meant to rely on a flex ROW's cross-axis stretch for its height, by design.
+        //
+        // A single FluentStack cannot rescue BOTH orientations at once, though — Scaffold is
+        // registered once per Type and wraps EVERY variant (PlaygroundView.WrappedSpecimen has
+        // no bare/wrapped toggle), and CSS Flexbox's align-items:stretch only ever reaches the
+        // CROSS axis of a direct flex child: a row stretches height but leaves an empty,
+        // width-unset item's own (main-axis) width at 0 — exactly the Vertical variants, which
+        // set no Width and get no flex-grow (FluentSpacer's own flex-grow condition requires the
+        // UNSET dimension to match Orientation, which Height already satisfies). A column
+        // wrapper just swaps which orientation breaks. No nesting of FluentStacks escapes this;
+        // the item's own main axis never auto-stretches without flex-grow, in either direction.
+        //
+        // CSS Grid does not have this asymmetry: a grid item's default align-items/justify-items
+        // is "stretch" on BOTH axes at once. A middle grid column with a guaranteed minimum
+        // track size keeps every orientation visible in the SAME wrapper — an explicit dimension
+        // the specimen itself sets (Width for Horizontal, Height for Vertical) still wins over
+        // stretch per spec, so this never overrides what the real component renders; it only
+        // guarantees the axis FluentSpacer itself leaves unset is never zero.
         options.For<FluentSpacer>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "style",
+                    "display:grid; grid-template-columns:auto minmax(40px,max-content) auto; " +
+                    "align-items:stretch; justify-items:stretch; gap:8px");
+                builder.OpenComponent<FluentCard>(2);
+                builder.AddAttribute(3, nameof(FluentCard.Width), "120px");
+                builder.AddAttribute(4, nameof(FluentCard.ChildContent), (RenderFragment)(b => b.AddContent(0, "Before")));
+                builder.CloseComponent();
+                builder.AddContent(5, specimen);
+                builder.OpenComponent<FluentCard>(6);
+                builder.AddAttribute(7, nameof(FluentCard.Width), "120px");
+                builder.AddAttribute(8, nameof(FluentCard.ChildContent), (RenderFragment)(b => b.AddContent(0, "After")));
+                builder.CloseComponent();
+                builder.CloseElement();
+            },
+            """
+            <div style="display:grid; grid-template-columns:auto minmax(40px,max-content) auto; align-items:stretch; justify-items:stretch; gap:8px">
+                <FluentCard Width="120px">Before</FluentCard>
+                {specimen}
+                <FluentCard Width="120px">After</FluentCard>
+            </div>
+            """)
             .Parameter(nameof(FluentSpacer.Orientation), Orientation.Vertical)
             .Parameter(nameof(FluentSpacer.Height), "40px")
-            .Variant("Tall", v => v.Set(nameof(FluentSpacer.Height), "120px"))
-            .Variant("Short", v => v.Set(nameof(FluentSpacer.Height), "8px"));
+            .Variant("Vertical, tall", v => v.Set(nameof(FluentSpacer.Height), "120px"))
+            .Variant("Vertical, short", v => v.Set(nameof(FluentSpacer.Height), "8px"))
+            .Variant("Horizontal (the component's own default orientation)", v => v
+                .Set(nameof(FluentSpacer.Orientation), Orientation.Horizontal)
+                .Set(nameof(FluentSpacer.Width), "40px"));
 
         // FluentLayout defaults Height to "100dvh" when unset (OnParametersSet-free — see
         // StyleValue), which would blow out the workspace stage; bound it for the bench.
