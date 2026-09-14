@@ -33,6 +33,13 @@ that print a report instead of asserting; run them on demand when auditing a com
 They are parametrized per explored library (currently MudBlazor and Fluent UI), so a normal run
 discovers all 367 tests but skips these 4 (2 suites × 2 libraries) rather than executing them.
 
+**Filter an `[Explicit]` suite by its METHOD name, not its class name.** `--filter
+"FullyQualifiedName~RenderSweepTests"` does not run the sweep: the NUnit adapter treats a
+class-name match as a non-explicit run, skips both `[Explicit]` cases and reports `total: 1`,
+which reads exactly like success. `--filter "FullyQualifiedName~RenderSweep_ReportsEveryComponentError"`
+runs it. Same family as the `--nologo` trap above — the failure mode here is a green-looking
+run that measured nothing.
+
 ## Layout
 
 | Path | Role |
