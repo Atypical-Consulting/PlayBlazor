@@ -162,4 +162,43 @@
         <FluentAppBarItem Text="Search" IconRest="@SearchIcon" />
         <FluentAppBarItem Text="Settings" IconRest="@SettingsIcon" />
     </text>;
+
+    // --- Data: grids, drag-and-drop, overflow ---
+
+    // Standalone here, so TGridItem needs stating explicitly; a real FluentDataGridRow nests
+    // inside a FluentDataGrid, whose CascadingTypeParameter infers it — the source string below
+    // (what a user pastes) omits it accordingly.
+    public static RenderFragment RowCells => @<text>
+        <FluentDataGridCell TGridItem="Person">Ada Lovelace</FluentDataGridCell>
+        <FluentDataGridCell TGridItem="Person">Analyst</FluentDataGridCell>
+    </text>;
+
+    // FluentDropZone.Item is typed TItem (an open generic parameter), so Razor cannot treat a
+    // quoted value as a string literal the way it does for a property declared as plain `string`
+    // — it parses "To do" as a C# expression instead. Hoisting to fields sidesteps that.
+    private static readonly string ToDoZone = "To do";
+    private static readonly string DoingZone = "Doing";
+    private static readonly string DoneZone = "Done";
+
+    // Same standalone-vs-nested reasoning as RowCells: FluentDragContainer cascades TItem to its
+    // FluentDropZone children, so the source string omits the explicit TItem this fragment needs.
+    public static RenderFragment DropZones => @<text>
+        <FluentDropZone TItem="string" Item="@ToDoZone" Droppable="true">
+            <FluentText Block="true">Design mockups</FluentText>
+        </FluentDropZone>
+        <FluentDropZone TItem="string" Item="@DoingZone" Droppable="true">
+            <FluentText Block="true">Implement API</FluentText>
+        </FluentDropZone>
+        <FluentDropZone TItem="string" Item="@DoneZone" Droppable="true">
+            <FluentText Block="true">Ship v1</FluentText>
+        </FluentDropZone>
+    </text>;
+
+    public static RenderFragment OverflowItems => @<text>
+        <FluentButton Appearance="ButtonAppearance.Primary">Home</FluentButton>
+        <FluentButton>Products</FluentButton>
+        <FluentButton>Services</FluentButton>
+        <FluentButton>About</FluentButton>
+        <FluentButton>Contact</FluentButton>
+    </text>;
 }

@@ -104,6 +104,22 @@ public class FluentPresetTests
     [TestCase(typeof(FluentTreeItem))]
     [TestCase(typeof(FluentAppBar))]
     [TestCase(typeof(FluentAppBarItem))]
+
+    // --- Task 8: data ---
+    [TestCase(typeof(FluentDataGrid<Person>))]
+    [TestCase(typeof(FluentDataGridRow<Person>))]
+    [TestCase(typeof(FluentDataGridCell<Person>))]
+    [TestCase(typeof(PropertyColumn<Person, string>))]
+    [TestCase(typeof(SelectColumn<Person>))]
+    [TestCase(typeof(TemplateColumn<Person>))]
+    [TestCase(typeof(HierarchicalSelectColumn<Person>))]
+    [TestCase(typeof(FluentPaginator))]
+    [TestCase(typeof(FluentSortableList<string>))]
+    [TestCase(typeof(FluentDragContainer<string>))]
+    [TestCase(typeof(FluentDropZone<string>))]
+    [TestCase(typeof(FluentOverflow))]
+    [TestCase(typeof(FluentPullToRefresh))]
+    [TestCase(typeof(FluentKeyCode))]
     public void ComponentHasCuration(Type component)
     {
         var options = Configured();

@@ -34,6 +34,29 @@ public static class FluentPlaygroundConfig
     ];
 
     /// <summary>
+    /// A live <see cref="PaginationState"/> for the paginator preset: on page 1 of a
+    /// <see cref="SampleRows"/>-sized set, two items per page.
+    /// </summary>
+    private static readonly PaginationState SamplePaginationState = CreateSamplePaginationState(currentPageIndex: 0);
+
+    /// <summary>The same state, advanced to page 2 — demonstrates Previous/First becoming enabled.</summary>
+    private static readonly PaginationState SamplePaginationStateMidway = CreateSamplePaginationState(currentPageIndex: 1);
+
+    /// <summary>
+    /// <see cref="PaginationState.TotalItemCount"/> starts null and only <see cref="PaginationState.SetTotalItemCountAsync"/>
+    /// sets it — until it does, <see cref="FluentPaginator"/> renders a bare, empty &lt;div&gt; with
+    /// no summary and no buttons. Calling it once here, synchronously, is what gives the presets
+    /// above real pagination chrome to show.
+    /// </summary>
+    private static PaginationState CreateSamplePaginationState(int currentPageIndex)
+    {
+        var state = new PaginationState { ItemsPerPage = 2 };
+        state.SetTotalItemCountAsync(SampleRows.Count).GetAwaiter().GetResult();
+        state.SetCurrentPageIndexAsync(currentPageIndex).GetAwaiter().GetResult();
+        return state;
+    }
+
+    /// <summary>
     /// Shared items for every list-driven form input closed at <c>&lt;string,string&gt;</c> or
     /// <c>&lt;string&gt;</c> — <see cref="FluentSelect{TOption,TValue}"/>,
     /// <see cref="FluentCombobox{TOption,TValue}"/>, <see cref="FluentAutocomplete{TOption,TValue}"/>
@@ -256,7 +279,14 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
-            .Related<FluentDataGrid<Person>>();
+            .Related<FluentDataGrid<Person>>()
+            .Parameter(nameof(FluentDataGridRow<Person>.Item), SampleRows[0])
+            // ChildContent here is the row's OWN cells — real <FluentDataGridCell> markup, not
+            // the placeholder text a plain Slot(name, b => b.AddContent(...)) call would give a
+            // manual/row-driven row nothing to show.
+            .Slot(nameof(FluentDataGridRow<Person>.ChildContent), FluentDemoFragments.RowCells, FluentDemoFragmentSources.RowCells)
+            .Variant("Header row", v => v.Set(nameof(FluentDataGridRow<Person>.RowType), DataGridRowType.Header))
+            .Variant("Custom column widths", v => v.Set(nameof(FluentDataGridRow<Person>.GridTemplateColumns), "160px 1fr"));
 
         options.For<FluentDataGridCell<Person>>()
             .Scaffold(specimen => builder =>
@@ -278,7 +308,12 @@ public static class FluentPlaygroundConfig
                 </FluentDataGridRow>
             </FluentDataGrid>
             """)
-            .Related<FluentDataGridRow<Person>>();
+            .Related<FluentDataGridRow<Person>>()
+            .Parameter(nameof(FluentDataGridCell<Person>.Item), SampleRows[0])
+            .Parameter(nameof(FluentDataGridCell<Person>.CellTitle), "Employee name")
+            .Slot(nameof(FluentDataGridCell<Person>.ChildContent), b => b.AddContent(0, "Ada Lovelace"), "Ada Lovelace")
+            .Variant("Header cell", v => v.Set(nameof(FluentDataGridCell<Person>.CellType), DataGridCellType.ColumnHeader))
+            .Variant("Row header cell", v => v.Set(nameof(FluentDataGridCell<Person>.CellType), DataGridCellType.RowHeader));
 
         // PropertyColumn.Property is [EditorRequired] with no default — without a preset,
         // OnParametersSet NullReferenceExceptions compiling a null expression.
@@ -293,9 +328,15 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
-            .Related<FluentDataGrid<Person>>();
+            .Related<FluentDataGrid<Person>>()
+            .Variant("Sortable", v => v.Set(nameof(PropertyColumn<Person, string>.Sortable), true))
+            .Variant("Right aligned", v => v.Set(nameof(PropertyColumn<Person, string>.Align), DataGridCellAlignment.End))
+            .Variant("With tooltip", v => v.Set(nameof(PropertyColumn<Person, string>.Tooltip), true));
 
+        // SelectColumn.Property decides checked state; its own default always returns false, so a
+        // Parameter preset is what makes the sample grid open with a row already checked.
         options.For<SelectColumn<Person>>()
+            .Parameter(nameof(SelectColumn<Person>.Property), (Func<Person, bool>)(p => p.Name == SampleRows[0].Name))
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<FluentDataGrid<Person>>(0);
@@ -304,9 +345,20 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
-            .Related<FluentDataGrid<Person>>();
+            .Related<FluentDataGrid<Person>>()
+            .Variant("Multiple selection", v => v.Set(nameof(SelectColumn<Person>.SelectMode), DataGridSelectMode.Multiple))
+            .Variant("Sticky single selection", v => v.Set(nameof(SelectColumn<Person>.SelectMode), DataGridSelectMode.SingleSticky));
 
+        // TemplateColumn.ChildContent is RenderFragment<TGridItem> — a CLOSED generic RenderFragment,
+        // which ParameterDictionaryBuilder.BuildSlot cannot honor: it special-cases only the literal
+        // non-generic RenderFragment (see src/PlayBlazor/Rendering/ParameterDictionaryBuilder.cs), and
+        // ControlKind.Slot parameters never fall through to the Parameter-preset or Variant-state
+        // paths either. No preset reaches ChildContent, so it keeps the field's own default
+        // (a no-op fragment) and every cell in this column renders empty — a src/PlayBlazor gap this
+        // demo-only task cannot close. What follows curates every OTHER reachable ColumnBase property
+        // so the column is not left completely uncurated.
         options.For<TemplateColumn<Person>>()
+            .Parameter(nameof(TemplateColumn<Person>.Title), "Bio")
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<FluentDataGrid<Person>>(0);
@@ -315,9 +367,17 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
-            .Related<FluentDataGrid<Person>>();
+            .Related<FluentDataGrid<Person>>()
+            .Variant("Centered", v => v.Set(nameof(TemplateColumn<Person>.Align), DataGridCellAlignment.Center))
+            .Variant("With tooltip", v => v.Set(nameof(TemplateColumn<Person>.Tooltip), true));
 
+        // Person doesn't implement IHierarchicalGridItem, so the constructor's own Property default
+        // (which reads that interface) always evaluates false — a Parameter preset that reads the
+        // item directly is what opens the sample grid with a row already checked, same as SelectColumn.
+        // SelectMode must stay Multiple — HierarchicalSelectColumn.OnParametersSet throws otherwise —
+        // so variants vary other real selection-chrome axes instead.
         options.For<HierarchicalSelectColumn<Person>>()
+            .Parameter(nameof(HierarchicalSelectColumn<Person>.Property), (Func<Person, bool>)(p => p.Name == SampleRows[0].Name))
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<FluentDataGrid<Person>>(0);
@@ -326,7 +386,9 @@ public static class FluentPlaygroundConfig
                 builder.CloseComponent();
             },
             "<FluentDataGrid Items=\"@_people\">\n    {specimen}\n</FluentDataGrid>")
-            .Related<FluentDataGrid<Person>>();
+            .Related<FluentDataGrid<Person>>()
+            .Variant("Select-all disabled", v => v.Set(nameof(HierarchicalSelectColumn<Person>.SelectAllDisabled), true))
+            .Variant("Checkbox-only selection", v => v.Set(nameof(HierarchicalSelectColumn<Person>.SelectFromEntireRow), false));
 
         // Both validation components demand a cascading EditContext and say so by name. An
         // EditForm over a throwaway model is the smallest thing that supplies one.
@@ -370,12 +432,92 @@ public static class FluentPlaygroundConfig
         // FluentKeyCode needs either an Anchor id or ChildContent to attach its key-listening JS to.
         // ChildContent is the one a Slot preset can supply.
         options.For<FluentKeyCode>()
-            .Slot(nameof(FluentKeyCode.ChildContent), b => b.AddContent(0, "Press any key"), "Press any key");
+            .Slot(nameof(FluentKeyCode.ChildContent), b => b.AddContent(0, "Press any key"), "Press any key")
+            .Variant("Global document listener", v => v.Set(nameof(FluentKeyCode.GlobalDocument), true))
+            .Variant("Ignore key repeats", v => v.Set(nameof(FluentKeyCode.StopRepeat), true))
+            .Variant("Div wrapper", v => v.Set(nameof(FluentKeyCode.TagName), FluentKeyCodeTag.Div));
 
         // FluentPaginator's sweep failure is not a missing parent — it wants a PaginationState
-        // instance, so it gets a Parameter preset rather than a Scaffold.
+        // instance, so it gets a Parameter preset rather than a Scaffold. A bare `new
+        // PaginationState()` is not enough, though: BuildRenderTree gates its ENTIRE output
+        // (summary text, all four nav buttons) behind `State.TotalItemCount.HasValue`, which stays
+        // null until SetTotalItemCountAsync runs — an unset total renders a bare, empty <div> with
+        // nothing in it. SamplePaginationState below calls that once, synchronously, so the bench
+        // shows real pagination chrome instead of an empty box that merely fails to throw.
         options.For<FluentPaginator>()
-            .Parameter(nameof(FluentPaginator.State), new PaginationState(), "@_paginationState");
+            .Parameter(nameof(FluentPaginator.State), SamplePaginationState, "@_paginationState")
+            .Variant("Disabled", v => v.Set(nameof(FluentPaginator.Disabled), true))
+            .Variant("On a later page", v => v.Set(nameof(FluentPaginator.State), SamplePaginationStateMidway));
+
+        // --- Data: sortable lists, drag-and-drop, overflow, pull-to-refresh ---
+
+        options.For<FluentDataGrid<Person>>()
+            .Parameter(nameof(FluentDataGrid<Person>.Items), SampleRows.AsQueryable(), "@_people")
+            .Slot(nameof(FluentDataGrid<Person>.ChildContent), source: """
+                <PropertyColumn Property="p => p.Name" />
+                <PropertyColumn Property="p => p.Role" />
+                <PropertyColumn Property="p => p.Age" />
+                """, content: columns =>
+            {
+                AddColumn<string>(columns, 0, p => p.Name);
+                AddColumn<string>(columns, 2, p => p.Role);
+                AddColumn<int>(columns, 4, p => p.Age);
+            })
+            .Variant("Striped rows", v => v.Set(nameof(FluentDataGrid<Person>.StripedRows), true))
+            .Variant("Resizable columns", v => v.Set(nameof(FluentDataGrid<Person>.ResizableColumns), true))
+            .Variant("Auto-fit columns", v => v.Set(nameof(FluentDataGrid<Person>.AutoFit), true))
+            .Variant("Table display", v => v.Set(nameof(FluentDataGrid<Person>.DisplayMode), DataGridDisplayMode.Table))
+            .Related<PropertyColumn<Person, string>>();
+
+        // FluentSortableList<TItem>.ItemTemplate is [EditorRequired] RenderFragment<TItem> — the
+        // same closed-generic-RenderFragment gap noted above for TemplateColumn.ChildContent, but
+        // starker: BuildRenderTree returns immediately when ItemTemplate is null, so the specimen
+        // renders NOTHING at all, not even a wrapper element — no error, no content, invisible.
+        // No preset in src/PlayBlazor's current Slot/Parameter/Variant surface can reach it. Every
+        // other real, reachable parameter is curated below so the type is not left bare, but the
+        // bench itself will show an empty area regardless.
+        options.For<FluentSortableList<string>>()
+            .Parameter(nameof(FluentSortableList<string>.Items), new[] { "Design", "Build", "Test", "Ship" }, "@_tasks")
+            .Parameter(nameof(FluentSortableList<string>.AriaLabel), "Project tasks")
+            .Variant("Drag handles only", v => v.Set(nameof(FluentSortableList<string>.Handle), true))
+            .Variant("Shared group", v => v.Set(nameof(FluentSortableList<string>.Group), "tasks"));
+
+        // FluentDragContainer<TItem>.ChildContent is a plain (non-generic) RenderFragment — unlike
+        // ItemTemplate above, a Slot preset reaches it fine. It cascades itself to its
+        // FluentDropZone<TItem> children, so DropZones (real drop targets, not placeholder text)
+        // is what actually belongs here.
+        options.For<FluentDragContainer<string>>()
+            .Slot(nameof(FluentDragContainer<string>.ChildContent), FluentDemoFragments.DropZones, FluentDemoFragmentSources.DropZones)
+            .Related<FluentDropZone<string>>();
+
+        // FluentDropZone<TItem>.Container is a `required` CascadingParameter of a
+        // FluentDragContainer<TItem> — the scaffold supplies the one ancestor it demands.
+        options.For<FluentDropZone<string>>()
+            .Scaffold(specimen => builder =>
+            {
+                builder.OpenComponent<FluentDragContainer<string>>(0);
+                builder.AddAttribute(1, nameof(FluentDragContainer<string>.ChildContent), specimen);
+                builder.CloseComponent();
+            },
+            "<FluentDragContainer>\n    {specimen}\n</FluentDragContainer>")
+            .Related<FluentDragContainer<string>>()
+            .Parameter(nameof(FluentDropZone<string>.Item), "Design mockups")
+            .Parameter(nameof(FluentDropZone<string>.Draggable), true)
+            .Parameter(nameof(FluentDropZone<string>.Droppable), true)
+            .Slot(nameof(FluentDropZone<string>.ChildContent), b => b.AddContent(0, "Design mockups"), "Design mockups")
+            .Variant("Drop target only", v => v.Set(nameof(FluentDropZone<string>.Droppable), true).Set(nameof(FluentDropZone<string>.Draggable), false))
+            .Variant("Draggable only", v => v.Set(nameof(FluentDropZone<string>.Draggable), true).Set(nameof(FluentDropZone<string>.Droppable), false));
+
+        options.For<FluentOverflow>()
+            .Slot(nameof(FluentOverflow.ChildContent), FluentDemoFragments.OverflowItems, FluentDemoFragmentSources.OverflowItems)
+            .Variant("Vertical", v => v.Set(nameof(FluentOverflow.Orientation), Orientation.Vertical))
+            .Variant("Hidden until loaded", v => v.Set(nameof(FluentOverflow.VisibleOnLoad), false));
+
+        options.For<FluentPullToRefresh>()
+            .Slot(nameof(FluentPullToRefresh.ChildContent), b => b.AddContent(0, "Pull down to refresh the feed."), "Pull down to refresh the feed.")
+            .Variant("Pull from bottom", v => v.Set(nameof(FluentPullToRefresh.Direction), PullDirection.Up))
+            .Variant("Static tip hidden", v => v.Set(nameof(FluentPullToRefresh.ShowStaticTip), false))
+            .Variant("Disabled", v => v.Set(nameof(FluentPullToRefresh.Disabled), true));
 
         // --- Form inputs: text, choice, value-entry and file components. ---
         // Verified against the pinned 5.0.0-rc.5 assembly and the official v5 docs site
@@ -1066,5 +1208,17 @@ public static class FluentPlaygroundConfig
     {
         var backtick = name.IndexOf('`');
         return backtick < 0 ? name : name[..backtick];
+    }
+
+    // Mirrors MudBlazor's own AddColumn helper: PropertyColumn.Property is an Expression, not a
+    // RenderFragment, so building FluentDataGrid<Person>'s columns is plain C# rather than markup.
+    private static void AddColumn<TProperty>(
+        Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder columns,
+        int sequence,
+        Expression<Func<Person, TProperty>> property)
+    {
+        columns.OpenComponent<PropertyColumn<Person, TProperty>>(sequence);
+        columns.AddComponentParameter(sequence + 1, nameof(PropertyColumn<Person, TProperty>.Property), property);
+        columns.CloseComponent();
     }
 }

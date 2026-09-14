@@ -158,4 +158,31 @@ public static class FluentDemoFragmentSources
 <FluentAppBarItem Text="Search" IconRest="@SearchIcon" />
 <FluentAppBarItem Text="Settings" IconRest="@SettingsIcon" />
 """;
+
+    // --- Data: grids, drag-and-drop, overflow ---
+
+    public const string RowCells = """
+<FluentDataGridCell>Ada Lovelace</FluentDataGridCell>
+<FluentDataGridCell>Analyst</FluentDataGridCell>
+""";
+
+    public const string DropZones = """
+<FluentDropZone Item="To do" Droppable="true">
+    <FluentText Block="true">Design mockups</FluentText>
+</FluentDropZone>
+<FluentDropZone Item="Doing" Droppable="true">
+    <FluentText Block="true">Implement API</FluentText>
+</FluentDropZone>
+<FluentDropZone Item="Done" Droppable="true">
+    <FluentText Block="true">Ship v1</FluentText>
+</FluentDropZone>
+""";
+
+    public const string OverflowItems = """
+<FluentButton Appearance="ButtonAppearance.Primary">Home</FluentButton>
+<FluentButton>Products</FluentButton>
+<FluentButton>Services</FluentButton>
+<FluentButton>About</FluentButton>
+<FluentButton>Contact</FluentButton>
+""";
 }
