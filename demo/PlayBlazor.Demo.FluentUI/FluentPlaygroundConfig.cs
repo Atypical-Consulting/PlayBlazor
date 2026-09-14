@@ -289,9 +289,14 @@ public static class FluentPlaygroundConfig
             .Parameter(nameof(FluentValidationMessage<string>.Field),
                 new FieldIdentifier(ValidationScaffoldModel, nameof(Person.Name)));
 
-        // AddTag.Name is `required` — without a preset, BuildRenderTree throws before anything shows.
+        // AddTag.Name is `required` — without a preset, BuildRenderTree throws before anything
+        // shows. It is an HTML ELEMENT NAME (BuildRenderTree does OpenElement(0, Name)), not a
+        // label: Fluent's own internal call sites always pass a real custom element name
+        // ("fluent-badge-container", "fluent-drawer", "fluent-dialog", …) — never a plain word
+        // like "priority", which would render as a meaningless unknown element. Reuse one of
+        // Fluent's own: FluentBadge wraps its content in exactly this element.
         options.For<AddTag>()
-            .Parameter(nameof(AddTag.Name), "priority");
+            .Parameter(nameof(AddTag.Name), "fluent-badge-container");
 
         // FluentKeyCode needs either an Anchor id or ChildContent to attach its key-listening JS to.
         // ChildContent is the one a Slot preset can supply.

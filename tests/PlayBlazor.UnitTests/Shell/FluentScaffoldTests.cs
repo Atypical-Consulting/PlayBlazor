@@ -52,5 +52,14 @@ public class FluentScaffoldTests
         options.TryGetParameterPreset(typeof(AddTag), "Name", out var name).Should().BeTrue();
         name.Should().NotBeNull();
         options.TryGetSlotPreset(typeof(FluentKeyCode), "ChildContent", out _).Should().BeTrue();
+
+        // FluentValidationMessage<T> passes its EditContext check once scaffolded inside an
+        // EditForm, then immediately demands a Field or For value — this is the preset that
+        // supplies it, and nothing else in this suite guards it.
+        options.TryGetParameterPreset(
+            typeof(FluentValidationMessage<string>),
+            nameof(FluentValidationMessage<string>.Field),
+            out var field).Should().BeTrue();
+        field.Should().NotBeNull();
     }
 }
