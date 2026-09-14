@@ -253,18 +253,24 @@ c'est le filet de sécurité de la restructuration.
   caractère près**, chacun se déclarant canonique. L'ancien renvoie 200 et ne pourra plus jamais
   être mis à jour (Actions désactivé sur un repo archivé). Correctif : désarchiver, remplacer le
   contenu Pages par une redirection, ré-archiver. **Autre repo, autre session.**
-- **`RazorSnippetGenerator.FormatValue` ne consulte jamais le catalogue** —
-  `src/PlayBlazor/CodeGen/RazorSnippetGenerator.cs:431` sérialise une valeur cataloguée sans
-  forme texte native via `value.ToString()`, faute de mieux. Pour les icônes `string` de
-  MudBlazor (markup SVG brut), ça dégrade sans casser — moche, mais du Razor valide. Pour les
-  paramètres **typés** `Icon` de Fluent, ça casse pour de vrai : collé dans un attribut entre
-  guillemets, `.ToString()` produit `IconStart="PlayBlazor.Demo.FluentUI.FluentIconCatalogue+DemoIcon"`
-  (vérifié empiriquement) — pour un type sans conversion implicite depuis `string`, donc le
-  snippet généré **ne compile pas**. C'est passé inaperçu parce que la vérification navigateur
-  du jalon a contrôlé le permalien et le rendu du spécimen, jamais le panneau de code généré.
-  Piste retenue : une expression *source* optionnelle sur `Catalogue<T>`, dans le même esprit
-  que `Slot(…, source:)` et `Parameter(…, source:)` qui existent déjà sur `PlayBlazorOptions`
-  précisément pour que le code généré montre quelque chose qu'un utilisateur peut coller.
+- **`RazorSnippetGenerator.FormatValue` ne consulte jamais le catalogue** — une valeur cataloguée
+  n'a aucune forme texte que le générateur sache écrire, donc le paramètre est purement et
+  simplement **omis** de l'extrait : `FormatValue` renvoie `null` pour le kind `Icon` et les deux
+  appelants de `Tokenize` n'ajoutent un attribut que s'il est non nul. Un `FluentAppBarItem` avec
+  une icône choisie produit `<FluentAppBarItem Text="Chat" />` — du Razor valide, mais qui ne
+  reproduit pas ce que le visiteur voit à l'écran. Piste retenue : une expression *source*
+  optionnelle sur `Catalogue<T>`, dans le même esprit que `Slot(…, source:)` et
+  `Parameter(…, source:)` qui existent déjà sur `PlayBlazorOptions` précisément pour que le code
+  généré montre quelque chose qu'un utilisateur peut coller.
+
+  *Correction (jalon 3, revue finale).* Cette entrée affirmait d'abord, « vérifié empiriquement »,
+  que `.ToString()` émettait `IconStart="…FluentIconCatalogue+DemoIcon"` et que l'extrait ne
+  compilait donc pas. C'était faux, et faux dès le premier jour : le garde qui renvoie `null` a
+  atterri en `f90a863`, un ancêtre de la branche où l'entrée a été écrite. La revue finale l'a
+  tranché en générant les 97 extraits curés — `DemoIcon` n'apparaît nulle part. Leçon retenue :
+  « vérifié empiriquement » sans la commande ni la sortie qui l'établissent ne vaut pas
+  vérification, et une erreur inscrite au spec survit à toutes les revues qui le prennent pour
+  autorité.
 - **`demo.css` fait fuiter un nom MudBlazor dans le chrome partagé** —
   `demo/PlayBlazor.Demo.Shared/wwwroot/css/demo.css:207` utilise
   `var(--mud-palette-text-primary, inherit)`, une custom property nommée pour MudBlazor, à
@@ -286,9 +292,21 @@ c'est le filet de sécurité de la restructuration.
   en curant la navigation de Fluent v5 (jalon 3, tâche 7), vérifié deux fois dans
   `ParameterDictionaryBuilder`. Une variante peut poser le *texte* d'un slot (une `string`),
   mais un `RenderFragment` passé à `v.Set(...)` n'atteint jamais le spécimen, pas plus qu'une
-  valeur de kind `Unsupported`. Rien ne le signale : ni erreur de compilation, ni exception,
+  valeur de kind `Unsupported` — ni un `null`, qu'`ApplyVariant` saute purement et simplement,
+  de sorte qu'une variante censée remettre un paramètre à « indéterminé » ne fait rien du tout. Rien ne le signale : ni erreur de compilation, ni exception,
   ni avertissement — la variante s'affiche, la puce se clique, et le rendu ne change pas.
   C'est aussi indocumenté, ce qui a contraint toute une tâche de curation à ne varier que des
   scalaires, des enums et des icônes sans que l'auteur sache pourquoi ses premiers essais
   restaient sans effet. Un avertissement en Debug au moment où la variante est enregistrée
   attraperait toute cette classe de défauts d'un coup, à l'endroit où l'auteur peut agir.
+- **`BuildSlot` refuse tout `RenderFragment<T>`** — découvert en curant les composants de données
+  de Fluent v5 (jalon 3, tâche 8), confirmé deux fois. `ParameterDictionaryBuilder.BuildSlot`
+  teste `== typeof(RenderFragment)` au sens strict, donc un slot typé `RenderFragment<T>` ne
+  reçoit **jamais** son preset — alors que `ControlKindResolver` classe bien `RenderFragment<>`
+  en `ControlKind.Slot`. La découverte annonce un slot que le constructeur refuse de remplir, et
+  rien ne le signale. Conséquence mesurée : `TemplateColumn<Person>` rend des cellules vides et
+  `FluentSortableList<string>` ne rend rien du tout. Ce n'est pas propre à Fluent — `RenderFragment<T>`
+  est la façon dont tout Blazor écrit un composant à gabarit, et MudBlazor en est plein. Corriger
+  demande une surcharge générique publique de `Slot(…)`, donc de la documentation XML sous
+  `CS1591`, des tests, et une décision sur ce que devient un tel slot dans un permalien : c'est
+  une fonctionnalité, pas un correctif, et elle mérite son propre jalon.
