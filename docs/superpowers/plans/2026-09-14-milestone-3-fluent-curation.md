@@ -327,9 +327,8 @@ And at class scope:
     private static readonly HashSet<string> Infrastructure =
     [
         "ColumnReorderOptions", "ColumnResizeOptions", "Defer", "FluentDialogProvider",
-        "FluentErrorBoundary", "FluentKeyCodeProvider", "FluentLabelInfo", "FluentLayoutHamburger",
-        "FluentMessageBarProvider", "FluentOptionString", "FluentProviders", "FluentToastProvider",
-        "FluentTooltipProvider", "FreeOptionOutput",
+        "FluentKeyCodeProvider", "FluentMessageBarProvider", "FluentOptionString",
+        "FluentProviders", "FluentToastProvider", "FluentTooltipProvider", "FreeOptionOutput",
     ];
 
     private static string StripArity(string name)
@@ -900,7 +899,7 @@ Worked example, in the style the MudBlazor config already uses:
 
 Reuse the `Person` record and the `SampleRows` list Task 3 created — never define new ones. The grid and the four column types already have scaffolds from Task 3; add presets to the same `options.For<T>()` chains.
 
-`FluentErrorBoundary` and `Defer` are deliberately absent: Task 2 puts both in the `Infrastructure` exclusion set, so they are never listed and need no presets.
+`Defer` is deliberately absent: Task 2 puts it in the `Infrastructure` exclusion set, so it is never listed and needs no presets. `FluentErrorBoundary` IS listed — it looked like infrastructure while writing this plan, but it is a documented component with real parameters, so it belongs in a preset task's scope.
 
 - [ ] **Step 1: Write the failing test**
 
