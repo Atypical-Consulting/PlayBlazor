@@ -75,6 +75,18 @@ public class PlaygroundViewTests
     }
 
     [Test]
+    public void UndrivableParameters_AreListedButNotOfferedAsControls()
+    {
+        var cut = RenderView(typeof(SplattingFixture));
+
+        // Extra (splatting) and Payload (opaque object) are Undrivable — no generated control
+        // can drive either, but they still surface as "not controlled here" rather than vanishing.
+        cut.FindAll(".pb-control").Count.Should().Be(1); // Label, the only drivable parameter.
+        var uncontrolled = cut.Find(".pb-uncontrolled").TextContent;
+        uncontrolled.Should().Contain("Extra").And.Contain("Payload");
+    }
+
+    [Test]
     public void ThrowingComponent_ShowsErrorInsteadOfCrashing()
     {
         var cut = RenderView(typeof(ThrowingRenderFixture));

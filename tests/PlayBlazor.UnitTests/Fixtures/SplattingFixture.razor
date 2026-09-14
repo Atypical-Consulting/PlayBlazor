@@ -1,0 +1,12 @@
+@namespace PlayBlazor.UnitTests.Fixtures
+<div @attributes="Extra">@Label</div>
+@code {
+    /// <summary>Blazor's splatting parameter — every library has one, under a different name.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? Extra { get; set; }
+
+    /// <summary>An opaque payload a host attaches to a component; nothing can type one in.</summary>
+    [Parameter] public object? Payload { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+}

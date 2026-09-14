@@ -104,12 +104,20 @@ public sealed class ReflectionCatalogProvider : IComponentCatalogProvider
         var nullability = new NullabilityInfoContext();
         foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            if (property.GetCustomAttribute<ParameterAttribute>() is null)
+            var parameterAttribute = property.GetCustomAttribute<ParameterAttribute>();
+            if (parameterAttribute is null)
             {
                 continue;
             }
 
             var (kind, isNullable) = ControlKindResolver.Resolve(property.PropertyType);
+            if (parameterAttribute.CaptureUnmatchedValues)
+            {
+                // The splatting parameter: MudBlazor's UserAttributes, Fluent's AdditionalAttributes.
+                // The attribute is the only thing they have in common — never match on the name.
+                kind = ControlKind.Undrivable;
+            }
+
             if (kind == ControlKind.Text && property.PropertyType == typeof(string)
                 && property.Name.EndsWith("Icon", StringComparison.Ordinal))
             {

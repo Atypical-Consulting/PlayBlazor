@@ -60,6 +60,12 @@ public static class ControlKindResolver
         {
             return (ControlKind.Color, isNullable);
         }
+        if (type == typeof(object))
+        {
+            // A bare object carries no shape to build a control from — MudBlazor's Tag and
+            // Fluent's Data are both this. Not "unsupported yet": undrivable by construction.
+            return (ControlKind.Undrivable, isNullable);
+        }
 
         return (ControlKind.Unsupported, isNullable);
     }
