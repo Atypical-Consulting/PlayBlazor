@@ -1,0 +1,215 @@
+@namespace PlayBlazor.Demo.FluentUI
+@* Static example fragments used as slot presets — official-docs-flavored content. *@
+@code {
+    public static RenderFragment RadioOptions => @<text>
+        <FluentRadio TValue="string" Label="Apple" />
+        <FluentRadio TValue="string" Label="Banana" />
+        <FluentRadio TValue="string" Label="Orange" Disabled="true" />
+        <FluentRadio TValue="string" Label="Kiwi" />
+    </text>;
+
+    public static RenderFragment CardBody => @<text>
+        <FluentBadge Appearance="BadgeAppearance.Tint" Color="BadgeColor.Brand">New</FluentBadge>
+        <FluentText Weight="TextWeight.Semibold" Block="true">Old paint</FluentText>
+        <FluentText Size="TextSize.Size200">A study of layered paint on wood, found in a Copenhagen attic.</FluentText>
+    </text>;
+
+    public static RenderFragment GridItems => @<text>
+        <FluentGridItem Xs="4"><FluentCard>Column 1</FluentCard></FluentGridItem>
+        <FluentGridItem Xs="4"><FluentCard>Column 2</FluentCard></FluentGridItem>
+        <FluentGridItem Xs="4"><FluentCard>Column 3</FluentCard></FluentGridItem>
+    </text>;
+
+    public static RenderFragment LayoutAreas => @<text>
+        <FluentLayoutItem Area="LayoutArea.Header">
+            <FluentText Weight="TextWeight.Semibold" Block="true">Header</FluentText>
+        </FluentLayoutItem>
+        <FluentLayoutItem Area="LayoutArea.Navigation" Width="160px">
+            <FluentText Block="true">Navigation</FluentText>
+        </FluentLayoutItem>
+        <FluentLayoutItem Area="LayoutArea.Content">
+            <FluentText Block="true">Content</FluentText>
+        </FluentLayoutItem>
+        <FluentLayoutItem Area="LayoutArea.Footer">
+            <FluentText Block="true">Footer</FluentText>
+        </FluentLayoutItem>
+    </text>;
+
+    public static RenderFragment StackItems => @<text>
+        <FluentCard Width="120px">Item 1</FluentCard>
+        <FluentCard Width="120px">Item 2</FluentCard>
+        <FluentCard Width="120px">Item 3</FluentCard>
+    </text>;
+
+    public static RenderFragment SplitterPanes => @<text>
+        <FluentMultiSplitterPane>
+            <FluentText Block="true">Left pane</FluentText>
+        </FluentMultiSplitterPane>
+        <FluentMultiSplitterPane>
+            <FluentText Block="true">Right pane</FluentText>
+        </FluentMultiSplitterPane>
+    </text>;
+
+    // --- Navigation and overlays ---
+
+    public static RenderFragment NavContent => @<text>
+        <FluentNavSectionHeader Title="General" />
+        <FluentNavItem>Dashboard</FluentNavItem>
+        <FluentNavItem>Reports</FluentNavItem>
+        <FluentNavCategory Title="Settings" Expanded="true">
+            <FluentNavItem>Profile</FluentNavItem>
+            <FluentNavItem>Security</FluentNavItem>
+        </FluentNavCategory>
+    </text>;
+
+    // The hamburger drawer is NOT a FluentNav, so its content has to bring its own: FluentNavItem
+    // reads a [CascadingParameter] FluentNav without null-checking it and throws a
+    // NullReferenceException outside one (caught by the render sweep, as an ESCAPED exception).
+    public static RenderFragment HamburgerNav => @<text>
+        <FluentNav>
+            <FluentNavItem>Dashboard</FluentNavItem>
+            <FluentNavItem>Reports</FluentNavItem>
+            <FluentNavItem>Settings</FluentNavItem>
+        </FluentNav>
+    </text>;
+
+    public static RenderFragment NavCategoryItems => @<text>
+        <FluentNavItem>Profile</FluentNavItem>
+        <FluentNavItem>Security</FluentNavItem>
+    </text>;
+
+    public static RenderFragment TabsContent => @<text>
+        <FluentTab Header="Home">
+            <FluentText Block="true">Welcome back! Here's what's new today.</FluentText>
+        </FluentTab>
+        <FluentTab Header="Profile">
+            <FluentText Block="true">Manage your account details and preferences.</FluentText>
+        </FluentTab>
+        <FluentTab Header="Settings">
+            <FluentText Block="true">Configure notifications and privacy options.</FluentText>
+        </FluentTab>
+    </text>;
+
+    // fluent-menu's default slot only marks its FIRST child element popover (and hides it until
+    // opened) — every subsequent element renders as a loose, always-visible row instead. A single
+    // FluentMenuList wrapping all the items is the shape the web component actually expects.
+    public static RenderFragment MenuContent => @<text>
+        <FluentMenuButton>Options</FluentMenuButton>
+        <FluentMenuList>
+            <FluentMenuItem Label="Cut" />
+            <FluentMenuItem Label="Copy" />
+            <FluentMenuItem Label="Paste" />
+        </FluentMenuList>
+    </text>;
+
+    public static RenderFragment MenuListItems => @<text>
+        <FluentMenuItem Label="Sort by name" />
+        <FluentMenuItem Label="Sort by date" />
+        <FluentMenuItem Label="Sort by size" />
+    </text>;
+
+    // Same FluentMenuList requirement as MenuContent above — FluentSplitButton forwards
+    // ChildContent straight into its internal FluentMenu's default slot.
+    public static RenderFragment SplitButtonItems => @<text>
+        <FluentMenuList>
+            <FluentMenuItem Label="Save As..." />
+            <FluentMenuItem Label="Save a Copy" />
+            <FluentMenuItem Label="Save as Template" />
+        </FluentMenuList>
+    </text>;
+
+    public static RenderFragment AccordionItems => @<text>
+        <FluentAccordionItem Header="Shipping details" Expanded="true">
+            <FluentText Block="true">Ships within 2 business days via standard courier.</FluentText>
+        </FluentAccordionItem>
+        <FluentAccordionItem Header="Return policy">
+            <FluentText Block="true">Items can be returned within 30 days of delivery.</FluentText>
+        </FluentAccordionItem>
+    </text>;
+
+    public static RenderFragment DialogContent => @<text>
+        <FluentDialogBody>
+            <FluentText Block="true">This action permanently deletes the selected file. It cannot be undone.</FluentText>
+        </FluentDialogBody>
+    </text>;
+
+    public static RenderFragment PopoverBody => @<text>
+        <FluentText Weight="TextWeight.Semibold" Block="true">Storage details</FluentText>
+        <FluentText Size="TextSize.Size200">64.2 GB used of 100 GB available.</FluentText>
+    </text>;
+
+    public static RenderFragment WizardSteps => @<text>
+        <FluentWizardStep Label="Account" Summary="Create your account">
+            <FluentText Block="true">Enter your name and email address.</FluentText>
+        </FluentWizardStep>
+        <FluentWizardStep Label="Profile" Summary="Tell us about you">
+            <FluentText Block="true">Add a photo and a short bio.</FluentText>
+        </FluentWizardStep>
+        <FluentWizardStep Label="Review" Summary="Confirm and finish">
+            <FluentText Block="true">Review your details before finishing.</FluentText>
+        </FluentWizardStep>
+    </text>;
+
+    public static RenderFragment TreeViewItems => @<text>
+        <FluentTreeItem Text="Documents" Expanded="true">
+            <FluentTreeItem Text="Resume.docx" />
+            <FluentTreeItem Text="CoverLetter.docx" />
+        </FluentTreeItem>
+        <FluentTreeItem Text="Pictures" />
+    </text>;
+
+    public static RenderFragment TreeItemChildren => @<text>
+        <FluentTreeItem Text="Resume.docx" />
+        <FluentTreeItem Text="CoverLetter.docx" />
+    </text>;
+
+    // Hoisted so the markup below never nests a quoted dictionary key inside a Razor attribute.
+    private static readonly Icon HomeIcon = FluentIconCatalogue.All["Circle"];
+    private static readonly Icon SearchIcon = FluentIconCatalogue.All["Search"];
+    private static readonly Icon SettingsIcon = FluentIconCatalogue.All["Settings"];
+
+    public static RenderFragment AppBarItems => @<text>
+        <FluentAppBarItem Text="Home" IconRest="@HomeIcon" />
+        <FluentAppBarItem Text="Search" IconRest="@SearchIcon" />
+        <FluentAppBarItem Text="Settings" IconRest="@SettingsIcon" />
+    </text>;
+
+    // --- Data: grids, drag-and-drop, overflow ---
+
+    // Standalone here, so TGridItem needs stating explicitly; a real FluentDataGridRow nests
+    // inside a FluentDataGrid, whose CascadingTypeParameter infers it — the source string below
+    // (what a user pastes) omits it accordingly.
+    public static RenderFragment RowCells => @<text>
+        <FluentDataGridCell TGridItem="Person">Ada Lovelace</FluentDataGridCell>
+        <FluentDataGridCell TGridItem="Person">Analyst</FluentDataGridCell>
+    </text>;
+
+    // FluentDropZone.Item is typed TItem (an open generic parameter), so Razor cannot treat a
+    // quoted value as a string literal the way it does for a property declared as plain `string`
+    // — it parses `To do` as a C# expression instead, which is CS1003 on the space and CS0103
+    // without one. The explicit-expression form @("To do") is what the library documents for this
+    // shape itself (see FluentOptionString's XML doc), and it is what the source string beside
+    // this fragment publishes verbatim — keep the two identical.
+    //
+    // Same standalone-vs-nested reasoning as RowCells: FluentDragContainer cascades TItem to its
+    // FluentDropZone children, so the source string omits the explicit TItem this fragment needs.
+    public static RenderFragment DropZones => @<text>
+        <FluentDropZone TItem="string" Item="@("To do")" Droppable="true">
+            <FluentText Block="true">Design mockups</FluentText>
+        </FluentDropZone>
+        <FluentDropZone TItem="string" Item="@("Doing")" Droppable="true">
+            <FluentText Block="true">Implement API</FluentText>
+        </FluentDropZone>
+        <FluentDropZone TItem="string" Item="@("Done")" Droppable="true">
+            <FluentText Block="true">Ship v1</FluentText>
+        </FluentDropZone>
+    </text>;
+
+    public static RenderFragment OverflowItems => @<text>
+        <FluentButton Appearance="ButtonAppearance.Primary">Home</FluentButton>
+        <FluentButton>Products</FluentButton>
+        <FluentButton>Services</FluentButton>
+        <FluentButton>About</FluentButton>
+        <FluentButton>Contact</FluentButton>
+    </text>;
+}

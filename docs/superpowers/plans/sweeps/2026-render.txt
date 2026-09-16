@@ -1,142 +1,40 @@
-[16:44:09.455] SynchronizedRunTestsAsync: ENTRY
-[16:44:09.461] SynchronizedRunTestsAsync: Creating executor
+[16:34:54.991] SynchronizedRunTestsAsync: ENTRY
+[16:34:54.997] SynchronizedRunTestsAsync: Creating executor
 NUnit Adapter 1.0.0.0: Test execution started
 Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
    NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Explicit run
 === MudBlazor ===
-SWEEP 169 components: 158 healthy, 11 contained errors, 0 escaped exceptions
+SWEEP 169 components: 159 healthy, 10 contained errors, 0 escaped exceptions
 --- ESCAPED (would take down more than the preview) ---
 --- CONTAINED (shown in the pb-error box) ---
-[CONTAINED] DataGridGroupRow :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] DataGridVirtualizeRow :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] FilterHeaderCell :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] HierarchyColumn :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] MudDragHandle :: InvalidOperationException: MudDragHandle must be placed inside a MudDynamicDropItem.
-[CONTAINED] MudHeatMapCell :: InvalidOperationException: MudHeatMapCell must be used inside a MudChart component.
+[CONTAINED] DataGridGroupRow<string> :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] DataGridVirtualizeRow<string> :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] FilterHeaderCell<string> :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] HierarchyColumn<string> :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] MudDragHandle<string> :: InvalidOperationException: MudDragHandle must be placed inside a MudDynamicDropItem.
+[CONTAINED] MudHeatMapCell<int> :: InvalidOperationException: MudHeatMapCell must be used inside a MudChart component.
 [CONTAINED] MudPopoverProvider :: InvalidOperationException: There is already a subscriber to the content with the given section ID 'mud-overlay-to-popover-provider'.
-[CONTAINED] MudToggleItem :: InvalidOperationException: MudToggleItem must be used within a MudToggleGroup.
-[CONTAINED] PropertyColumn :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] SelectColumn :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] TemplateColumn :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] MudToggleItem<string> :: InvalidOperationException: MudToggleItem must be used within a MudToggleGroup.
+[CONTAINED] SelectColumn<string> :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] TemplateColumn<string> :: NullReferenceException: Object reference not set to an instance of an object.
 
 
-MudBlazor: 158/169 healthy — see output for the inventory.
+MudBlazor: 159/169 healthy — see output for the inventory.
+passed MudBlazor (4s 270ms)
 === Microsoft.FluentUI.AspNetCore.Components ===
-SWEEP 108 components: 3 healthy, 105 contained errors, 0 escaped exceptions
+SWEEP 108 components: 106 healthy, 2 contained errors, 0 escaped exceptions
 --- ESCAPED (would take down more than the preview) ---
 --- CONTAINED (shown in the pb-error box) ---
-[CONTAINED] AddTag :: InvalidOperationException: Name property is required.
-[CONTAINED] ColumnReorderOptions :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] ColumnResizeOptions :: ArgumentException: Column must have a value greater than zero
-[CONTAINED] FluentAccordion :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentAccordionItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentAnchorButton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentAppBar :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentAppBarItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentAutocomplete :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentAvatar :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentBadge :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentButton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentCalendar :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentCard :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentCheckbox :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentColorPicker :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentColorPickerInput :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentCombobox :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentCompoundButton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentCounterBadge :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDataGrid :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDataGridCell :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDataGridRow :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDatePicker :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDialog :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDialogBody :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDialogProvider :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDivider :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDragContainer :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentDropZone :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentErrorBoundary :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentField :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentGrid :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentGridItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentHighlighter :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentImage :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentInputFile :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentKeyCode :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentLabel :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentLabelInfo :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentLayout :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentLayoutHamburger :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentLayoutItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentLink :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentListbox :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMenu :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMenuButton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMenuItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMenuList :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMessageBar :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMessageBarProvider :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMultiSplitter :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentMultiSplitterPane :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentNav :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentNavCategory :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentNavItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentNavSectionHeader :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentNumberInput :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentOption :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentOptionString :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentOverflow :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentOverlay :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentPaginator :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentPopover :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentPresenceBadge :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentProgress :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentProgressBar :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentProgressRing :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentProviders :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentPullToRefresh :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentRadio :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentRadioGroup :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentRatingDisplay :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSelect :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSkeleton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSlider :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSortableList :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSpacer :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSpinner :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSplitButton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentStack :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentSwitch :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTab :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTabs :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentText :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTextArea :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTextInput :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTimePicker :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentToast :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentToastProvider :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentToggleButton :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTooltip :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTooltipProvider :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTreeItem :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentTreeView :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentValidationMessage :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentValidationSummary :: InvalidOperationException: ValidationSummary requires a cascading parameter of type EditContext. For example, you can use ValidationSummary inside an EditForm.
-[CONTAINED] FluentWizard :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentWizardStep :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] FluentWizardStepValidator :: InvalidOperationException: FluentWizardStepValidator must be used inside a FluentWizardStep.
-[CONTAINED] FreeOptionOutput :: Defaults not captured: the component could not be instantiated.
-[CONTAINED] HierarchicalSelectColumn :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] PropertyColumn :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] SelectColumn :: NullReferenceException: Object reference not set to an instance of an object.
-[CONTAINED] TemplateColumn :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] ColumnReorderOptions<string> :: NullReferenceException: Object reference not set to an instance of an object.
+[CONTAINED] ColumnResizeOptions<string> :: ArgumentException: Column must have a value greater than zero
 
 
-FluentUI: 3/108 healthy — see output for the inventory.
+FluentUI: 106/108 healthy — see output for the inventory.
+passed FluentUI (909ms)
 
 Test run summary: Passed! - /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
   total: 2
   failed: 0
   succeeded: 2
   skipped: 0
-  duration: 3s 741ms
+  duration: 5s 368ms

@@ -28,7 +28,8 @@ public static class ParameterSignature
     private static string? Initializer(ParameterDescriptor parameter)
     {
         if (!parameter.HasDefault || parameter.DefaultValue is null
-            || parameter.Kind is ControlKind.Event or ControlKind.Slot or ControlKind.Unsupported)
+            || parameter.Kind is ControlKind.Event or ControlKind.Slot
+                or ControlKind.Unsupported or ControlKind.Undrivable)
         {
             return null;
         }
@@ -39,6 +40,15 @@ public static class ParameterSignature
             string s => $"\"{s}\"",
             Enum e => $"{e.GetType().Name}.{e}",
             IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
+
+            // A catalogued icon driving a host's own type (not a recognized string) has no C#
+            // text form: ToString() on a nested type yields `CoreIcons+Filled+Size20+Checkmark`,
+            // which is reflection notation presented as a declaration — and Fluent UI's CoreIcons
+            // is `internal` besides, so no consumer could write it. Showing no initializer is what
+            // a host with no catalogue would produce. Placed AFTER the arms above so a string icon
+            // (MudBlazor's `Icons.Material.*` constants) still shows its literal, exactly as
+            // RazorSnippetGenerator.FormatValue orders the same guard.
+            _ when parameter.Kind == ControlKind.Icon => null,
             var other => other.ToString(),
         };
     }

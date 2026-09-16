@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using AwesomeAssertions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using NUnit.Framework;
 using PlayBlazor.Discovery;
+using PlayBlazor.Model;
 
 namespace PlayBlazor.UnitTests.Diagnostics;
 
@@ -43,12 +45,69 @@ public class RenderSweepTests
         }
     }
 
+    [Test]
+    public void SweptName_NamesTheClosingActuallyRendered()
+    {
+        // A generic reports its closing, so a transcript never reads "FluentCalendar" for both
+        // the placeholder Discovery picked and a closing the host declared with options.For<T>().
+        SweptName("FluentCalendar", typeof(FluentCalendar<>).MakeGenericType(typeof(string)))
+            .Should().Be("FluentCalendar<string>");
+        SweptName("FluentCalendar", typeof(FluentCalendar<DateTime?>)).Should().Be("FluentCalendar<DateTime?>");
+        SweptName("FluentNumberInput", typeof(FluentNumberInput<int>)).Should().Be("FluentNumberInput<int>");
+        SweptName("MudChart", typeof(MudChart<int>)).Should().Be("MudChart<int>");
+
+        // A non-generic reports bare — nothing to disambiguate.
+        SweptName("FluentButton", typeof(FluentButton)).Should().Be("FluentButton");
+    }
+
+    /// <summary>
+    /// Registers the explored library's own services. DaisyBlazor is not yet a sweep case: a third
+    /// branch will register its services once the DaisyBlazor demo app exists — see the note in
+    /// ExploredLibraries for the blocker.
+    /// </summary>
+    private static void AddLibraryServices(IServiceCollection services, Assembly assembly)
+    {
+        switch (assembly.GetName().Name)
+        {
+            case "MudBlazor":
+                services.AddMudServices();
+                break;
+            case "Microsoft.FluentUI.AspNetCore.Components":
+                services.AddFluentUIComponents();
+                break;
+        }
+    }
+
+    /// <summary>The container the catalog constructs from, matching what a real host provides.</summary>
+    private static IServiceProvider ContainerFor(Assembly assembly)
+    {
+        var services = new ServiceCollection();
+        AddLibraryServices(services, assembly);
+        return services.BuildServiceProvider();
+    }
+
     private static async Task RunSweepAsync(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
         var options = new PlayBlazorOptions();
         configure(options);
-        var catalog = new ReflectionCatalogProvider(options: options);
-        var components = catalog.Discover(assembly);
+
+        // Capturing defaults means constructing each component, and a library may demand its own
+        // services through the constructor (Fluent UI v5 wants a LibraryConfiguration). Give the
+        // catalog the same container a real host would, or every such component reports
+        // "could not be instantiated" and the sweep measures the harness instead of the library.
+        var catalog = new ReflectionCatalogProvider(options: options, services: ContainerFor(assembly));
+
+        // Discovery closes an open generic with string, then int — but the host may have declared
+        // a different closing worth playing (options.For<T>()). Resolve each to the same closing
+        // PlaygroundWorkspace.OnParametersSet would pick, or the sweep measures a type the real
+        // explorer never renders, and a host closing (Task 2's FluentCalendar<DateTime?>, say)
+        // never moves the numbers no matter how correct it is.
+        IReadOnlyList<ComponentDescriptor> components = catalog.Discover(assembly)
+            .Select(c => options.ResolvePreferredClosing(c.Type) is var preferred && preferred != c.Type
+                ? catalog.Describe(preferred)
+                : c)
+            .ToArray();
+
         var contained = new List<(string Name, string Error)>();
         var escaped = new List<(string Name, string Error)>();
         var healthy = 0;
@@ -59,13 +118,16 @@ public class RenderSweepTests
             context.JSInterop.Mode = JSRuntimeMode.Loose;
 
             // Each library needs its own service registrations before its components will render.
-            if (assembly.GetName().Name == "MudBlazor") { context.Services.AddMudServices(); }
-            else if (assembly.GetName().Name == "Microsoft.FluentUI.AspNetCore.Components") { context.Services.AddFluentUIComponents(); }
-            // DaisyBlazor is not yet a sweep case: the third branch will call AddDaisyBlazor()
-            // once the DaisyBlazor demo app exists — see the note in ExploredLibraries for the
-            // blocker.
+            AddLibraryServices(context.Services, assembly);
 
-            context.Services.AddPlayBlazor();
+            // With the host's own configuration, so presets, scaffolds and catalogues apply —
+            // without it the sweep reports failures that curation would already have fixed.
+            context.Services.AddPlayBlazor(configure);
+
+            // Bare DisplayName is ambiguous once a generic can be swept under more than one
+            // closing (the placeholder Discovery picked, or one the host declared) — name the
+            // closing actually rendered, not just the open generic's name.
+            var sweptAs = SweptName(component.DisplayName, component.Type);
 
             try
             {
@@ -85,7 +147,7 @@ public class RenderSweepTests
                 var errors = cut.FindAll(".pb-error pre");
                 if (errors.Count > 0)
                 {
-                    contained.Add((component.DisplayName, FirstLine(errors[0].TextContent)));
+                    contained.Add((sweptAs, FirstLine(errors[0].TextContent)));
                 }
                 else
                 {
@@ -95,7 +157,7 @@ public class RenderSweepTests
             catch (Exception exception)
             {
                 var root = Root(exception);
-                escaped.Add((component.DisplayName, $"{root.GetType().Name}: {FirstLine(root.Message)}"));
+                escaped.Add((sweptAs, $"{root.GetType().Name}: {FirstLine(root.Message)}"));
             }
         }
 
@@ -133,6 +195,34 @@ public class RenderSweepTests
         public override void WriteLine(string? message)
         {
         }
+    }
+
+    /// <summary>Names the closing actually rendered — bare for a non-generic, closed for a generic.</summary>
+    private static string SweptName(string displayName, Type type)
+        => type.IsConstructedGenericType
+            ? $"{displayName}<{string.Join(", ", type.GetGenericArguments().Select(FriendlyArgumentName))}>"
+            : displayName;
+
+    private static string FriendlyArgumentName(Type type)
+    {
+        if (Nullable.GetUnderlyingType(type) is { } underlying)
+        {
+            return FriendlyArgumentName(underlying) + "?";
+        }
+
+        return type switch
+        {
+            _ when type == typeof(bool) => "bool",
+            _ when type == typeof(int) => "int",
+            _ when type == typeof(long) => "long",
+            _ when type == typeof(short) => "short",
+            _ when type == typeof(byte) => "byte",
+            _ when type == typeof(double) => "double",
+            _ when type == typeof(float) => "float",
+            _ when type == typeof(decimal) => "decimal",
+            _ when type == typeof(string) => "string",
+            _ => type.Name,
+        };
     }
 
     private static Exception Root(Exception exception)

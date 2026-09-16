@@ -23,8 +23,11 @@ public static class PlayBlazorServiceCollectionExtensions
         var options = new PlayBlazorOptions();
         configure?.Invoke(options);
         services.TryAddSingleton(options);
-        // Not `static`: the provider needs the options this call just configured.
-        services.TryAddSingleton<IComponentCatalogProvider>(_ => new ReflectionCatalogProvider(options: options));
+        // Not `static`: the provider needs the options this call just configured, and the container
+        // itself — a library whose components take constructor dependencies (Fluent UI v5 gives
+        // nearly every component a LibraryConfiguration) cannot be instantiated without it.
+        services.TryAddSingleton<IComponentCatalogProvider>(
+            sp => new ReflectionCatalogProvider(options: options, services: sp));
         return services;
     }
 }

@@ -143,6 +143,12 @@ public static class DemoFragmentSources
 </tbody>
 """;
 
+    public const string TableHeader = """
+<MudTh>Name</MudTh>
+<MudTh>Role</MudTh>
+<MudTh>Age</MudTh>
+""";
+
     public const string ToolBarContent = """
 <MudIconButton Icon="@Icons.Material.Filled.Menu" />
 <MudText Typo="Typo.h6">Title</MudText>

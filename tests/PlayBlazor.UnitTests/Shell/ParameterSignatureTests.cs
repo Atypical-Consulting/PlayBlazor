@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using NUnit.Framework;
 using PlayBlazor.Discovery;
+using PlayBlazor.Model;
 using PlayBlazor.Shell.Workspace;
 using PlayBlazor.UnitTests.Fixtures;
 
@@ -47,5 +48,48 @@ public class ParameterSignatureTests
             with { DefaultValue = "Hi", HasDefault = true };
         ParameterSignature.Format(label)
             .Should().Be("[Parameter] public string? Label { get; set; } = \"Hi\";");
+    }
+
+    [Test]
+    public void Icon_WithAnOpaqueDefault_OmitsInitializer()
+    {
+        // A host's own icon type has no C# text form: object.ToString() on a nested type yields
+        // `Outer+Inner`, reflection notation presented as a declaration. Fluent UI's
+        // FluentMessageBox.Icon and SelectColumn.IconIndeterminate both hit this.
+        var descriptor = _provider.Describe(typeof(BasicFixture));
+        var icon = descriptor.Parameters.Single(p => p.Name == nameof(BasicFixture.Label))
+            with { Kind = ControlKind.Icon, DefaultValue = new OpaqueIcon(), HasDefault = true };
+
+        ParameterSignature.Format(icon)
+            .Should().Be("[Parameter] public string? Label { get; set; }");
+    }
+
+    [Test]
+    public void Icon_WithAStringDefault_KeepsItsLiteral()
+    {
+        // The guard is placed after the string arm on purpose: MudBlazor's icons ARE strings
+        // (Icons.Material.Filled.Delete), and those have a perfectly good literal form.
+        var descriptor = _provider.Describe(typeof(BasicFixture));
+        var icon = descriptor.Parameters.Single(p => p.Name == nameof(BasicFixture.Label))
+            with { Kind = ControlKind.Icon, DefaultValue = "<svg />", HasDefault = true };
+
+        ParameterSignature.Format(icon)
+            .Should().Be("[Parameter] public string? Label { get; set; } = \"<svg />\";");
+    }
+
+    private sealed class OpaqueIcon
+    {
+        public override string ToString() => "Some.Library+Filled+Size20+CheckmarkCircle";
+    }
+
+    [Test]
+    public void Undrivable_WithDefault_OmitsInitializer()
+    {
+        var descriptor = _provider.Describe(typeof(BasicFixture));
+        var label = descriptor.Parameters.Single(p => p.Name == nameof(BasicFixture.Label))
+            with { Kind = ControlKind.Undrivable, DefaultValue = "Hi", HasDefault = true };
+
+        ParameterSignature.Format(label)
+            .Should().Be("[Parameter] public string? Label { get; set; }");
     }
 }

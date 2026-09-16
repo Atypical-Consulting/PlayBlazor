@@ -15,7 +15,7 @@ MudBlazor appears only in `demo/` and `tests/`, as the library being *pointed at
 
 ```bash
 dotnet build -c Release
-dotnet test -c Release                                     # 252 tests, 4 skipped, ~1s
+dotnet test -c Release                                     # 367 tests, 4 skipped, ~2s
 dotnet test -c Release -- --filter "FullyQualifiedName~X"  # single suite (MTP, note the `--`)
 dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and /explorer
 ```
@@ -23,10 +23,22 @@ dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and 
 Tests run on Microsoft.Testing.Platform (see `global.json`), not VSTest — VSTest-era flags such as
 `--collect:"XPlat Code Coverage"` are silently ignored. Use `--coverage` and friends.
 
+**Never pass `--nologo` to `dotnet test`.** MTP rejects unrecognised arguments by exiting 5 and
+printing `Zero tests ran` — which reads like a discovery failure and sends you hunting the test
+project. The migration guide claims `--nologo` still works; it does not. Exit code 5 means
+*invalid arguments*, never *no tests found*.
+
 Two `[Explicit]` suites (`RenderSweep`, `ListUnsupportedParameterTypes`) are diagnostic inventories
 that print a report instead of asserting; run them on demand when auditing a component library.
 They are parametrized per explored library (currently MudBlazor and Fluent UI), so a normal run
-discovers all 252 tests but skips these 4 (2 suites × 2 libraries) rather than executing them.
+discovers all 367 tests but skips these 4 (2 suites × 2 libraries) rather than executing them.
+
+**Filter an `[Explicit]` suite by its METHOD name, not its class name.** `--filter
+"FullyQualifiedName~RenderSweepTests"` does not run the sweep: the NUnit adapter treats a
+class-name match as a non-explicit run, skips both `[Explicit]` cases and reports `total: 1`,
+which reads exactly like success. `--filter "FullyQualifiedName~RenderSweep_ReportsEveryComponentError"`
+runs it. Same family as the `--nologo` trap above — the failure mode here is a green-looking
+run that measured nothing.
 
 ## Layout
 
@@ -36,7 +48,7 @@ discovers all 252 tests but skips these 4 (2 suites × 2 libraries) rather than 
 | `tests/PlayBlazor.UnitTests` | bUnit + NUnit + AwesomeAssertions. |
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (`DemoLanding`, `LibrarySwitcher`) shared by every showcase app. Zero UI dependencies — same constraint as `src/PlayBlazor`. |
 | `demo/PlayBlazor.Demo.MudBlazor` | `PlaygroundConfig.cs` holds every preset, scaffold, variant and exclusion for the MudBlazor showcase. Namespace stays `PlayBlazor.DemoHost` even though the project and assembly are `PlayBlazor.Demo.MudBlazor`. |
-| `demo/PlayBlazor.Demo.FluentUI` | Fluent UI Blazor showcase. An uncurated scaffold: `FluentPlaygroundConfig.cs` registers only the hand-written `FluentIconCatalogue` (24 SVGs, no dependency on the 23 MB icons package); presets, scaffolds, variants and exclusion land in milestone 3 from a sweep inventory. |
+| `demo/PlayBlazor.Demo.FluentUI` | Fluent UI Blazor showcase, curated to the same depth as MudBlazor's. `FluentPlaygroundConfig.cs` holds every preset, scaffold, variant and the `Infrastructure` deny-list, plus the hand-written `FluentIconCatalogue` (24 SVGs, no dependency on the 23 MB icons package). A few components are deliberately left imperfect rather than faked — see the comments beside them in that file. |
 | `docs/superpowers` | Incubation-era design spec, milestone plans, and the UX concept prototypes (A→G) whose concept G v2 is the shell that exists today. Paths quoted inside them predate the `src`/`tests`/`demo` split. |
 
 ## Traps learned the hard way
@@ -64,6 +76,11 @@ discovers all 252 tests but skips these 4 (2 suites × 2 libraries) rather than 
 - **Razor attributes cannot nest quotes** — hoist the value into a `const`.
 - Do not judge a thin dark chrome's luminance from a screenshot by eye; decode the PNG and probe
   the pixels.
+- **A preset can compile, pass the full suite and the render sweep, and still render nothing
+  visible or teach invalid markup.** Happened nine times curating Fluent. The component's own XML
+  docs are not a reliable source — they caused one of the nine. The only check that held up was
+  reading the library's own shipped implementation: decompiled `BuildRenderTree`, `lib.module.js`,
+  `bundle.scp.css`.
 
 ## Conventions
 
