@@ -55,7 +55,7 @@ jobs:
           --results-directory ${{ github.workspace }}/TestResults
 
       - name: Upload Code Coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
 
   create_nuget:
     runs-on: ubuntu-latest
