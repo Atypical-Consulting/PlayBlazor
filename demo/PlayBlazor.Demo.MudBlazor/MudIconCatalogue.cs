@@ -19,6 +19,9 @@ public static class MudIconCatalogue
         typeof(Icons.Material.Filled)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
             .Where(static field => field.IsLiteral && field.FieldType == typeof(string))
+            // Close and Clear share one SVG path and the reverse lookup keeps the first name:
+            // list Close first so a CloseIcon reads "Close", not a clear-field "Clear".
+            .OrderBy(static field => field.Name != nameof(Icons.Material.Filled.Close))
             .ToDictionary(
                 static field => field.Name,
                 static field => (string)field.GetRawConstantValue()!,

@@ -13,20 +13,20 @@
 
         <section class="demo-section demo-bench-compact">
             <h2 class="demo-tag">MudButton</h2>
-            <p class="demo-note">Start here: pick an example, flip a parameter, and watch the Razor snippet follow.<a class="demo-docs" href="https://mudblazor.com/components/button">MudButton docs &#8599;</a></p>
+            <p class="demo-note">Start here: pick an example, flip a parameter, and watch the Razor snippet follow. MudBlazor's theme uppercases button text, so "Click me" in the snippet shows as CLICK ME on the stage.<a class="demo-docs" href="https://mudblazor.com/components/button">MudButton docs &#8599;</a></p>
             <PlaygroundView Component="typeof(MudButton)" />
         </section>
 
         <section class="demo-section demo-bench-long demo-bench-grid">
-            <h2 class="demo-tag">MudDataGrid&lt;Person&gt;</h2>
-            <p class="demo-note">Four sample rows and three columns are filled in for you; Dense, Striped, Hover and every other parameter are yours to change.<a class="demo-docs" href="https://mudblazor.com/components/datagrid">MudDataGrid docs &#8599;</a></p>
+            <h2 class="demo-tag">MudDataGrid</h2>
+            <p class="demo-note">Four sample rows and three PropertyColumn columns are filled in; try Dense, Striped and Hover. <code>_people</code> is any <code>List&lt;Person&gt;</code> with Name, Role and Age, and <code>Breakpoint.None</code> keeps the table at phone width instead of MudBlazor's stacked cards.<a class="demo-docs" href="https://mudblazor.com/components/datagrid">MudDataGrid docs &#8599;</a></p>
             <PlaygroundView Component="typeof(MudDataGrid<Person>)" />
         </section>
 
-        <section class="demo-section demo-bench-grid">
-            <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
-            <p class="demo-note">A column cannot live outside its grid, so the Name column you are playing with renders inside a real MudDataGrid, after a fixed Age column.<a class="demo-docs" href="https://mudblazor.com/components/datagrid#columns">Column docs &#8599;</a></p>
-            <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
+        <section class="demo-section">
+            <h2 class="demo-tag">MudDatePicker</h2>
+            <p class="demo-note">MudBlazor's Material calendar, opened as a static picker so the whole surface is on the stage. The Inline field example shows the everyday version: a text field that opens this calendar in a popover.<a class="demo-docs" href="https://mudblazor.com/components/datepicker">MudDatePicker docs &#8599;</a></p>
+            <PlaygroundView Component="typeof(MudDatePicker)" />
         </section>
 
         @* Jump target: DemoLanding renders the tile grid straight after the flagships. *@

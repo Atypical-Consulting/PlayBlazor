@@ -326,9 +326,18 @@
                 var(--pb-panel);
         }
 
-        /* One button needs less room than ninety grid parameters. */
+        /* One button needs less room than ninety grid parameters: 15rem matches the stage's own
+           240px minimum, so the panel no longer stretches the button's stage taller than that. */
         .demo-main .demo-bench-compact .pb-playground .pb-panel {
-            max-height: 18rem;
+            max-height: 15rem;
+        }
+
+        /* Inline code in the bench notes (_people, Breakpoint.None). */
+        .demo-main .demo-note code {
+            font-size: 0.9em;
+            padding: 0.05em 0.3em;
+            border-radius: 4px;
+            background: rgba(27, 27, 34, 0.06);
         }
 
         /* Grid parameter names (ColumnsPanelReordering, DropNotAllowedClass) are long: put each
@@ -389,15 +398,22 @@
                 border-bottom: 1px solid var(--pb-line);
             }
 
-            /* Toolbar in the flow under the chip, never over the specimen's first row. */
+            /* Toolbar in the flow right under the chip, never over the specimen's first row.
+               The stage is a centred column, so pin it to the top and let the specimen centre in
+               the room that is left instead of the toolbar floating mid-stage. */
             .demo-main .pb-playground .pb-preview {
                 padding-top: 2.75rem;
+                justify-content: flex-start;
             }
 
             .demo-main .pb-playground .pb-stage-toolbar {
                 position: static;
                 align-self: flex-start;
                 margin-bottom: 1rem;
+            }
+
+            .demo-main .pb-playground .pb-preview > .pb-specimen {
+                margin-block: auto;
             }
         }
 
