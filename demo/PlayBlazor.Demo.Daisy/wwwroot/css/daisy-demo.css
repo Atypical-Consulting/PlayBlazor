@@ -7,6 +7,7 @@
    --color-primary comes from app.css under data-theme="daisyblazor" (index.html). ---- */
 :root {
     --demo-accent: var(--color-primary, #6d4aff);
+    --demo-accent-content: var(--color-primary-content, #ffffff);
 }
 
 /* var(--demo-accent), not var(--color-primary): resolved at :root, so the theme row below re-skins
@@ -17,7 +18,7 @@
 }
 
 .demo-host .pbw-panel {
-    --pbw-accent: var(--color-primary, #6d4aff);
+    --pbw-accent: var(--demo-accent);
 }
 
 ::selection {
@@ -53,18 +54,26 @@
     color: color-mix(in oklch, var(--demo-accent) 40%, white);
 }
 
+/* --demo-accent, resolved at :root: a theme carried in from the home re-skins the specimen and
+   the stage, never the workspace chrome. */
 .demo-host .pbw {
-    --pbw-accent: var(--color-primary, #6d4aff);
-    --pbw-accent-soft: color-mix(in oklch, var(--color-primary, #6d4aff) 55%, white);
+    --pbw-accent: var(--demo-accent);
+    --pbw-accent-soft: color-mix(in oklch, var(--demo-accent) 55%, white);
 }
 
 .demo-host .pbw :is(.pbw-rail-item-on, .pbw-env-on, .pbw-tnode-sel, .pbw-mtab-on) {
-    background: color-mix(in oklch, var(--color-primary, #6d4aff) 12%, transparent);
-    color: color-mix(in oklch, var(--color-primary, #6d4aff) 78%, black);
+    background: color-mix(in oklch, var(--demo-accent) 12%, transparent);
+    color: color-mix(in oklch, var(--demo-accent) 78%, black);
 }
 
 .demo-host .pbw :is(.pbw-modchip, .pbw-tag-n, .pbw-help-list dt, .pbw-code .pb-tok-tag) {
-    color: color-mix(in oklch, var(--color-primary, #6d4aff) 78%, black);
+    color: color-mix(in oklch, var(--demo-accent) 78%, black);
+}
+
+.demo-host .daisy-themed[data-theme] .pbw-stage:not(.pbw-stage-dark, .pbw-stage-checker) {
+    background-color: var(--color-base-100);
+    background-image: radial-gradient(circle, color-mix(in oklch, var(--color-base-content) 14%, transparent) 1px, transparent 1px);
+    color: var(--color-base-content);
 }
 
 .demo-host .pbw .pbw-tnode-sel .pbw-tag-n {
@@ -79,8 +88,8 @@
     margin: 0 0 3.5rem;
 }
 
-/* Stacked: heading, then the live card, then the copy, so a phone meets DaisyBlazor early and
-   labelled. display: contents lets the heading and the card share one order. */
+/* Stacked: heading, the live card and the theme row first, then the copy, so a phone meets
+   DaisyBlazor early and labelled. display: contents lets them share one order. */
 @media (max-width: 860px) {
     /* The copy's own margins space the flattened children; the grid gap would double them. */
     .daisy-lead {
@@ -98,19 +107,39 @@
 
     .daisy-lead .daisy-lead-proof {
         order: -1;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
-    .daisy-lead .daisy-docs {
-        justify-self: start;
+    .daisy-lead .daisy-theme-row {
+        order: -1;
+        margin-bottom: 1.5rem;
     }
 }
 
+/* Copy and card share the top edge; the theme row runs under both, one line, as the control
+   for everything below it. */
 @media (min-width: 861px) {
     .daisy-lead {
         grid-template-columns: minmax(0, 1fr) 20rem;
-        align-items: center;
-        gap: 3.5rem;
+        grid-template-areas: "copy proof" "themes themes";
+        align-items: start;
+        gap: 1.75rem 3.5rem;
+    }
+
+    .daisy-lead-copy {
+        grid-area: copy;
+        padding-top: 0.5rem;
+    }
+
+    .daisy-lead-proof {
+        grid-area: proof;
+    }
+
+    .daisy-lead .daisy-theme-row {
+        grid-area: themes;
+        margin: 0;
+        padding-top: 1.25rem;
+        border-top: 1px solid #e3e3ea;
     }
 }
 
@@ -137,10 +166,10 @@
 }
 
 .daisy-lead-text {
-    max-width: 58ch;
-    margin: 0 0 1.25rem;
+    max-width: 52ch;
+    margin: 0 0 1.5rem;
     color: var(--demo-ink-2);
-    font-size: 1rem;
+    font-size: 1.0625rem;
     line-height: 1.6;
 }
 
@@ -151,8 +180,18 @@
     color: var(--demo-ink);
 }
 
-/* daisyUI's own btn: the call to action is the library's button, not a lookalike. */
+.daisy-lead-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+}
+
+/* daisyUI's own btn: the call to action is the library's button, not a lookalike. Its primary is
+   pinned to the root's, so a dark or loud theme never puts it at 2:1 on the light page. */
 .daisy-lead .daisy-docs {
+    --color-primary: var(--demo-accent);
+    --color-primary-content: var(--demo-accent-content);
     text-decoration: none;
 }
 
@@ -163,7 +202,7 @@
 
 /* The shared bar keeps its plain-link shape; only the colour moves to the library's primary. */
 .demo-host .demo-landing .demo-main .daisy-jump {
-    margin: 1.25rem 0 0;
+    margin: 0;
 }
 
 .demo-host .demo-landing .demo-main .daisy-jump::before {
@@ -232,9 +271,10 @@
 }
 
 .daisy-theme-label {
-    margin-right: 0.25rem;
-    color: var(--demo-ink-2);
-    font-size: 0.8125rem;
+    margin-right: 0.5rem;
+    color: var(--demo-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
 }
 
 .daisy-swatch {
@@ -281,14 +321,6 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-}
-
-.daisy-lead-small {
-    max-width: 58ch;
-    margin: 0 0 1.25rem;
-    color: var(--demo-ink-2);
-    font-size: 0.8125rem;
-    line-height: 1.55;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -390,7 +422,55 @@
     outline-offset: 2px;
 }
 
+/* Phones only: the DataGrid and PropertyColumn panels fold behind a toggle (Index.razor). */
+.daisy-fold-toggle {
+    display: none;
+}
+
 @media (max-width: 720px) {
+    .daisy-fold-toggle {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.5rem;
+        margin: 0 0 0.75rem;
+        padding: 0 1rem;
+        border: 1px solid #dcdce6;
+        border-radius: 999px;
+        background: #ffffff;
+        color: color-mix(in oklch, var(--demo-accent) 88%, black);
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .daisy-fold-toggle:focus-visible {
+        outline: 2px solid var(--demo-accent);
+        outline-offset: 2px;
+    }
+
+    .demo-main .daisy-bench-fold:not(.daisy-unfolded) .pb-playground :is(.pb-panel, .pb-events) {
+        display: none;
+    }
+
+    /* Long lines scroll sideways: the right edge fades so the cut reads as "more", not as a bug.
+       The top band (the Copy button's row) stays solid. */
+    .demo-host .demo-main .demo-section .pb-playground .pb-code {
+        mask:
+            linear-gradient(#000, #000) top / 100% 2.6rem no-repeat,
+            linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+    }
+
+    /* Event payloads wrap rather than ending in an ellipsis nobody can scroll to. */
+    .demo-host .demo-main .pb-playground .pb-events li {
+        flex-wrap: wrap;
+    }
+
+    .demo-host .demo-main .pb-playground .pb-event-payload {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
     /* Tall enough that the Button bench shows Color, Variant and Size, as its copy promises. */
     .demo-main .pb-playground .pb-panel {
         max-height: 28rem;

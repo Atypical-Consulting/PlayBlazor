@@ -1,8 +1,5 @@
 @page "/"
 @using DaisyBlazor.Data
-@using PlayBlazor.Discovery
-@inject IComponentCatalogProvider Catalog
-@inject PlayBlazorOptions Options
 <DemoLanding Assembly="typeof(Button).Assembly"
              LibraryName="DaisyBlazor"
              DocsUrl="@DocsUrl"
@@ -17,38 +14,21 @@
                sheet the specimens use. *@
             <section class="daisy-lead" aria-labelledby="daisy-lead-title">
                 <div class="daisy-lead-copy">
-                    <h2 id="daisy-lead-title" class="daisy-h2 daisy-lead-title">DaisyBlazor, played live</h2>
+                    <h2 id="daisy-lead-title" class="daisy-h2 daisy-lead-title">Typed components, 37 themes</h2>
                     <p class="daisy-lead-text">
-                        DaisyBlazor is daisyUI as typed Blazor components: <code>Color</code>, <code>Variant</code>
-                        and <code>Size</code> are enums, not class strings, and the 37 themes it ships, two of its own
-                        and all 35 of daisyUI's, re-skin every component with no code change.
+                        DaisyBlazor is daisyUI for Blazor: <code>Color</code>, <code>Variant</code> and <code>Size</code>
+                        are enums, not class strings. Every theme re-skins every component with no code change.
                     </p>
-                    <div class="daisy-theme-row" role="group" aria-labelledby="daisy-theme-label">
-                        <span class="daisy-theme-label" id="daisy-theme-label">Theme</span>
-                        @foreach (var (id, label) in Themes)
-                        {
-                            <button type="button" class="daisy-swatch" aria-pressed="@(_theme == id ? "true" : "false")"
-                                    @onclick="() => _theme = id">
-                                <span class="daisy-swatch-chip" data-theme="@id" aria-hidden="true">
-                                    <span class="bg-primary"></span><span class="bg-secondary"></span><span class="bg-accent"></span>
-                                </span>
-                                @label
-                            </button>
-                        }
+                    <div class="daisy-lead-links">
+                        <a class="btn btn-outline btn-primary daisy-docs" href="@DocsUrl">Read the DaisyBlazor docs</a>
+                        @* Fragment links stay base-relative: under <base href> "#x" resolves to this page. *@
+                        <nav class="daisy-jump" aria-label="On this page">
+                            <a href="#bench-button">Button</a>
+                            <a href="#bench-datagrid">DataGrid</a>
+                            <a href="#bench-column">PropertyColumn</a>
+                            <a href="#catalog">All components</a>
+                        </nav>
                     </div>
-                    @* The shared hero says nothing below is hand-written; this says exactly what is. *@
-                    <p class="daisy-lead-small">
-                        Hand-picked: this card and the benches' examples and sample people. Generated: every control,
-                        snippet and event log, for all @_count components.
-                    </p>
-                    <a class="btn btn-outline btn-primary daisy-docs" href="@DocsUrl">Read the DaisyBlazor docs</a>
-                    @* Fragment links stay base-relative: under <base href> "#x" resolves to this page. *@
-                    <nav class="daisy-jump" aria-label="On this page">
-                        <a href="#bench-button">Button</a>
-                        <a href="#bench-datagrid">DataGrid</a>
-                        <a href="#bench-column">PropertyColumn</a>
-                        <a href="#catalog">All components</a>
-                    </nav>
                 </div>
                 @* A small composition, live: DaisyBlazor's Card and Button with daisyUI badges, so the
                    library's character shows before the first bench. The button really toggles. *@
@@ -67,13 +47,28 @@
                                     OnClick="@(() => _following = !_following)">@(_following ? "Following" : "Follow")</Button>
                         </CardActions>
                     </Card>
-                    <figcaption>Card, badges and Button, composed by hand. Follow toggles; the theme row re-skins it.</figcaption>
+                    <figcaption>Card, badges and Button, composed by hand.</figcaption>
                 </figure>
+                @* Six of the 37, light and dark, calm and loud. The pick goes in ?theme=, so a reload, a
+                   bench's Share link and the explorer all keep it. *@
+                <div class="daisy-theme-row" role="group" aria-labelledby="daisy-theme-label">
+                    <span class="daisy-theme-label" id="daisy-theme-label">Try a theme</span>
+                    @foreach (var (id, label) in Themes)
+                    {
+                        <button type="button" class="daisy-swatch" aria-pressed="@(_theme == id ? "true" : "false")"
+                                @onclick="() => PickTheme(id)">
+                            <span class="daisy-swatch-chip" data-theme="@id" aria-hidden="true">
+                                <span class="bg-primary"></span><span class="bg-secondary"></span><span class="bg-accent"></span>
+                            </span>
+                            @label
+                        </button>
+                    }
+                </div>
             </section>
 
             @* One heading system: sans h2 for each part of the page, mono h3 for the component tags. *@
             <h2 class="daisy-h2" id="benches">Start with three components</h2>
-            <p class="demo-note daisy-benches-note">Change a parameter in a bench's panel: the specimen and its Razor snippet follow. The theme picked above applies here too.</p>
+            <p class="demo-note daisy-benches-note">Change a parameter in a bench's panel: the specimen and its Razor snippet follow, in the theme picked above. The examples and sample people are hand-picked; every control, snippet and event log is generated.</p>
 
             <section class="demo-section daisy-bench-compact" id="bench-button">
                 <h3 class="demo-tag">Button</h3>
@@ -81,15 +76,23 @@
                 <PlaygroundView Component="typeof(Button)" />
             </section>
 
-            <section class="demo-section" id="bench-datagrid">
+            <section class="demo-section daisy-bench-fold @(_unfolded.Contains("datagrid") ? "daisy-unfolded" : null)" id="bench-datagrid">
                 <h3 class="demo-tag">DataGrid<span class="daisy-tparam">&lt;Person&gt;</span></h3>
                 <p class="demo-note">Click a header to sort, page through two rows at a time, then try Striped, Dense or Bordered. The sample people and columns are already filled in.</p>
+                @* Phones only (daisy-demo.css): the panel and events fold away behind this, so three full
+                   benches do not stand between a visitor and the catalog. *@
+                <button type="button" class="daisy-fold-toggle" aria-expanded="@(_unfolded.Contains("datagrid") ? "true" : "false")"
+                        @onclick="@(() => Toggle("datagrid"))">@(_unfolded.Contains("datagrid") ? "Hide the parameters" : "Show the parameters")</button>
                 <PlaygroundView Component="typeof(DataGrid<Person>)" />
             </section>
 
-            <section class="demo-section" id="bench-column">
+            <section class="demo-section daisy-bench-fold @(_unfolded.Contains("column") ? "daisy-unfolded" : null)" id="bench-column">
                 <h3 class="demo-tag">PropertyColumn<span class="daisy-tparam">&lt;Person, string&gt;</span></h3>
                 <p class="demo-note">A column only renders inside a grid, so this one is shown in a real DataGrid. Rename its Title or turn off Sortable and only that column changes.</p>
+                @* Phones only (daisy-demo.css): the panel and events fold away behind this, so three full
+                   benches do not stand between a visitor and the catalog. *@
+                <button type="button" class="daisy-fold-toggle" aria-expanded="@(_unfolded.Contains("column") ? "true" : "false")"
+                        @onclick="@(() => Toggle("column"))">@(_unfolded.Contains("column") ? "Hide the parameters" : "Show the parameters")</button>
                 <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
             </section>
 
@@ -99,9 +102,20 @@
 
 @code {
     private const string DocsUrl = "https://phmatray.github.io/daisyblazor/";
-    private int _count;
+    private const string DefaultTheme = "daisyblazor";
+
+    /// <summary>The theme last picked here, so the explorer (reached through links that cannot carry
+    /// it, like the shared hero's) opens in it too. Per tab: a WebAssembly static lives as long as the app.</summary>
+    internal static string LastTheme { get; set; } = DefaultTheme;
+
     private bool _following;
-    private string _theme = "daisyblazor";
+    private string _theme = DefaultTheme;
+    private readonly HashSet<string> _unfolded = [];
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    [SupplyParameterFromQuery(Name = "theme")]
+    private string? ThemeQuery { get; set; }
 
     // A handful of the preset's 37 (obj/daisyblazor/preset.css), light and dark, calm and loud.
     private static readonly (string Id, string Label)[] Themes =
@@ -114,10 +128,35 @@
         ("synthwave", "Synthwave"),
     ];
 
+    /// <summary>A theme id as daisyUI names them (lowercase, digits, dashes), or null.</summary>
+    internal static string? ValidTheme(string? id)
+        => id is { Length: > 0 and <= 40 } && id.All(c => c is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-') ? id : null;
+
     /// <inheritdoc />
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        _count = Catalog.Discover(typeof(Button).Assembly)
-            .Count(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true));
+        if (ValidTheme(ThemeQuery) is { } fromUrl)
+        {
+            _theme = LastTheme = fromUrl;
+        }
+        else if (LastTheme != DefaultTheme)
+        {
+            // Back from the explorer through a plain link: keep the theme and put it in the URL again.
+            PickTheme(LastTheme);
+        }
+    }
+
+    private void PickTheme(string id)
+    {
+        _theme = LastTheme = id;
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("theme", id == DefaultTheme ? null : id), replace: true);
+    }
+
+    private void Toggle(string bench)
+    {
+        if (!_unfolded.Remove(bench))
+        {
+            _unfolded.Add(bench);
+        }
     }
 }

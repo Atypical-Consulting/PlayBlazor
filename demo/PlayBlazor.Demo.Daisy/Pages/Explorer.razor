@@ -3,7 +3,10 @@
 @using PlayBlazor.Shell.Workspace
 @inject Microsoft.AspNetCore.Components.NavigationManager Navigation
 @implements IDisposable
-<div class="demo-explorer-page">
+@* The home's theme follows the visitor here: data-theme re-skins the specimens and the stage
+   (daisy-demo.css), while the workspace chrome keeps DaisyBlazor's own colours. Left off for the
+   default theme, so ThemeController's :root theming still works in its own bench. *@
+<div class="demo-explorer-page daisy-themed" data-theme="@_theme">
     <DemoNav Current="daisy" Page="explorer" />
     @if (_ready)
     {
@@ -13,6 +16,7 @@
 
 @code {
     private bool _ready;
+    private string? _theme;
 
     // A bare /explorer would open on the first curated component, AccessDenied: a red lock reads as a
     // permission error. Land on the flagship Button instead; any ?pb- link keeps its own target.
@@ -20,12 +24,24 @@
     protected override void OnInitialized()
     {
         Navigation.LocationChanged += OnLocationChanged;
-        _ready = HasTarget();
+        var query = new Uri(Navigation.Uri).Query.TrimStart('?');
+        var fromUrl = Index.ValidTheme(QueryValue(query, "theme"));
+        var theme = Index.LastTheme = fromUrl ?? Index.LastTheme;
+        _theme = theme == "daisyblazor" ? null : theme;
+
+        // The workspace keeps any non-pb query pair, so ?theme= rides along on every bench it opens.
+        var themePair = _theme is null ? "" : $"theme={_theme}&";
+        _ready = HasTarget() && (_theme is null || fromUrl is not null);
         if (!_ready)
         {
-            Navigation.NavigateTo("explorer?pb-Button", replace: true);
+            // Either no bench yet (land on Button) or a bench without the remembered theme (add it).
+            Navigation.NavigateTo($"explorer?{themePair}{(HasTarget() ? query : "pb-Button")}", replace: true);
         }
     }
+
+    private static string? QueryValue(string query, string key)
+        => query.Split('&').Select(pair => pair.Split('=', 2))
+            .FirstOrDefault(kv => kv[0] == key && kv.Length == 2) is { } hit ? Uri.UnescapeDataString(hit[1]) : null;
 
     private bool HasTarget() => new Uri(Navigation.Uri).Query.Contains("pb-", StringComparison.Ordinal);
 
