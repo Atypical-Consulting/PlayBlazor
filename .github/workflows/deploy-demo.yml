@@ -100,7 +100,7 @@ jobs:
       - name: Lay the site out
         run: |
           mkdir -p site
-          cp demo/landing/index.html demo/landing/favicon.png site/
+          cp -r demo/landing/. site/
           for app in mud fluent daisy; do
             mv "staging/app-$app" "site/$app"
           done
