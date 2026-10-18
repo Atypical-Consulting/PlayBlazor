@@ -196,6 +196,8 @@ Le câblage CSS DaisyBlazor suppose `@daisyblazor/tailwind` publié sur npm — 
 @daisyblazor/tailwind, versioned in lockstep* »). Il n'a jamais été publié à ce jour ; le merge
 de la PR #20 le publie.
 
+> *Caduc (jalon 4) :* aucun Node ni npm — le paquet NuGet 0.6.0 compile le CSS lui-même (`DaisyBlazorBuildCss`), voir §8.
+
 ## 6. Les tests
 
 **Le sweep d'abord, la config ensuite.** `[Explicit] ListUnsupportedParameterTypes` et
