@@ -14,7 +14,7 @@ public static class FluentComponentFamilies
         ("Data", ["FluentDataGrid", "FluentDataGridCell", "FluentDataGridRow", "PropertyColumn", "TemplateColumn", "SelectColumn", "HierarchicalSelectColumn", "FluentPaginator", "FluentSortableList", "FluentTreeView", "FluentTreeItem"]),
         ("Feedback", ["FluentBadge", "FluentCounterBadge", "FluentPresenceBadge", "FluentErrorBoundary", "FluentMessageBar", "FluentProgress", "FluentProgressBar", "FluentProgressRing", "FluentSkeleton", "FluentSpinner", "FluentToast", "FluentTooltip"]),
         ("Overlays", ["FluentAccordion", "FluentAccordionItem", "FluentDialog", "FluentDialogBody", "FluentMessageBox", "FluentOverlay", "FluentPopover"]),
-        ("Layout", ["FluentCard", "FluentDivider", "FluentDragContainer", "FluentDropZone", "FluentGrid", "FluentGridItem", "FluentLayout", "FluentLayoutHamburger", "FluentLayoutItem", "FluentMultiSplitter", "FluentMultiSplitterPane", "FluentOverflow", "FluentPullToRefresh", "FluentSpacer", "FluentStack"]),
+        ("Layout", ["AddTag", "FluentCard", "FluentDivider", "FluentDragContainer", "FluentDropZone", "FluentGrid", "FluentGridItem", "FluentLayout", "FluentLayoutHamburger", "FluentLayoutItem", "FluentMultiSplitter", "FluentMultiSplitterPane", "FluentOverflow", "FluentPullToRefresh", "FluentSpacer", "FluentStack"]),
         ("Navigation", ["FluentAppBar", "FluentAppBarItem", "FluentLink", "FluentNav", "FluentNavCategory", "FluentNavItem", "FluentNavSectionHeader", "FluentTab", "FluentTabs", "FluentWizard", "FluentWizardStep", "FluentWizardStepValidator"]),
         ("Media", ["FluentAvatar", "FluentImage"]),
         ("Text", ["FluentHighlighter", "FluentLabel", "FluentLabelInfo", "FluentText"]),
