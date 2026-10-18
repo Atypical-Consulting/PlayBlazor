@@ -111,9 +111,10 @@
             opacity: 0.85;
         }
 
-        /* Thumbnail + field take the same 132px as every other control, so the column stays even. */
+        /* The field takes whatever the thumbnail leaves, so the icon name stays readable. */
         .demo-host .pb-playground .pb-icon-pair > .pb-icon-preview + input[type="text"] {
-            width: 106px;
+            flex: 1;
+            width: auto;
         }
 
         /* Landing benches only (.demo-main): the explorer keeps its own workspace chrome. */
@@ -155,62 +156,50 @@
             scroll-margin-top: 1.5rem;
         }
 
-        /* A shorter parameter column, so a one-button stage is not stretched into a tall empty
-           field; long parameter lists scroll inside it. */
-        /* 320px (shared default 300) fits names like DropNotAllowedClass beside a 132px field. */
+        /* Landing benches: the parameter panel is capped so a one-button stage is not stretched
+           into a tall empty field; long lists scroll inside it. 320px (shared default 300) fits a
+           name beside a 132px field. */
         .demo-main .pb-playground {
             grid-template-columns: minmax(0, 1fr) 320px;
         }
 
+        /* Scroll cue: a soft shade pinned to the panel's bottom edge (scroll) is covered by a
+           panel-coloured cap that rides on the content's end (local), so the shade shows while
+           more parameters sit below and disappears once the list is scrolled to its end. */
         .demo-main .pb-playground .pb-panel {
             max-height: 22.5rem;
-            overscroll-behavior: contain;
+            background:
+                linear-gradient(rgba(251, 251, 253, 0), var(--pb-panel) 60%) center bottom / 100% 2.5rem no-repeat local,
+                linear-gradient(rgba(27, 27, 34, 0), rgba(27, 27, 34, 0.09)) center bottom / 100% 1.75rem no-repeat scroll,
+                var(--pb-panel);
         }
 
-        /* Long parameter names wrap instead of ending in an ellipsis. */
+        /* One button needs less room than ninety grid parameters. */
+        .demo-main .demo-bench-compact .pb-playground .pb-panel {
+            max-height: 18rem;
+        }
+
+        /* Grid parameter names (ColumnsPanelReordering, DropNotAllowedClass) are long: put each
+           name above its field, the way the explorer does at phone width, so names stay whole
+           and values are not cut short. Switches keep their one-line row. */
+        .demo-main .demo-bench-long .pb-playground .pb-control {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.25rem;
+        }
+
+        .demo-main .demo-bench-long .pb-playground .pb-control-bool {
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
         .demo-main .pb-playground .pb-control-label {
             white-space: normal;
-            overflow-wrap: anywhere;
+            overflow-wrap: break-word;
             line-height: 1.3;
         }
 
         /* The events placeholder at body-muted contrast, not the faint tertiary ink. */
         .demo-main .pb-playground .pb-events-empty {
             color: #5f5f6b;
-        }
-
-        /* Stage toolbar: words, not glyphs. The glyph is hidden and the label drawn in its place,
-           so the button reads (and is announced) as what it toggles. */
-        .demo-main .pb-playground .pb-env-btn {
-            width: auto;
-            padding: 0 0.45rem;
-            font-size: 0;
-        }
-
-        .demo-main .pb-playground .pb-env-btn::after {
-            font-family: var(--pb-sans);
-            font-size: 0.6875rem;
-            font-weight: 500;
-        }
-
-        .demo-main .pb-playground .pb-env-dark::after { content: "Dark"; }
-        .demo-main .pb-playground .pb-env-rtl::after { content: "RTL"; }
-        .demo-main .pb-playground .pb-env-checker::after { content: "Grid"; }
-
-        .demo-main .pb-playground .pb-stage-toolbar::before {
-            content: "Width";
-            order: 1;
-            margin-left: 0.25rem;
-            color: #5f5f6b;
-            font-size: 0.6875rem;
-        }
-
-        .demo-main .pb-playground .pb-env-width {
-            order: 2;
-        }
-
-        .demo-main .pb-playground .pb-stage-dark .pb-stage-toolbar::before {
-            color: #b9b9c9;
         }
 
         @media (max-width: 720px) {
@@ -225,20 +214,21 @@
                 grid-template-columns: minmax(0, 1fr);
             }
 
-            .demo-main .pb-playground .pb-panel {
-                max-height: 26rem;
+            .demo-main .pb-playground .pb-panel,
+            .demo-main .demo-bench-compact .pb-playground .pb-panel {
+                max-height: 20rem;
                 border-bottom: 1px solid var(--pb-line);
             }
 
-            /* Chip on its own line, toolbar beneath it, so neither overlaps on a phone. */
+            /* Toolbar in the flow under the chip, never over the specimen's first row. */
             .demo-main .pb-playground .pb-preview {
-                padding-top: 4.25rem;
+                padding-top: 2.75rem;
             }
 
             .demo-main .pb-playground .pb-stage-toolbar {
-                top: 2.5rem;
-                left: 0.75rem;
-                right: auto;
+                position: static;
+                align-self: flex-start;
+                margin-bottom: 1rem;
             }
         }
 

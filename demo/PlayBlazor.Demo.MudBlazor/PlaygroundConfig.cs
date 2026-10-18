@@ -441,22 +441,25 @@ public static class PlaygroundConfig
 
         options.For<PropertyColumn<Person, string>>()
             .Parameter(nameof(PropertyColumn<Person, string>.Property),
-                (Expression<Func<Person, string>>)(p => p.Name))
+                (Expression<Func<Person, string>>)(p => p.Name), "x => x.Name")
+            // The played column goes LAST in both the stage and the snippet: MudDataGrid
+            // registers columns as they initialise, and the specimen is re-created on every
+            // parameter change, so anywhere but last it would render out of the order shown.
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<MudDataGrid<Person>>(0);
                 builder.AddComponentParameter(1, nameof(MudDataGrid<Person>.Items), Person.Samples);
                 builder.AddComponentParameter(2, nameof(MudDataGrid<Person>.Columns), (RenderFragment)(columns =>
                 {
-                    columns.AddContent(0, specimen);
-                    AddColumn<int>(columns, 1, p => p.Age);
+                    AddColumn<int>(columns, 0, p => p.Age);
+                    columns.AddContent(2, specimen);
                 }));
                 builder.CloseComponent();
             }, source: """
                 <MudDataGrid T="Person" Items="@_people">
                     <Columns>
-                        {specimen}
                         <PropertyColumn Property="x => x.Age" />
+                        {specimen}
                     </Columns>
                 </MudDataGrid>
                 """)
