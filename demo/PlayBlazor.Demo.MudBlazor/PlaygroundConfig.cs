@@ -69,7 +69,9 @@ public static class PlaygroundConfig
 
         options.For<MudAlert>()
             .Slot(nameof(MudAlert.ChildContent), b => b.AddContent(0, "The reactor is running at optimum temperature."), "The reactor is running at optimum temperature.")
-            .Variant("Info", v => v.Set(nameof(MudAlert.Severity), Severity.Info))
+            // The explorer opens on MudAlert: Severity.Normal is a flat grey box, so start it Info.
+            .Parameter(nameof(MudAlert.Severity), Severity.Info)
+            .Variant("Normal", v => v.Set(nameof(MudAlert.Severity), Severity.Normal))
             .Variant("Success", v => v.Set(nameof(MudAlert.Severity), Severity.Success))
             .Variant("Warning", v => v.Set(nameof(MudAlert.Severity), Severity.Warning))
             .Variant("Outlined error", v => v.Set(nameof(MudAlert.Severity), Severity.Error).Set(nameof(MudAlert.Variant), Variant.Outlined));
@@ -158,7 +160,17 @@ public static class PlaygroundConfig
 
         options.For<MudDatePicker>()
             .Parameter(nameof(MudDatePicker.Label), "Select a date")
-            .Variant("Static calendar", v => v.Set(nameof(MudDatePicker.PickerVariant), PickerVariant.Static));
+            // A landing flagship: the inline variant is only a text field until clicked, so open
+            // the static calendar and let the chips show the other surfaces.
+            .Parameter(nameof(MudDatePicker.PickerVariant), PickerVariant.Static)
+            // With no Date the Material toolbar is a violet block reading only the year. Presetting
+            // Date does not help: the picker raises DateChanged on load, which turns the snippet's
+            // value into a locale string. So the bench opens on the calendar alone.
+            .Parameter(nameof(MudDatePicker.ShowToolbar), false)
+            .Variant("With toolbar", v => v.Set(nameof(MudDatePicker.ShowToolbar), true))
+            .Variant("Inline field", v => v.Set(nameof(MudDatePicker.PickerVariant), PickerVariant.Inline))
+            .Variant("Week numbers", v => v.Set(nameof(MudDatePicker.ShowWeekNumbers), true))
+            .Variant("Open to year", v => v.Set(nameof(MudDatePicker.OpenTo), OpenTo.Year));
 
         options.For<MudDateRangePicker>()
             .Parameter(nameof(MudDateRangePicker.Label), "Period");
@@ -426,6 +438,9 @@ public static class PlaygroundConfig
         // The grid demo: sample data as a parameter preset, columns as a slot preset.
         options.For<MudDataGrid<Person>>()
             .Parameter(nameof(MudDataGrid<Person>.Items), Person.Samples, "@_people")
+            // MudBlazor's default Breakpoint.Xs stacks every row into label/value cards at phone
+            // width; keep the table (the stage scrolls sideways) so the three columns stay visible.
+            .Parameter(nameof(MudDataGrid<Person>.Breakpoint), Breakpoint.None)
             .Slot(nameof(MudDataGrid<Person>.Columns), source: """
 <PropertyColumn Property="x => x.Name" />
 <PropertyColumn Property="x => x.Role" />
@@ -436,8 +451,12 @@ public static class PlaygroundConfig
                 AddColumn<string>(columns, 2, p => p.Role);
                 AddColumn<int>(columns, 4, p => p.Age);
             })
-            .Variant("Dense striped", v => v.Set(nameof(MudDataGrid<Person>.Dense), true).Set(nameof(MudDataGrid<Person>.Striped), true))
-            .Variant("Hover bordered", v => v.Set(nameof(MudDataGrid<Person>.Hover), true).Set(nameof(MudDataGrid<Person>.Bordered), true))
+            // One chip per parameter the landing copy names, so each is one click away instead of
+            // deep in a ninety-row panel.
+            .Variant("Dense", v => v.Set(nameof(MudDataGrid<Person>.Dense), true))
+            .Variant("Striped", v => v.Set(nameof(MudDataGrid<Person>.Striped), true))
+            .Variant("Hover", v => v.Set(nameof(MudDataGrid<Person>.Hover), true))
+            .Variant("Bordered", v => v.Set(nameof(MudDataGrid<Person>.Bordered), true))
             .Related<PropertyColumn<Person, string>>();
 
         options.For<PropertyColumn<Person, string>>()
@@ -450,14 +469,15 @@ public static class PlaygroundConfig
             {
                 builder.OpenComponent<MudDataGrid<Person>>(0);
                 builder.AddComponentParameter(1, nameof(MudDataGrid<Person>.Items), Person.Samples);
-                builder.AddComponentParameter(2, nameof(MudDataGrid<Person>.Columns), (RenderFragment)(columns =>
+                builder.AddComponentParameter(2, nameof(MudDataGrid<Person>.Breakpoint), Breakpoint.None);
+                builder.AddComponentParameter(3, nameof(MudDataGrid<Person>.Columns), (RenderFragment)(columns =>
                 {
                     AddColumn<int>(columns, 0, p => p.Age);
                     columns.AddContent(2, specimen);
                 }));
                 builder.CloseComponent();
             }, source: """
-                <MudDataGrid T="Person" Items="@_people">
+                <MudDataGrid T="Person" Items="@_people" Breakpoint="Breakpoint.None">
                     <Columns>
                         <PropertyColumn Property="x => x.Age" />
                         {specimen}
