@@ -15,17 +15,17 @@
         @* Pitch left, proof right on a wide screen: the hero stays short enough that the first
            live bench starts inside the first viewport. *@
         <div class="demo-hero-pitch">
-        @* The library rides in the h1: a deep-linked visitor knows which showcase this is. *@
-        <h1 class="demo-wordmark">
-            <span class="demo-mark" aria-hidden="true">▶</span> PlayBlazor
-            <span class="demo-wordmark-lib"><span aria-hidden="true">× </span>@LibraryName</span>
+        @* The nav already carries the PlayBlazor wordmark, so the h1 leads with what the tool does; the
+           library rides in it, so a deep-linked visitor knows which showcase this is. *@
+        <h1 class="demo-headline">
+            Auto-generated playgrounds for any Blazor component library.
+            <span class="demo-headline-lib">Shown on @LibraryName</span>
         </h1>
+        @* Phones drop this paragraph so the first live bench opens inside the first screen. *@
         <p class="demo-tagline">
-            <span class="demo-lede">Auto-generated playgrounds for any Blazor component library.</span>
-            @* Phones drop this sentence so the first live bench opens inside the first screen. *@
-            <span class="demo-tagline-more">Point it at an assembly — every parameter becomes a control, every
+            Point it at an assembly — every parameter becomes a control, every
             <code>EventCallback</code> a log entry, every configuration a shareable link.
-            No story files. Nothing below is hand-written.</span>
+            No story files. Nothing below is hand-written.
         </p>
         <div class="demo-actions">
             @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
@@ -35,18 +35,17 @@
         </div>
         </div>
         <div class="demo-hero-proof">
-        @* The proof, computed from discovery at render time: never a hand-typed number. The counts
-           are one unit, so a long assembly name pushes all three to the next line, never one. *@
-        <p class="demo-proof">
-            <code class="demo-proof-src">@AssemblyFile</code>
-            <span class="demo-proof-counts">
-                <span class="demo-proof-arrow" aria-hidden="true">→</span>
-                <span><strong>@_covered.Count</strong> components</span>
-                <span><strong>@_parameterCount.ToString("N0")</strong> parameters</span>
-                <span><strong>0</strong> story files</span>
-            </span>
-            <span class="demo-proof-note">Counted by reflection as this page rendered.</span>
-        </p>
+        @* The proof, computed from discovery at render time: never a hand-typed number. The assembly
+           name holds one line (cut short, full name in the title), so the counts sit at the same
+           height on every library. *@
+        <div class="demo-proof">
+            <p class="demo-proof-src">Read as this page rendered, from <code title="@AssemblyFile">@AssemblyFile</code></p>
+            <dl class="demo-proof-counts">
+                <div><dt>components</dt><dd>@_covered.Count</dd></div>
+                <div><dt>parameters</dt><dd>@_parameterCount.ToString("N0")</dd></div>
+                <div><dt>story files</dt><dd>0</dd></div>
+            </dl>
+        </div>
         <div class="demo-install">
             <span class="demo-install-label">Use it on your own library</span>
             <code class="demo-install-cmd">@InstallCommand</code>
@@ -58,11 +57,18 @@
 </header>
 
 <main class="demo-main">
+    @* One line for every library, owned here: what a bench is, and the library's own docs. The hero
+       already holds the ways to the explorer and the catalog. *@
+    <div class="demo-onpage">
+        <p>Each bench below is a slice of the explorer: change a parameter and the component and its Razor markup update.</p>
+        <a href="@DocsUrl" target="_blank" rel="noopener">@LibraryName docs ↗</a>
+    </div>
+
     @Flagships
 
     <section class="demo-section demo-catalog" id="catalog" aria-labelledby="catalog-title">
         <h2 class="demo-covered-title" id="catalog-title">Every @LibraryName component, discovered</h2>
-        <p class="demo-note">@_covered.Count components found by reflection@(_byFamily ? ", grouped by what they do, A to Z in each group" : ", A to Z"). Each tile opens its playground.@if (_parts.Count > 0){<text> Dashed tiles are parts that render inside another component.</text>}</p>
+        <p class="demo-note">@_covered.Count components found by reflection@(_byFamily ? ", grouped by what they do" : ", A to Z"). Each tile opens its playground; the number is how many parameters it exposes as controls.@if (_parts.Count > 0){<text> Dashed tiles only render inside another component, such as a card's header.</text>}</p>
         @* Sticky inside the section: the filter stays in reach the whole way down the wall. *@
         <div class="demo-filter-bar">
             <input class="demo-filter" type="search" placeholder="Filter by name" aria-label="Filter components by name"
@@ -71,6 +77,13 @@
             @if (_suggestions.Length > 0)
             {
                 <span class="demo-try">@Suggestions</span>
+            }
+            @if (_byFamily && string.IsNullOrWhiteSpace(_filter) && Groups.Any(Collapsible))
+            {
+                var allOpen = Groups.Where(Collapsible).All(g => _open.Contains(g.Key));
+                <button type="button" class="demo-expand-all" aria-pressed="@(allOpen ? "true" : "false")" @onclick="@(() => ToggleAll(allOpen))">
+                    @(allOpen ? "Collapse families" : "Expand all families")
+                </button>
             }
             <p class="demo-filter-status" id="catalog-status" role="status">@Status</p>
         </div>
@@ -95,7 +108,7 @@
                 {
                     <div class="demo-letter-group" @key="group.Key">
                     <h3 class="demo-letter">@group.Key@if (_byFamily){<span class="demo-family-n">@group.Count()</span>}</h3>
-                    @foreach (var component in group)
+                    @foreach (var component in Shown(group))
                     {
                         var name = component.DisplayName;
                         var stem = Stem(name);
@@ -104,7 +117,16 @@
                             @* <wbr> at each PascalCase seam of the stem: a long name wraps at a word, never mid-word.
                                None between prefix and stem, so "Mud" never strands on a line of its own. *@
                             <span>@if (stem.Length < name.Length){<b class="demo-tile-prefix">@_prefix</b>}@foreach (var word in Words(stem)){@word<wbr />}</span>
+                            <small class="demo-tile-n">@component.Parameters.Count<span class="demo-sr"> parameters</span></small>
                         </a>
+                    }
+                    @if (Collapsible(group))
+                    {
+                        var open = _open.Contains(group.Key);
+                        <button type="button" class="demo-more" aria-expanded="@(open ? "true" : "false")"
+                                @onclick="@(() => { if (!_open.Remove(group.Key)) _open.Add(group.Key); })">
+                            @(open ? "Show fewer" : $"Show {group.Count() - FamilyPreview} more")
+                        </button>
                     }
                     </div>
                 }
@@ -140,6 +162,32 @@
     private string _copyLabel = "Copy";
     private bool _byFamily;
     private HashSet<string> _parts = [];
+    private readonly HashSet<string> _open = [];
+
+    // A long family opens on its first rows, components before parts, and one click shows the rest;
+    // a filter always shows every match.
+    // Ten: two full rows of the five-up desktop grid.
+    private const int FamilyPreview = 10;
+
+    private bool Collapsible(IGrouping<string, PlayBlazor.Model.ComponentDescriptor> group) =>
+        _byFamily && string.IsNullOrWhiteSpace(_filter) && group.Count() > FamilyPreview + 2;
+
+    private bool Collapsed(IGrouping<string, PlayBlazor.Model.ComponentDescriptor> group) =>
+        Collapsible(group) && !_open.Contains(group.Key);
+
+    private void ToggleAll(bool allOpen)
+    {
+        _open.Clear();
+        if (!allOpen)
+        {
+            _open.UnionWith(Groups.Where(Collapsible).Select(g => g.Key));
+        }
+    }
+
+    private IEnumerable<PlayBlazor.Model.ComponentDescriptor> Shown(IGrouping<string, PlayBlazor.Model.ComponentDescriptor> group) =>
+        Collapsed(group)
+            ? group.OrderBy(c => _parts.Contains(c.DisplayName) ? 1 : 0).Take(FamilyPreview)
+            : group;
 
     // The host's families when it names them, else the first letter of the stem.
     private IEnumerable<IGrouping<string, PlayBlazor.Model.ComponentDescriptor>> Groups => _byFamily

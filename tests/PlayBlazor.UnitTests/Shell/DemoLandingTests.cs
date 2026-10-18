@@ -69,7 +69,7 @@ public class DemoLandingTests
             .Add(c => c.DocsUrl, "https://example.test/")
             .Add(c => c.Current, "mud"));
 
-        cut.FindAll("h1").Should().ContainSingle().Which.TextContent.Should().Contain("PlayBlazor").And.Contain("Fixtures");
+        cut.FindAll("h1").Should().ContainSingle().Which.TextContent.Should().Contain("playgrounds").And.Contain("Fixtures");
         cut.FindAll("input[type=search]").Count.Should().Be(1);
 
         cut.Find("input.demo-filter").Input("zz-no-such-component");
