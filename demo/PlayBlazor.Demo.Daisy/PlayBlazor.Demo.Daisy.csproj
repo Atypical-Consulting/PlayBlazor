@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <!--
+      daisyUI is a Tailwind plugin: its stylesheet is generated, not shipped. The DaisyBlazor
+      package copies its preset into obj/daisyblazor/ and, with this switch, downloads the Tailwind
+      standalone CLI (once, per-user cache) and compiles Styles/main.css to wwwroot/css/app.css on
+      every build. No Node, no npm. The output is git-ignored; a clean publish regenerates it.
+    -->
+    <DaisyBlazorBuildCss>true</DaisyBlazorBuildCss>
+  </PropertyGroup>
+
+  <!--
+    PlayBlazor discovers components by reflection, and the IL trimmer only keeps what is
+    statically referenced. Rooting the explored assembly keeps its constructors and
+    [Parameter] properties whole, and the Icons constants the catalogue reflects over.
+    See CLAUDE.md.
+  -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="DaisyBlazor.Components" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="DaisyBlazor.Components" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PlayBlazor\PlayBlazor.csproj" />
+    <ProjectReference Include="..\PlayBlazor.Demo.Shared\PlayBlazor.Demo.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

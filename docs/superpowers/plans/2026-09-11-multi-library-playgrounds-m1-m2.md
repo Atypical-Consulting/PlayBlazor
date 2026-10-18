@@ -52,7 +52,7 @@ dotnet test -c Release -- --filter "FullyQualifiedName~CatalogueTests"
 | `demo/PlayBlazor.Demo.Shared/` | **Create.** RCL: `DemoLanding.razor`, `LibrarySwitcher.razor`, `DemoChrome.razor.css`, `wwwroot/css/demo.css`. Zero UI dependencies. |
 | `demo/PlayBlazor.Demo.MudBlazor/` | **Move** from `demo/PlayBlazor.DemoHost/`. Keeps `PlaygroundConfig.cs`, `ComponentIcons.cs`, `DemoFragments*`, `Person.cs`. |
 | `demo/PlayBlazor.Demo.FluentUI/` | **Create.** Scaffold only — bare workspace, no curation yet (Milestone 3). |
-| `demo/PlayBlazor.Demo.Daisy/` | **Create.** Scaffold plus the npm/Tailwind build. Blocked on `phmatray/blazor-tailwind-ui#20`. |
+| `demo/PlayBlazor.Demo.Daisy/` | **Create.** Scaffold plus the Tailwind build. *Done 2026-10-18 on DaisyBlazor.Components 0.6.0, whose NuGet package compiles the CSS — no npm, no #20 blocker (see Task 8).* |
 | `demo/landing/index.html` | **Create.** Static site root — three cards, three links, no WASM. |
 | `.github/workflows/deploy-demo.yml` | **Modify.** Matrix over the three apps, then one assembling job. |
 | `PlayBlazor.slnx` | **Modify.** Four demo projects instead of one. |
@@ -1645,6 +1645,11 @@ git commit -m "Feat: scaffold the Fluent UI demo app"
 
 ### Task 8: Scaffold the DaisyBlazor app
 
+> **Done 2026-10-18, superseding the steps below.** DaisyBlazor shipped as 0.6.0, not 1.0.0, and its
+> NuGet package now carries the whole CSS pipeline (preset copied into `obj/daisyblazor/`, Tailwind
+> standalone CLI downloaded and run on build with `DaisyBlazorBuildCss=true`). No `package.json`, no
+> npm, no Node step in CI. See `demo/PlayBlazor.Demo.Daisy` and the CLAUDE.md layout row.
+>
 > **BLOCKED.** This task needs `DaisyBlazor.Components` 1.0.0 on NuGet and `@daisyblazor/tailwind` on npm, both published by merging the release-please PR `phmatray/blazor-tailwind-ui#20`. Verify before starting:
 >
 > ```bash
@@ -1931,6 +1936,8 @@ git commit -m "Feat: scaffold the DaisyBlazor demo app"
 ---
 
 ### Task 9: The static landing and the deployment matrix
+
+> **Superseded for the Daisy job (2026-10-18):** the `npm: true` flag, `setup-node` and `npm ci` / `build:css` steps below never shipped. DaisyBlazor 0.6.0's NuGet package builds the stylesheet during `dotnet publish`; see `.github/workflows/deploy-demo.yml`.
 
 **Files:**
 - Create: `demo/landing/index.html`
@@ -2236,7 +2243,7 @@ public static class ExploredLibraries
 }
 ```
 
-> If Task 8 is still blocked, comment out the DaisyBlazor case with a note pointing at `blazor-tailwind-ui#20` rather than deleting it.
+> ~~If Task 8 is still blocked, comment out the DaisyBlazor case with a note pointing at `blazor-tailwind-ui#20` rather than deleting it.~~ Moot: Task 8 is done on 0.6.0 and the Daisy case is live.
 
 - [ ] **Step 2: Reference the two new demo apps from the test project**
 

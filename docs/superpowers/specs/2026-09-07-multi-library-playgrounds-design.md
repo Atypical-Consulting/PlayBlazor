@@ -21,7 +21,7 @@ Tout le savoir-librairie vit déjà côté hôte dans `PlayBlazorOptions` (`Comp
 |---|---|
 | Forme de la démo | **Trois apps WASM, un site Pages, un sélecteur qui est un lien.** Isolation CSS/JS totale, payload par librairie |
 | Version Fluent UI | **v5 RC** (`5.0.0-rc.5-26219.1`) — pur Blazor, plus de Fluent UI Web Components |
-| Source DaisyBlazor | **1.0.0**, après merge de la PR release-please `phmatray/blazor-tailwind-ui#20` |
+| Source DaisyBlazor | ~~**1.0.0**, après merge de la PR release-please `phmatray/blazor-tailwind-ui#20`~~ — *révisé (jalon 4) :* **DaisyBlazor.Components 0.6.0** depuis NuGet, qui compile lui-même le CSS (voir §8) |
 | Ampleur des presets | **Parité complète avec MudBlazor** — ~60 composants curés par librairie |
 | Extension du package | **Le sac d'options grandit** : un catalogue de valeurs par type. Pas de paquets satellites (pour l'instant) |
 | Paquets publiés | **1, inchangé.** `src/PlayBlazor` garde zéro dépendance UI |
@@ -186,7 +186,7 @@ livrer un site dont tous les assets renvoient 404 sans que le build ne bronche),
 Un job final assemble `publish/`, y dépose la landing statique et `.nojekyll`, puis fait un seul
 `upload-pages-artifact`.
 
-Le job `daisy` ajoute, avant `dotnet publish` : `setup-node`, `npm ci`, build Tailwind
+*(Caduc, voir la note plus bas : le job `daisy` est un `dotnet publish` comme les autres.)* Le job `daisy` ajoute, avant `dotnet publish` : `setup-node`, `npm ci`, build Tailwind
 (`tailwindcss -i Styles/main.css -o wwwroot/css/app.css --minify`). `PlayBlazor.Demo.Daisy`
 porte donc ses propres `package.json` / `package-lock.json` — c'est la seule app du repo à
 avoir une dépendance Node, et elle est confinée à ce projet.
@@ -195,6 +195,8 @@ Le câblage CSS DaisyBlazor suppose `@daisyblazor/tailwind` publié sur npm — 
 `publish.yml` du monorepo fait déjà au tag (« *The daisyUI Tailwind preset ships to npm as
 @daisyblazor/tailwind, versioned in lockstep* »). Il n'a jamais été publié à ce jour ; le merge
 de la PR #20 le publie.
+
+> *Caduc (jalon 4) :* aucun Node ni npm — le paquet NuGet 0.6.0 compile le CSS lui-même (`DaisyBlazorBuildCss`), voir §8.
 
 ## 6. Les tests
 
@@ -226,7 +228,7 @@ propre, pas les tests.
 | **La safelist DaisyBlazor sera prise en défaut** — le playground compose des classes à l'exécution (`btn-accent`, `badge-xl`) que Tailwind n'a jamais vues | attendu : c'est le test de complétude le plus dur jamais fait sur ce kit, et la valeur revient à DaisyBlazor |
 | **Poids du site ×3** | chaque app se télécharge seule ; la landing est statique |
 | **`Demo.Shared` pourrait dériver vers une dépendance UI** | discipline de revue ; la contrainte est déjà écrite dans `CLAUDE.md` |
-| **Daisy bloquée sur le merge de #20** | les jalons 1 à 3 n'en dépendent pas |
+| ~~**Daisy bloquée sur le merge de #20**~~ | *levé (jalon 4) :* livré sur DaisyBlazor.Components 0.6.0 depuis NuGet, sans attendre #20 |
 
 ## 8. Jalons
 
@@ -236,6 +238,9 @@ propre, pas les tests.
    landing statique. Le site tourne à trois apps dont deux vides.
 3. **Fluent UI** — sweep, puis `PlaygroundConfig` à parité.
 4. **DaisyBlazor** — merge de #20, montée en 1.0.0, sweep, puis `PlaygroundConfig` à parité.
+   *Livré sur DaisyBlazor.Components 0.6.0* (pas de 1.0.0 publiée) : le paquet NuGet compile
+   lui-même le CSS (`DaisyBlazorBuildCss`), sans Node ; les 127 composants listés sont curés et
+   tenus par les mêmes portes que MudBlazor et Fluent.
 
 Les jalons 1 et 2 ne changent **aucun** comportement visible de la démo MudBlazor actuelle :
 c'est le filet de sécurité de la restructuration.
@@ -271,6 +276,14 @@ c'est le filet de sécurité de la restructuration.
   « vérifié empiriquement » sans la commande ni la sortie qui l'établissent ne vaut pas
   vérification, et une erreur inscrite au spec survit à toutes les revues qui le prennent pour
   autorité.
+- **`Icon.Name` de DaisyBlazor n'obtient pas le sélecteur d'icônes** — découvert en posant
+  l'infrastructure de la curation Daisy (jalon 4, lot 1). La règle 1 du §3.3 exige un nom finissant
+  par `Icon` ; `Icon.Name` est pourtant la ligature même que le catalogue `DaisyIconCatalogue`
+  connaît. `Button.StartIcon`, `IconButton.Icon`, `ToggleItem.Icon` & co. reçoivent bien le
+  sélecteur, le composant `Icon` lui-même non. Contourné côté démo par un preset et des variantes
+  (lot 5), sans toucher au package : élargir la règle (un attribut, ou une liste de paramètres
+  nommés par l'hôte) est une décision d'API qui mérite son propre examen, et la règle « un
+  catalogue remplit, n'élargit jamais un kind » doit rester intacte.
 - **`demo.css` fait fuiter un nom MudBlazor dans le chrome partagé** —
   `demo/PlayBlazor.Demo.Shared/wwwroot/css/demo.css:207` utilise
   `var(--mud-palette-text-primary, inherit)`, une custom property nommée pour MudBlazor, à
@@ -310,6 +323,18 @@ c'est le filet de sécurité de la restructuration.
   demande une surcharge générique publique de `Slot(…)`, donc de la documentation XML sous
   `CS1591`, des tests, et une décision sur ce que devient un tel slot dans un permalien : c'est
   une fonctionnalité, pas un correctif, et elle mérite son propre jalon.
+
+  *Résolu côté package (jalon 4, lot 7).* La surcharge existe : `Slot<TContext>(nom,
+  RenderFragment<TContext>, source)`, stockée comme un preset de paramètre — liée à la fermeture
+  générique **exacte**, pour la même raison (`RenderFragment<Person>` servi à `<string>` serait un
+  `InvalidCastException`) — et lue par `TryGetTemplatePreset`. `BuildSlot`, le générateur
+  d'extraits (qui émet `<RowTemplate>…@context…</RowTemplate>`, compilé par le corpus), le graphe
+  et le badge « host preset » la consultent. La question du permalien se tranche d'elle-même : un
+  gabarit n'entre jamais dans l'état, donc n'est jamais sérialisé. Adopté par la vitrine Daisy
+  (`Table.RowTemplate`, `DataTable.Actions`, `TemplateColumn.CellTemplate`) ; **pas encore** par
+  MudBlazor (`MudTable.RowTemplate`, `MudFileUpload`) ni Fluent (`TemplateColumn`,
+  `FluentSortableList`) — leurs commentaires disent désormais « pas encore adopté », plus « trou
+  du package ». Une variante ne peut toujours pas changer un gabarit (il n'est pas dans l'état).
 - **Les deux filets mécaniques ont un plancher, pas un plafond** — écrits en clôture du jalon 3
   après que le défaut « compile, passe les tests et le sweep, et n'affiche rien » soit ressorti
   dix fois. Ils valent largement leur coût : le test de vivacité a échoué à sa première
@@ -333,3 +358,44 @@ c'est le filet de sécurité de la restructuration.
     troisième cas d'extrait omettant un paramètre `[EditorRequired]` passera donc en silence.
     Remède : compiler chaque extrait dans sa propre unité plutôt qu'en corpus, ou assertion
     explicite sur la liste des paramètres attendus.
+- **DaisyBlazor 0.6.0 : trous de safelist et défauts à remonter en amont** — relevés pendant la
+  curation (jalon 4, lots 1 à 7), chacun vérifié contre le `.razor` au tag `v0.6.0` et le
+  `app.css` compilé. **Rien n'est corrigé ici** : la vitrine les montre tels quels, avec un
+  commentaire à côté du preset concerné dans `DaisyPlaygroundConfig.cs`, et un test qui épingle
+  chaque trou de CSS pour qu'il échoue le jour où l'amont le comble.
+  - *Safelist.* `gap-{n}` s'arrête à 12 alors que `Stack.Spacing` et `Grid.Spacing` acceptent
+    tout entier : au-delà, aucun espacement (`DaisyLayoutPresetTests` épingle `gap-16` absent).
+    `tooltip-neutral` est safelisté mais daisyUI 5 ne le définit pas : `Tooltip Color=Dark`
+    garde la couleur par défaut (`DisplayClasses_AreCompiledIntoAppCss`).
+  - *Classes daisyUI 4 mortes sous daisyUI 5* (sans perte visible, daisyUI 5 dessinant la
+    bordure par défaut) : `label-text` (FieldError, Field, TextField), `input-bordered` /
+    `select-bordered` (TextField, NumericField, Select, DatePicker, **DataGridPager**),
+    `input-disabled` (Autocomplete).
+  - *Enfants qui s'enregistrent avec un rendu de retard* : Tab, SelectItem, PropertyColumn,
+    TemplateColumn — l'enfant ne signale jamais au parent que ses paramètres ont changé, et le
+    parent rend avant que l'enfant ne les reçoive. Même cause pour `DataTable.ActionsTitle`
+    (via son `TemplateColumn` interne), que la vitrine ne propose donc pas en variante.
+  - *RadioGroup* se cascade `IsFixed` : une `Value` posée de l'extérieur ne déplace pas la coche
+    tant que rien ne re-rend les radios. *Menu* : `Open` ne prime l'état interne que lorsque le
+    paramètre lui-même change (#108 amont).
+  - *Dialog* : son commentaire d'en-tête conseille `Class="modal-box"` pour un aperçu statique,
+    or `.modal-box` est à opacité 0 hors d'un `.modal` ouvert — l'aperçu conseillé est invisible.
+  - *FieldError* : sa doc dit que `request.Name` correspond à `Name` sans dire dans quel sens ;
+    `ErrorsFor` ne compare que le dernier segment de la **clé serveur** à `For`, jamais
+    l'inverse. `For="request.Email"` face à la clé `Email` ne rend rien — c'est ce qu'enseignait
+    une variante du lot 3, attrapé au navigateur au lot 7 et corrigé (`For="Phone"` face à
+    `request.Phone`).
+  - *QuickAccessButton* : `BadgeText` désactive aussi le bouton. *FeatureNavCard* : la `Card`
+    interne reçoit toujours un `OnClick`, donc `role="button" tabindex="0"` même sans `Href`.
+  - *Table* : `Hover` est sans effet dès qu'`OnRowClick` a un délégué (la ligne prend alors
+    `row-hover` d'office) — documenté côté vitrine, où le banc branche toujours les événements.
+  - *Material Symbols sans axe FILL* : `docs/getting-started.md`, `docs/css-preset.md`,
+    `styles/README.md` et les pages guide du site chargent `family=Material+Symbols+Outlined`
+    nu, l'instance statique. Or `Icon` ne bascule plein/contour que par
+    `font-variation-settings:'FILL'`, ignoré par une police non variable : toute icône `Filled`
+    s'affiche en contour et `Outlined` ne change rien. Le site et le template, eux, chargent
+    `:opsz,wght,FILL,GRAD@24,400,0..1,0` — c'est l'URL que la vitrine utilise.
+  - *ThemeProvider nu* : défauts `SystemLightTheme="light"` / `SystemDarkTheme="dark"`, si bien
+    qu'un `<ThemeProvider>` sans paramètre écrase au premier rendu tout `data-theme` posé dans
+    `index.html` (dont `daisyblazor`, le thème du preset) — la vitrine n'en monte donc aucun.
+

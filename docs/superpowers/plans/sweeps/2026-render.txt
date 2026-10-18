@@ -1,8 +1,6 @@
-[16:34:54.991] SynchronizedRunTestsAsync: ENTRY
-[16:34:54.997] SynchronizedRunTestsAsync: Creating executor
-NUnit Adapter 1.0.0.0: Test execution started
-Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
-   NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Explicit run
+NUnit Adapter 6.3.0.0: Test execution started
+Running selected tests in /home/phmatray/Projects/PlayBlazor/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
+   NUnit3TestExecutor discovered 3 of 3 NUnit test cases using Current Discovery mode, Explicit run
 === MudBlazor ===
 SWEEP 169 components: 159 healthy, 10 contained errors, 0 escaped exceptions
 --- ESCAPED (would take down more than the preview) ---
@@ -20,7 +18,7 @@ SWEEP 169 components: 159 healthy, 10 contained errors, 0 escaped exceptions
 
 
 MudBlazor: 159/169 healthy — see output for the inventory.
-passed MudBlazor (4s 270ms)
+passed MudBlazor (5s 041ms)
 === Microsoft.FluentUI.AspNetCore.Components ===
 SWEEP 108 components: 106 healthy, 2 contained errors, 0 escaped exceptions
 --- ESCAPED (would take down more than the preview) ---
@@ -30,11 +28,20 @@ SWEEP 108 components: 106 healthy, 2 contained errors, 0 escaped exceptions
 
 
 FluentUI: 106/108 healthy — see output for the inventory.
-passed FluentUI (909ms)
+passed FluentUI (822ms)
+=== DaisyBlazor.Components ===
+SWEEP 131 components: 130 healthy, 0 contained errors, 1 escaped exceptions
+--- ESCAPED (would take down more than the preview) ---
+[ESCAPED] PageBreadcrumb :: InvalidOperationException: Cannot provide a value for property 'BreadcrumbService' on type 'DaisyBlazor.PageBreadcrumb'. There is no registered service of type 'DaisyBlazor.IBreadcrumbService'.
+--- CONTAINED (shown in the pb-error box) ---
 
-Test run summary: Passed! - /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
-  total: 2
+
+DaisyBlazor: 130/131 healthy — see output for the inventory.
+passed DaisyBlazor (1s 864ms)
+
+Test run summary: Passed! - /home/phmatray/Projects/PlayBlazor/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
+  total: 3
   failed: 0
-  succeeded: 2
+  succeeded: 3
   skipped: 0
-  duration: 5s 368ms
+  duration: 7s 947ms

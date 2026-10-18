@@ -1,0 +1,960 @@
+@* Every Razor snippet the DaisyBlazor showcase can generate, verbatim.
+
+   This file exists to be COMPILED: it is the proof that what a visitor copies out of the code
+   panel actually builds. Do not hand-edit the block between the markers — SnippetCorpusTests
+   regenerates it and will fail if it drifts. Fix the curation, not the corpus.
+
+   Every listed component is curated (milestone 4), so each snippet below is the preset bench
+   a visitor sees first, scaffold included.
+
+   The @code block at the bottom stands in for the fields a host declares beside its own bench;
+   the snippets reference them by the @_camelCase names the generator emits for values that have
+   no literal form.
+*@
+@using System.Linq.Expressions
+@using DaisyBlazor
+@using DaisyBlazor.Data
+@using DaisyBlazor.Feedback
+@using DaisyBlazor.Layout
+@using DaisyBlazor.Theming
+@using DaisyBlazor.Validation
+@using PlayBlazor.Demo.Daisy
+
+@* ==> generated snippets begin — see SnippetCorpusTests <== *@
+
+@* AccessDenied *@
+<AccessDenied Message="You need the Billing admin role to view invoices."
+              ActionText="Back to home"
+              ActionHref="#"
+              MinHeight="16rem" />
+
+@* Alert *@
+<Alert Severity="Severity.Info">12 unread messages. Tap to see them.</Alert>
+
+@* AppCard *@
+<AppCard Name="Invoices"
+         Icon="receipt_long"
+         GradientStart="#0ea5e9"
+         GradientEnd="#6366f1" />
+
+@* Autocomplete *@
+<Autocomplete T="string"
+              Label="Fruit"
+              Placeholder="Type two letters, e.g. an"
+              SearchFunc="@((text, _) => Task.FromResult(_fruits.Where(f => f.Contains(text, StringComparison.OrdinalIgnoreCase))))" />
+
+@* Avatar *@
+<Avatar Image="@_photo" Alt="Ada Lovelace" />
+
+@* Badge *@
+<Badge Content="8"><Button Variant="Variant.Outlined">Inbox</Button></Badge>
+
+@* Breadcrumbs *@
+<Breadcrumbs Items="@(new List<BreadcrumbItem> { new("Home", "#", Icon: Icons.Material.Filled.Home), new("Projects", "#", Icon: Icons.Material.Filled.Folder), new("Checkout redesign", null) })" />
+
+@* Button *@
+<Button Variant="Variant.Filled">Click me</Button>
+
+@* ButtonGroup *@
+<ButtonGroup Variant="Variant.Filled">
+    <Button>Day</Button>
+    <Button>Week</Button>
+    <Button>Month</Button>
+</ButtonGroup>
+
+@* Card *@
+<Card Class="w-80">
+    <CardContent>
+        <h2 class="card-title">Analytical Engine</h2>
+        <p>The first design for a general-purpose computer.</p>
+    </CardContent>
+    <CardActions Class="justify-end">
+        <Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button>
+    </CardActions>
+</Card>
+
+@* CardActions *@
+<Card Class="w-80">
+    <CardContent>Wrote the first published algorithm.</CardContent>
+    <CardActions><Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button></CardActions>
+</Card>
+
+@* CardContent *@
+<Card Class="w-80">
+    <CardContent>
+        <h2 class="card-title">Analytical Engine</h2>
+        <p>The first design for a general-purpose computer.</p>
+    </CardContent>
+</Card>
+
+@* CardHeader *@
+<Card Class="w-80">
+    <CardHeader>
+        <CardHeaderContent>
+            <h2 class="card-title">Ada Lovelace</h2>
+            <p class="text-sm opacity-70">Analyst</p>
+        </CardHeaderContent>
+    </CardHeader>
+    <CardContent>Wrote the first published algorithm.</CardContent>
+</Card>
+
+@* Carousel *@
+<Carousel Class="rounded-box gap-4 w-80">
+    <CarouselItem>
+        <div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div>
+    </CarouselItem>
+    <CarouselItem>
+        <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+    </CarouselItem>
+    <CarouselItem>
+        <div class="bg-accent text-accent-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 3</div>
+    </CarouselItem>
+</Carousel>
+
+@* CarouselItem *@
+<Carousel Class="rounded-box gap-4">
+    <CarouselItem><div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div></CarouselItem>
+    <CarouselItem>
+        <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+    </CarouselItem>
+</Carousel>
+
+@* ChatBubble *@
+<ChatBubble Header="Ana · 18:02"
+            Footer="Delivered"
+            Class="w-full">
+    <ChildContent>
+        The hotfix is on staging, you can test it.
+    </ChildContent>
+    <Image>
+        <Avatar Image="@_photo" Alt="Ana Silva" Size="Size.Small" />
+    </Image>
+</ChatBubble>
+
+@* Checkbox *@
+<Checkbox Checked="true" Label="Remember me" />
+
+@* Chip *@
+<Chip Text="Blazor" Color="Color.Primary" />
+
+@* ColorPicker *@
+<ColorPicker Value="#605dff" Label="Brand colour" />
+
+@* ConfirmDialog *@
+<div class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    <ConfirmDialog ContentText="Delete this project? This cannot be undone."
+                   ButtonText="Delete"
+                   Color="Color.Error" />
+</div>
+
+@* Container *@
+<div class="w-[64rem] max-w-full">
+    <Container><div class="rounded-box bg-base-200 p-4 text-center">The content stays within the container's max width.</div></Container>
+</div>
+
+@* Countdown *@
+<Countdown Value="42" Class="font-mono text-5xl" />
+
+@* DataGrid *@
+<DataGrid T="Person" Items="@_people">
+    <Columns>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+    <PagerContent>
+        <DataGridPager T="Person" PageSizeOptions="@(new[] { 2, 5, 10 })" />
+    </PagerContent>
+</DataGrid>
+
+@* DataGridPager *@
+<DataGrid T="Person" Items="@_people" RowsPerPage="2" PageSizeOptions="@(new[] { 2, 5, 10 })">
+    <Columns>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" />
+    </Columns>
+    <PagerContent>
+        <DataGridPager T="Person" RowsPerPageText="People per page:" />
+    </PagerContent>
+</DataGrid>
+
+@* DataTable *@
+<DataTable T="Person"
+           Items="@_people"
+           PageSizeOptions="@(new[] { 2, 5, 10 })">
+    <Columns>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+    <Actions>
+        <IconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Title="@($"Edit {context.Name}")" />
+    </Actions>
+</DataTable>
+
+@* DatePicker *@
+<DatePicker Date="@(new DateTime(1815, 12, 10))" Label="Birth date" />
+
+@* DetailCard *@
+<DetailCard Title="Northwind Traders"
+            Icon="business"
+            Class="w-96">
+    <DetailRow Label="Owner" Value="Ana Silva" />
+    <DetailRow Label="Region" Value="EU West" />
+    <DetailRow Label="Seats" Value="120" />
+</DetailCard>
+
+@* DetailLayout *@
+<div class="w-[64rem] max-w-full">
+    <DetailLayout Title="Northwind Traders" BackRoute="#">
+        <MainContent>
+            <p>Northwind Traders renewed its Enterprise plan for 120 seats.</p>
+        </MainContent>
+    </DetailLayout>
+</div>
+
+@* DetailRow *@
+<DetailCard Title="Northwind Traders" Icon="@Icons.Material.Filled.Business" Class="w-96">
+    <DetailRow Label="Owner" Value="Ana Silva" />
+    <DetailRow Label="Region" Value="EU West" />
+</DetailCard>
+
+@* Dialog *@
+<Dialog Title="Deploy v2.4.0 to production?" Class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    <DialogContent>
+        <p>12 services restart in all 3 regions on Friday at midnight.</p>
+    </DialogContent>
+    <DialogActions>
+        <Button Variant="Variant.Text">Later</Button>
+        <Button Color="Color.Primary" Variant="Variant.Filled">Deploy</Button>
+    </DialogActions>
+</Dialog>
+
+@* Diff *@
+<Diff Item1Label="Colour"
+      Item2Label="Greyscale"
+      Class="w-96 max-w-full rounded-box">
+    <Item1>
+        <img src="@_photo" alt="Colour" />
+    </Item1>
+    <Item2>
+        <img src="@_photoMuted" alt="Greyscale" />
+    </Item2>
+</Diff>
+
+@* Divider *@
+<Divider Class="w-64">OR</Divider>
+
+@* Dock *@
+@* The transform keeps even a fixed (default) Dock inside this box. *@
+<div class="w-80 overflow-hidden rounded-box border border-base-300" style="transform: translateZ(0)">
+    <div class="h-24 bg-base-200"></div>
+    <Dock Fixed="false">
+        <DockItem Icon="@Icons.Material.Filled.Home" Label="Home" Active="true" />
+        <DockItem Icon="@Icons.Material.Filled.Inbox" Label="Inbox" />
+        <DockItem Icon="@Icons.Material.Filled.Settings" Label="Settings" />
+    </Dock>
+</div>
+
+@* DockItem *@
+<Dock Fixed="false">
+    <DockItem Label="Home" Icon="home" />
+    <DockItem Icon="settings" Label="Settings" />
+</Dock>
+
+@* Drawer *@
+<div class="rounded-box border-2 border-base-300 h-64 overflow-hidden">
+    <Drawer Open="true" Class="h-full">
+        <ChildContent>
+            <p class="p-4">Main content sits beside the open panel.</p>
+        </ChildContent>
+        <SideContent>
+            <div class="bg-base-200 min-h-full w-40 p-2">
+                <ItemList>
+                    <ListItem Icon="home" Text="Home" />
+                    <ListItem Icon="folder" Text="Projects" />
+                    <ListItem Icon="settings" Text="Settings" />
+                </ItemList>
+            </div>
+        </SideContent>
+    </Drawer>
+</div>
+
+@* Dropdown *@
+@* The transform keeps an open Menu's fixed backdrop inside this box. *@
+<div class="flex h-80 w-[40rem] max-w-full items-center justify-center" style="transform: translateZ(0)">
+    <Dropdown ActivatorClass="btn btn-outline">
+        <ChildContent>
+            <li><a>Edit</a></li>
+            <li><a>Duplicate</a></li>
+            <li><a>Archive</a></li>
+        </ChildContent>
+        <Activator>
+            Options
+        </Activator>
+    </Dropdown>
+</div>
+
+@* EmptyState *@
+<EmptyState Message="No projects yet"
+            Icon="folder_open"
+            Subtitle="Create your first project to get started."><Button Variant="Variant.Filled" Color="Color.Primary">New project</Button></EmptyState>
+
+@* ErrorAlert *@
+<ErrorAlert Message="Could not save: the server is unreachable." />
+
+@* ExpansionPanel *@
+<ExpansionPanels>
+    <ExpansionPanel Text="Shipping" IsExpanded="true">Orders ship within two business days.</ExpansionPanel>
+    <ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+</ExpansionPanels>
+
+@* ExpansionPanels *@
+<ExpansionPanels Class="w-96">
+    <ExpansionPanel Text="Shipping" IsExpanded="true">Orders ship within two business days.</ExpansionPanel>
+    <ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+    <ExpansionPanel Text="Warranty">Two years on every order.</ExpansionPanel>
+</ExpansionPanels>
+
+@* Fab *@
+@* The transform keeps even a fixed (default) Fab inside this box. *@
+<div class="relative isolate h-64" style="transform: translateZ(0)">
+    <Fab AriaLabel="Actions" Fixed="false">
+        <FabAction Icon="@Icons.Material.Filled.Edit" Tooltip="Edit" />
+        <FabAction Icon="@Icons.Material.Filled.Share" Tooltip="Share" />
+    </Fab>
+</div>
+
+@* FabAction *@
+<div class="relative isolate h-64">
+    <Fab Fixed="false" AriaLabel="Actions">
+        <FabAction Icon="edit" Tooltip="Edit" />
+        <FabAction Icon="share" Tooltip="Share" />
+    </Fab>
+</div>
+
+@* FeatureHero *@
+<div class="w-[64rem] max-w-full">
+    <FeatureHero Icon="payments"
+                 Title="Billing"
+                 Subtitle="Invoices, payments and reports in one place."
+                 Eyebrow="Finance">
+        <Actions>
+            <Button Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">New invoice</Button>
+        </Actions>
+    </FeatureHero>
+</div>
+
+@* FeatureHomePage *@
+<div class="w-[64rem] max-w-full">
+    <FeatureHomePage Title="Billing" Subtitle="Invoices, payments and reports.">
+        <NavCards>
+            <Item xs="6">
+                <FeatureNavCard Icon="@Icons.Material.Filled.ReceiptLong" Title="Invoices" Subtitle="Billing" Description="Create, send and track invoices." AvatarColor="Color.Primary" />
+            </Item>
+            <Item xs="6">
+                <FeatureNavCard Icon="@Icons.Material.Filled.Payments" Title="Payments" Subtitle="Billing" Description="Reconcile incoming payments." AvatarColor="Color.Secondary" />
+            </Item>
+        </NavCards>
+    </FeatureHomePage>
+</div>
+
+@* FeatureNavCard *@
+<div class="w-80">
+    <FeatureNavCard AvatarColor="Color.Primary"
+                    Icon="receipt_long"
+                    Title="Invoices"
+                    Subtitle="Billing"
+                    Description="Create, send and track invoices." />
+</div>
+
+@* Field *@
+<Field Label="Invoice no.">INV-2041</Field>
+
+@* FieldError *@
+<ServerValidation State="@_validation">
+    <fieldset class="fieldset">
+        <legend class="fieldset-legend">Email</legend>
+        <input type="email" class="input" value="ada@example.com" />
+        <FieldError For="Email" />
+    </fieldset>
+</ServerValidation>
+
+@* FileInput *@
+<FileInput Label="Profile picture" Accept="image/*" />
+
+@* FilterPanel *@
+<FilterPanel ActiveFilters="@_activeFilters">
+    <Item xs="12" sm="6">
+        <TextField Label="Customer" Placeholder="Northwind Traders" />
+    </Item>
+    <Item xs="12" sm="6">
+        <Select T="string" Label="Plan" Value="@("Pro")">
+            <SelectItem T="string" Value="@("Free")">Free</SelectItem>
+            <SelectItem T="string" Value="@("Pro")">Pro</SelectItem>
+            <SelectItem T="string" Value="@("Enterprise")">Enterprise</SelectItem>
+        </Select>
+    </Item>
+</FilterPanel>
+
+@* FloatingLabel *@
+<FloatingLabel Label="Email"><input type="email" class="input" placeholder="ada@example.com" /></FloatingLabel>
+
+@* Footer *@
+<div class="w-[64rem] max-w-full">
+    <Footer Class="rounded-box">
+        <nav>
+            <FooterTitle>Product</FooterTitle>
+            <a class="link link-hover">Dashboard</a>
+            <a class="link link-hover">Billing</a>
+        </nav>
+        <nav>
+            <FooterTitle>Company</FooterTitle>
+            <a class="link link-hover">About</a>
+            <a class="link link-hover">Careers</a>
+        </nav>
+    </Footer>
+</div>
+
+@* FooterTitle *@
+<Footer Class="bg-base-200 text-base-content">
+    <nav>
+        <FooterTitle>Services</FooterTitle>
+        <a class="link link-hover">Branding</a>
+        <a class="link link-hover">Design</a>
+    </nav>
+</Footer>
+
+@* Form *@
+<Form>
+    <TextField Label="Name" Value="@("Ada Lovelace")" Required="true" />
+    <TextField Label="Email" InputType="InputType.Email" Placeholder="ada@example.com" />
+    <Button Color="Color.Primary" Variant="Variant.Filled">Submit</Button>
+</Form>
+
+@* Grid *@
+<Grid Class="w-96">
+    <Item xs="4"><Paper Class="bg-primary! text-primary-content! p-4 text-center">xs=4</Paper></Item>
+    <Item xs="4"><Paper Class="bg-secondary! text-secondary-content! p-4 text-center">xs=4</Paper></Item>
+    <Item xs="4"><Paper Class="bg-accent! text-accent-content! p-4 text-center">xs=4</Paper></Item>
+    <Item xs="6"><Paper Class="bg-neutral! text-neutral-content! p-4 text-center">xs=6</Paper></Item>
+    <Item xs="6"><Paper Class="bg-info! text-info-content! p-4 text-center">xs=6</Paper></Item>
+</Grid>
+
+@* Hero *@
+<div class="w-[64rem] max-w-full">
+    <Hero MinHeight="min-h-64" Class="rounded-box bg-base-200">
+        <div class="max-w-md text-center">
+            <h2 class="text-4xl font-bold">Ship it.</h2>
+            <p class="py-4">One click from commit to production.</p>
+            <Button Color="Color.Primary" Variant="Variant.Filled">Get started</Button>
+        </div>
+    </Hero>
+</div>
+
+@* Icon *@
+<Icon Name="@Icons.Material.Filled.Favorite" />
+
+@* IconButton *@
+<IconButton Icon="favorite" Title="Add to favourites" />
+
+@* Image *@
+<Image Src="@_photo"
+       Alt="Mountains at dusk"
+       Width="192" />
+
+@* Indicator *@
+<Indicator>
+    <ChildContent>
+        <Button Variant="Variant.Outlined">Tickets</Button>
+    </ChildContent>
+    <Item>
+        <Badge Inline="true" Color="Color.Primary">12</Badge>
+    </Item>
+</Indicator>
+
+@* Item *@
+<Grid Spacing="4">
+    <Item xs="6"><div class="bg-base-200 rounded-box p-4">Grid cell</div></Item>
+    <Item xs="6"><div class="bg-base-200 rounded-box p-4">Sibling</div></Item>
+</Grid>
+
+@* ItemList *@
+<ItemList Class="bg-base-200 rounded-box">
+    <ListItem Icon="inbox" Text="Inbox" />
+    <ListItem Icon="send" Text="Sent" />
+    <ListItem Icon="drafts" Text="Drafts" />
+</ItemList>
+
+@* Kbd *@
+<Kbd>Ctrl</Kbd>
+
+@* KpiCard *@
+<div class="w-80">
+    <KpiCard Label="Monthly recurring revenue"
+             Value="€48.2 k"
+             Subtitle="+12% vs. September" />
+</div>
+
+@* List *@
+<List Class="w-80">
+    <ListRow Icon="person" Title="Ada Lovelace" Subtitle="Analyst" />
+    <ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+    <ListRow Icon="person" Title="Alan Turing" Subtitle="Cryptanalyst" />
+</List>
+
+@* ListItem *@
+<ItemList>
+    <ListItem Icon="inbox" Text="Inbox" />
+    <ListItem Icon="send" Text="Sent" />
+</ItemList>
+
+@* ListRow *@
+<List>
+    <ListRow Icon="person"
+             Title="Ada Lovelace"
+             Subtitle="Analyst" />
+    <ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+</List>
+
+@* Loading *@
+<Loading />
+
+@* Mask *@
+<Mask Class="w-24"><img class="block w-full" src="@_photo" alt="Mountains at dusk" /></Mask>
+
+@* Menu *@
+@* The transform keeps an open Menu's fixed backdrop inside this box. *@
+<div class="flex h-80 w-[40rem] max-w-full items-center justify-center" style="transform: translateZ(0)">
+    <Menu Label="Actions" Open="true">
+        <MenuItem Icon="@Icons.Material.Filled.Edit">Edit</MenuItem>
+        <MenuItem Icon="@Icons.Material.Filled.Share">Share</MenuItem>
+        <MenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Delete</MenuItem>
+    </Menu>
+</div>
+
+@* MenuItem *@
+<div class="h-48">
+    @* The transform keeps the open menu's fixed backdrop inside the menu. *@
+    <Menu Label="Actions" Open="true" Style="transform: translateZ(0)">
+        <MenuItem Icon="edit">Edit</MenuItem>
+        <MenuItem Icon="share">Share</MenuItem>
+    </Menu>
+</div>
+
+@* MessageBoxDialog *@
+<div class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    <MessageBoxDialog Message="Save your changes before closing?"
+                      YesText="Save"
+                      NoText="Discard"
+                      CancelText="Cancel" />
+</div>
+
+@* MockupBrowser *@
+<MockupBrowser Url="acme.cloud" Class="w-96">
+    <div class="text-center">
+        <p class="text-2xl font-bold">Hello!</p>
+        <p class="text-sm opacity-70">Version 2.4 is out now.</p>
+    </div>
+</MockupBrowser>
+
+@* MockupCode *@
+<MockupCode Lines="@(new[] { "npm i daisyui", "installing...", "Done!" })" />
+
+@* MockupPhone *@
+<MockupPhone Class="w-48">
+    <div class="bg-primary text-primary-content grid h-full place-content-center gap-1 p-4 text-center">
+        <p class="text-lg font-bold">api-gateway</p>
+        <p class="text-xs">Deploying…</p>
+    </div>
+</MockupPhone>
+
+@* MockupWindow *@
+<MockupWindow Title="Deployments" Class="w-96"><p>3 deployments running, 1 queued.</p></MockupWindow>
+
+@* Modal *@
+<div>
+    <p class="text-sm opacity-70">Shown while Open is true (bind it with @@bind-Open). It opens as a native modal over the whole page: Escape, the backdrop or the close button dismiss it.</p>
+    <Modal Title="Invite a team member" CloseButton="true">
+        <ChildContent>
+            <p>We will email Dana an invitation to join the workspace.</p>
+        </ChildContent>
+        <DialogActions>
+            <Button Color="Color.Primary" Variant="Variant.Filled">Send invite</Button>
+        </DialogActions>
+    </Modal>
+</div>
+
+@* NavMenuLink *@
+<ul class="menu w-56 rounded-box bg-base-200">
+    <NavMenuLink Href="#" Icon="home">Dashboard</NavMenuLink>
+    <NavMenuLink Href="#" Icon="@Icons.Material.Filled.Settings">Settings</NavMenuLink>
+</ul>
+
+@* Navbar *@
+<div class="w-[64rem] max-w-full">
+    <Navbar Class="rounded-box">
+        <Start>
+            <a class="btn btn-ghost text-xl">Acme</a>
+        </Start>
+        <Center>
+            <ul class="menu menu-horizontal px-1">
+                <li><a>Docs</a></li>
+                <li><a>Pricing</a></li>
+            </ul>
+        </Center>
+        <End>
+            <IconButton Icon="@Icons.Material.Filled.Notifications" Title="Notifications" />
+        </End>
+    </Navbar>
+</div>
+
+@* NumericField *@
+<NumericField T="int"
+              Value="42"
+              Label="Quantity"
+              Min="0"
+              Max="100"
+              Step="2"
+              HelperText="Even numbers from 0 to 100." />
+
+@* PageHeader *@
+<div class="w-[64rem] max-w-full">
+    <PageHeader Title="Invoices" Subtitle="42 open, 3 overdue">
+        <Actions>
+            <Button Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">New invoice</Button>
+        </Actions>
+    </PageHeader>
+</div>
+
+@* Pagination *@
+<Pagination Count="10" Selected="5" />
+
+@* Paper *@
+<Paper Class="p-6 w-64">
+    <h3 class="text-lg font-semibold">Analytical Engine</h3>
+    <p class="text-sm">Designed by Charles Babbage in 1837.</p>
+</Paper>
+
+@* ProgressCircular *@
+<ProgressCircular Indeterminate="false"
+                  Value="65"
+                  AriaLabel="Upload progress" />
+
+@* ProgressLinear *@
+<ProgressLinear Value="40"
+                AriaLabel="Upload progress"
+                Class="w-56" />
+
+@* PropertyColumn *@
+<DataGrid T="Person" Items="@_people">
+    <Columns>
+        <PropertyColumn T="Person"
+                        TProperty="string"
+                        Property="p => p.Name"
+                        Title="Name" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+</DataGrid>
+
+@* QuickAccessButton *@
+<div class="w-80">
+    <QuickAccessButton Label="New invoice" Icon="add" />
+</div>
+
+@* RadialProgress *@
+<RadialProgress Value="70" AriaLabel="Storage used" />
+
+@* Radio *@
+<RadioGroup T="string" Label="Fruit" Value="@("apple")">
+    <Radio T="string"
+           Value="@("apple")"
+           Label="Apple" />
+    <Radio Value="@("banana")" Label="Banana" />
+</RadioGroup>
+
+@* RadioGroup *@
+<RadioGroup T="string"
+            Value="@("banana")"
+            Label="Fruit">
+    <Radio Value="@("apple")" Label="Apple" />
+    <Radio Value="@("banana")" Label="Banana" />
+    <Radio Value="@("cherry")" Label="Cherry" />
+</RadioGroup>
+
+@* Range *@
+<Range Value="40" Label="Volume" />
+
+@* Rating *@
+<Rating Value="3" />
+
+@* SectionCard *@
+<SectionCard Title="Deployment"
+             Icon="rocket_launch"
+             Class="w-96"><p>api-gateway v2.4 is rolling out to production, step 2 of 3.</p></SectionCard>
+
+@* Select *@
+<Select T="string"
+        Value="@("banana")"
+        SelectedValues="@(new[] { "apple", "cherry" })"
+        Label="Fruit">
+    <SelectItem Value="@("apple")">Apple</SelectItem>
+    <SelectItem Value="@("banana")">Banana</SelectItem>
+    <SelectItem Value="@("cherry")">Cherry</SelectItem>
+</Select>
+
+@* SelectItem *@
+<Select T="string" Label="Fruit" Value="@("banana")">
+    <SelectItem Value="@("apple")">Apple</SelectItem>
+    <SelectItem T="string" Value="@("banana")">Banana</SelectItem>
+</Select>
+
+@* ServerValidation *@
+<ServerValidation State="@_validation"><TextField Label="Email" FieldName="Email" Value="@("ada@example.com")" /></ServerValidation>
+
+@* SimpleTable *@
+<SimpleTable>
+    <thead>
+        <tr><th>Name</th><th>Role</th><th>Age</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Ada Lovelace</td><td>Analyst</td><td>36</td></tr>
+        <tr><td>Grace Hopper</td><td>Rear Admiral</td><td>45</td></tr>
+        <tr><td>Alan Turing</td><td>Cryptanalyst</td><td>41</td></tr>
+    </tbody>
+</SimpleTable>
+
+@* Skeleton *@
+<Skeleton Width="12rem" Height="1rem" />
+
+@* Spacer *@
+<Stack Row="true" AlignItems="AlignItems.Center" Class="w-80 rounded-box bg-base-200 p-4">
+    <span>2 GB used</span>
+    <Spacer />
+    <span>5 GB</span>
+</Stack>
+
+@* Stack *@
+<Stack>
+    <Paper Class="bg-primary! text-primary-content! px-6 py-4">One</Paper>
+    <Paper Class="bg-secondary! text-secondary-content! px-6 py-4">Two, wider</Paper>
+    <Paper Class="bg-accent! text-accent-content! px-6 py-4">Three, the widest box</Paper>
+</Stack>
+
+@* StackOverlay *@
+<StackOverlay>
+    <div class="bg-primary text-primary-content rounded-box grid size-28 place-content-center">1</div>
+    <div class="bg-secondary text-secondary-content rounded-box grid size-28 place-content-center">2</div>
+    <div class="bg-accent text-accent-content rounded-box grid size-28 place-content-center">3</div>
+</StackOverlay>
+
+@* Stat *@
+<Stats Shadow="true">
+    <Stat Title="Downloads"
+          Value="31K"
+          Desc="Jan 1st - Feb 1st" />
+    <Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" />
+</Stats>
+
+@* Stats *@
+<Stats Shadow="true">
+    <Stat Title="Downloads" Value="31K" Desc="Jan 1st - Feb 1st" />
+    <Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" DescColor="Color.Success" />
+    <Stat Title="New registers" Value="1,200" Desc="↘︎ 90 (14%)" DescColor="Color.Error" />
+</Stats>
+
+@* Status *@
+<Status Color="Color.Success" AriaLabel="Online" />
+
+@* StatusChip *@
+<StatusChip Status="Shipment.Delayed" Map="@_shipmentStatus" />
+
+@* Step *@
+<Steps>
+    <Step Completed="true">Register</Step>
+    <Step>Choose plan</Step>
+    <Step>Purchase</Step>
+</Steps>
+
+@* Steps *@
+<Steps>
+    <Step Completed="true">Register</Step>
+    <Step Active="true">Choose plan</Step>
+    <Step>Purchase</Step>
+    <Step>Receive product</Step>
+</Steps>
+
+@* Swap *@
+<Swap AriaLabel="Dark mode">
+    <On>
+        <Icon Name="@Icons.Material.Filled.DarkMode" Size="Size.Large" />
+    </On>
+    <Off>
+        <Icon Name="@Icons.Material.Filled.LightMode" Size="Size.Large" />
+    </Off>
+</Swap>
+
+@* Switch *@
+<Switch Checked="true" Label="Email notifications" />
+
+@* Tab *@
+<Tabs ActiveIndex="1">
+    <Tab Title="Overview">Born in London in 1815.</Tab>
+    <Tab Title="Biography"><p>Ada Lovelace wrote the first published algorithm.</p></Tab>
+</Tabs>
+
+@* Table *@
+<Table T="Person" Items="@_people">
+    <HeaderContent>
+        <Th>Name</Th>
+        <Th>Role</Th>
+        <Th>Age</Th>
+    </HeaderContent>
+    <RowTemplate>
+        <Td>@context.Name</Td>
+        <Td>@context.Role</Td>
+        <Td>@context.Age</Td>
+    </RowTemplate>
+</Table>
+
+@* TablePager *@
+<Table T="Person" Items="@_people" RowsPerPage="2">
+    <HeaderContent>
+        <Th>Name</Th>
+        <Th>Role</Th>
+    </HeaderContent>
+    <RowTemplate>
+        <Td>@context.Name</Td>
+        <Td>@context.Role</Td>
+    </RowTemplate>
+    <PagerContent>
+        <TablePager PageSizeOptions="@(new[] { 2, 5, 10 })" />
+    </PagerContent>
+</Table>
+
+@* Tabs *@
+<Tabs Class="w-96">
+    <Tab Title="Overview">Born in London in 1815.</Tab>
+    <Tab Title="Work">Wrote the first published algorithm.</Tab>
+    <Tab Title="Legacy">Ada, the language, is named after her.</Tab>
+</Tabs>
+
+@* Td *@
+<SimpleTable>
+    <thead>
+        <Tr><Th>Name</Th><Th>Role</Th></Tr>
+    </thead>
+    <tbody>
+        <Tr>
+            <Td>Ada Lovelace</Td>
+            <Td>Analyst</Td>
+        </Tr>
+    </tbody>
+</SimpleTable>
+
+@* TemplateColumn *@
+<DataGrid T="Person" Items="@_people">
+    <Columns>
+        <TemplateColumn T="Person" Title="Role">
+            <CellTemplate>
+                <span class="badge badge-soft badge-primary">@context.Item.Role</span>
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+</DataGrid>
+
+@* TextField *@
+<TextField Label="Email"
+           Placeholder="ada@example.com"
+           HelperText="We never share your email."
+           InputType="InputType.Email" />
+
+@* TextLink *@
+<TextLink Href="https://daisyui.com" Target="_blank">Read the daisyUI docs</TextLink>
+
+@* Th *@
+<SimpleTable>
+    <thead>
+        <Tr>
+            <Th>Name</Th>
+            <Th>Role</Th>
+        </Tr>
+    </thead>
+    <tbody>
+        <Tr><Td>Ada Lovelace</Td><Td>Analyst</Td></Tr>
+    </tbody>
+</SimpleTable>
+
+@* ThemeController *@
+<ThemeController Value="dark" Class="inline-flex items-center gap-3">Dark theme</ThemeController>
+
+@* Timeline *@
+<Timeline>
+    <TimelineItem Color="Color.Primary">1815: Ada Lovelace is born</TimelineItem>
+    <TimelineItem Color="Color.Primary">1843: Notes on the Analytical Engine</TimelineItem>
+    <TimelineItem>1953: The notes are republished</TimelineItem>
+</Timeline>
+
+@* TimelineItem *@
+<Timeline>
+    <TimelineItem Color="Color.Primary">1815: Ada Lovelace is born</TimelineItem>
+    <TimelineItem>1843: Notes on the Analytical Engine</TimelineItem>
+</Timeline>
+
+@* ToggleGroup *@
+<ToggleGroup T="string"
+             Value="@("grid")"
+             Values="@(new[] { "list", "table" })">
+    <ToggleItem Value="@("list")" Text="List" Icon="@Icons.Material.Filled.ViewList" />
+    <ToggleItem Value="@("grid")" Text="Grid" Icon="@Icons.Material.Filled.GridView" />
+    <ToggleItem Value="@("table")" Text="Table" Icon="@Icons.Material.Filled.TableRows" />
+</ToggleGroup>
+
+@* ToggleItem *@
+<ToggleGroup T="string" Value="@("grid")">
+    <ToggleItem T="string"
+                Value="@("grid")"
+                Text="Grid" />
+    <ToggleItem Value="@("list")" Text="List" />
+</ToggleGroup>
+
+@* Tooltip *@
+<Tooltip Text="Saves a draft"><Button Variant="Variant.Outlined">Save</Button></Tooltip>
+
+@* Tr *@
+<SimpleTable>
+    <thead>
+        <Tr><Th>Name</Th><Th>Role</Th></Tr>
+    </thead>
+    <tbody>
+        <Tr>
+            <Td>Ada Lovelace</Td>
+            <Td>Analyst</Td>
+        </Tr>
+        <Tr><Td>Grace Hopper</Td><Td>Rear Admiral</Td></Tr>
+    </tbody>
+</SimpleTable>
+
+@* Typography *@
+<Typography>The Analytical Engine weaves algebraic patterns.</Typography>
+
+@* Validator *@
+<Validator Hint="Enter a valid email address."><input type="email" class="input validator" placeholder="ada@example.com" required /></Validator>
+
+@* ValidatorHint *@
+<Validator>
+    <input type="email" class="input validator" value="ada.example.com" aria-invalid="true" />
+    <ValidatorHint>Enter a valid email address.</ValidatorHint>
+</Validator>
+@* ==> generated snippets end <== *@
+
+@code {
+    private readonly IReadOnlyList<Person> _people = DaisyPlaygroundConfig.SampleRows;
+    private readonly ServerValidationState _validation = DaisyPlaygroundConfig.SampleValidation;
+    private readonly IReadOnlyList<string> _fruits = DaisyPlaygroundConfig.ListOptions;
+    private readonly string _photo = DaisyPlaygroundConfig.SamplePhoto;
+    private readonly string _photoMuted = DaisyPlaygroundConfig.SamplePhotoMuted;
+    private readonly IReadOnlyList<ActiveFilter> _activeFilters = DaisyPlaygroundConfig.SampleFilters;
+    private readonly StatusMap _shipmentStatus = DaisyPlaygroundConfig.ShipmentStatus;
+}

@@ -10,27 +10,29 @@ namespace PlayBlazor.UnitTests.Diagnostics;
 /// </summary>
 public static class ExploredLibraries
 {
+    private static TestCaseData Mud => new(
+        typeof(MudBlazor.MudButton).Assembly,
+        (Action<PlayBlazorOptions>)PlayBlazor.DemoHost.PlaygroundConfig.Configure)
+        { TestName = "MudBlazor" };
+
+    private static TestCaseData Fluent => new(
+        typeof(Microsoft.FluentUI.AspNetCore.Components.FluentButton).Assembly,
+        (Action<PlayBlazorOptions>)PlayBlazor.Demo.FluentUI.FluentPlaygroundConfig.Configure)
+        { TestName = "FluentUI" };
+
+    private static TestCaseData Daisy => new(
+        typeof(DaisyBlazor.Button).Assembly,
+        (Action<PlayBlazorOptions>)PlayBlazor.Demo.Daisy.DaisyPlaygroundConfig.Configure)
+        { TestName = "DaisyBlazor" };
+
     /// <summary>One NUnit case per explored library: assembly and host configuration, named for the report.</summary>
     public static IEnumerable<TestCaseData> All
     {
         get
         {
-            yield return new TestCaseData(
-                typeof(MudBlazor.MudButton).Assembly,
-                (Action<PlayBlazorOptions>)PlayBlazor.DemoHost.PlaygroundConfig.Configure)
-                { TestName = "MudBlazor" };
-
-            yield return new TestCaseData(
-                typeof(Microsoft.FluentUI.AspNetCore.Components.FluentButton).Assembly,
-                (Action<PlayBlazorOptions>)PlayBlazor.Demo.FluentUI.FluentPlaygroundConfig.Configure)
-                { TestName = "FluentUI" };
-
-            // DaisyBlazor is not yet a case here: `demo/PlayBlazor.Demo.Daisy` does not exist
-            // because `DaisyBlazor.Components` 1.0.0 is not on NuGet and `@daisyblazor/tailwind`
-            // is not on npm — the release PR (phmatray/blazor-tailwind-ui#20) is still open. Once
-            // that app exists (Task 8), add a third case here the same shape as the two above:
-            // typeof(DaisyBlazor.Button).Assembly and PlayBlazor.Demo.Daisy.DaisyPlaygroundConfig.Configure,
-            // TestName = "DaisyBlazor".
+            yield return Mud;
+            yield return Fluent;
+            yield return Daisy;
         }
     }
 }

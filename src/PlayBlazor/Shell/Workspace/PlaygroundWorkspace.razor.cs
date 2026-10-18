@@ -591,7 +591,8 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
                 continue;
             }
 
-            var filledByHost = Options.TryGetSlotPreset(_selected.Type, parameter.Name, out _);
+            var filledByHost = Options.TryGetSlotPreset(_selected.Type, parameter.Name, out _)
+                               || Options.TryGetTemplatePreset(_selected.Type, parameter.Name, out _);
             var filledByUser = IsTextSlot(parameter) && _state.IsModified(parameter.Name);
             if (filledByHost || filledByUser)
             {

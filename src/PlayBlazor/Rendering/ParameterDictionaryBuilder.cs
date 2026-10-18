@@ -95,10 +95,12 @@ public static class ParameterDictionaryBuilder
         PlaygroundState state,
         PlayBlazorOptions? options)
     {
-        // Only non-generic RenderFragment slots can carry text or an untyped preset.
+        // A templated slot (RenderFragment<T>) takes no typed text, only a host template.
         if (parameter.Type != typeof(RenderFragment))
         {
-            return null;
+            return options is not null && options.TryGetTemplatePreset(component.Type, parameter.Name, out var template)
+                ? template
+                : null;
         }
 
         // The user's typed text wins over a host preset.

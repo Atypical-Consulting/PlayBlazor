@@ -24,7 +24,7 @@ public static class FluentPlaygroundConfig
     /// </summary>
     private static readonly HashSet<string> Infrastructure =
     [
-        "ColumnReorderOptions", "ColumnResizeOptions", "Defer", "FluentDialogProvider",
+        "ColumnReorderOptions", "ColumnResizeOptions", "ColumnSortMenuItems", "ColumnSortOptions", "Defer", "FluentDialogProvider",
         "FluentKeyCodeProvider", "FluentMessageBarProvider", "FluentOptionString", "FluentProviders",
         "FluentToastProvider", "FluentTooltipProvider", "FreeOptionOutput",
     ];
@@ -356,14 +356,11 @@ public static class FluentPlaygroundConfig
             .Variant("Multiple selection", v => v.Set(nameof(SelectColumn<Person>.SelectMode), DataGridSelectMode.Multiple))
             .Variant("Sticky single selection", v => v.Set(nameof(SelectColumn<Person>.SelectMode), DataGridSelectMode.SingleSticky));
 
-        // TemplateColumn.ChildContent is RenderFragment<TGridItem> — a CLOSED generic RenderFragment,
-        // which ParameterDictionaryBuilder.BuildSlot cannot honor: it special-cases only the literal
-        // non-generic RenderFragment (see src/PlayBlazor/Rendering/ParameterDictionaryBuilder.cs), and
-        // ControlKind.Slot parameters never fall through to the Parameter-preset or Variant-state
-        // paths either. No preset reaches ChildContent, so it keeps the field's own default
-        // (a no-op fragment) and every cell in this column renders empty — a src/PlayBlazor gap this
-        // demo-only task cannot close. What follows curates every OTHER reachable ColumnBase property
-        // so the column is not left completely uncurated.
+        // TemplateColumn.ChildContent is RenderFragment<TGridItem>, a templated slot. Until the
+        // DaisyBlazor curation (milestone 4) no preset could fill one; the templated .Slot<TContext>
+        // overload now can, but this bench has not adopted it yet (a follow-up), so ChildContent
+        // keeps the field's own no-op default and every cell in this column renders empty. What
+        // follows curates every OTHER reachable ColumnBase property.
         options.For<TemplateColumn<Person>>()
             .Parameter(nameof(TemplateColumn<Person>.Title), "Bio")
             .Scaffold(specimen => builder =>
@@ -486,9 +483,9 @@ public static class FluentPlaygroundConfig
         // same closed-generic-RenderFragment gap noted above for TemplateColumn.ChildContent, but
         // starker: BuildRenderTree returns immediately when ItemTemplate is null, so the specimen
         // renders NOTHING at all, not even a wrapper element — no error, no content, invisible.
-        // No preset in src/PlayBlazor's current Slot/Parameter/Variant surface can reach it. Every
-        // other real, reachable parameter is curated below so the type is not left bare, but the
-        // bench itself will show an empty area regardless.
+        // The templated .Slot<TContext> overload can now fill it, but this bench has not adopted it
+        // yet (a follow-up). Every other real, reachable parameter is curated below so the type is
+        // not left bare, but until then the bench shows an empty area.
         options.For<FluentSortableList<string>>()
             .Parameter(nameof(FluentSortableList<string>.Items), new[] { "Design", "Build", "Test", "Ship" }, "@_tasks")
             .Parameter(nameof(FluentSortableList<string>.AriaLabel), "Project tasks")
@@ -523,10 +520,10 @@ public static class FluentPlaygroundConfig
             .Variant("Drop target only", v => v.Set(nameof(FluentDropZone<string>.Droppable), true).Set(nameof(FluentDropZone<string>.Draggable), false))
             .Variant("Draggable only", v => v.Set(nameof(FluentDropZone<string>.Draggable), true).Set(nameof(FluentDropZone<string>.Droppable), false));
 
-        options.For<FluentOverflow>()
-            .Slot(nameof(FluentOverflow.ChildContent), FluentDemoFragments.OverflowItems, FluentDemoFragmentSources.OverflowItems)
-            .Variant("Vertical", v => v.Set(nameof(FluentOverflow.Orientation), Orientation.Vertical))
-            .Variant("Hidden until loaded", v => v.Set(nameof(FluentOverflow.VisibleOnLoad), false));
+        options.For<FluentOverflow<string>>()
+            .Slot(nameof(FluentOverflow<string>.ChildContent), FluentDemoFragments.OverflowItems, FluentDemoFragmentSources.OverflowItems)
+            .Variant("Vertical", v => v.Set(nameof(FluentOverflow<string>.Orientation), Orientation.Vertical))
+            .Variant("Hidden until loaded", v => v.Set(nameof(FluentOverflow<string>.VisibleOnLoad), false));
 
         options.For<FluentPullToRefresh>()
             .Slot(nameof(FluentPullToRefresh.ChildContent), b => b.AddContent(0, "Pull down to refresh the feed."), "Pull down to refresh the feed.")

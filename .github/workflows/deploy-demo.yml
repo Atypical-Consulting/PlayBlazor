@@ -37,11 +37,11 @@ jobs:
             project: demo/PlayBlazor.Demo.MudBlazor/PlayBlazor.Demo.MudBlazor.csproj
           - app: fluent
             project: demo/PlayBlazor.Demo.FluentUI/PlayBlazor.Demo.FluentUI.csproj
-          # A third entry for the DaisyBlazor app belongs here once it exists, pointing at its
-          # .csproj under demo/PlayBlazor.Demo.Daisy — plus a Node setup step and a Tailwind CSS
-          # build step ahead of publish, since daisyUI is a Tailwind plugin and its stylesheet is
-          # generated, not shipped. Blocked on phmatray/blazor-tailwind-ui#20 (DaisyBlazor.Components
-          # 1.0.0 not on NuGet, @daisyblazor/tailwind not on npm).
+          # daisyUI is a Tailwind plugin, so its stylesheet is generated, not shipped — but no Node
+          # step is needed: the DaisyBlazor NuGet package downloads the Tailwind standalone CLI
+          # (linux-x64 on ubuntu-latest) and compiles wwwroot/css/app.css during this very publish.
+          - app: daisy
+            project: demo/PlayBlazor.Demo.Daisy/PlayBlazor.Demo.Daisy.csproj
     steps:
       - uses: actions/checkout@v7
 
@@ -51,6 +51,15 @@ jobs:
 
       - name: Publish the app
         run: dotnet publish ${{ matrix.project }} -c Release -o publish
+
+      # The build already errors when the Tailwind CLI cannot be fetched. This checks the generated
+      # sheet actually reached the published output: a daisy app without it boots, works, and
+      # renders every component unstyled — a failure only a browser would show.
+      - name: Verify the generated Tailwind stylesheet
+        if: matrix.app == 'daisy'
+        run: |
+          grep -q '\.btn' publish/wwwroot/css/app.css \
+            || { echo "::error::css/app.css is missing or holds no daisyUI classes"; exit 1; }
 
       # The site is served from https://atypical-consulting.github.io/PlayBlazor/<app>/, not from
       # a domain root, so every asset URL Blazor resolves — _framework, _content, the scoped CSS —
@@ -92,9 +101,7 @@ jobs:
         run: |
           mkdir -p site
           cp demo/landing/index.html demo/landing/favicon.png site/
-          # Add "daisy" to this loop once demo/PlayBlazor.Demo.Daisy exists — see the build job's
-          # matrix comment for what unblocks it.
-          for app in mud fluent; do
+          for app in mud fluent daisy; do
             mv "staging/app-$app" "site/$app"
           done
 
@@ -105,8 +112,8 @@ jobs:
 
       - name: Verify all apps landed
         run: |
-          # Extend this loop alongside the one above when the daisy app is restored.
-          for app in mud fluent; do
+          # Keep in step with the loop above and the build matrix.
+          for app in mud fluent daisy; do
             test -f "site/$app/index.html" \
               || { echo "::error::$app is missing from the assembled site"; exit 1; }
           done

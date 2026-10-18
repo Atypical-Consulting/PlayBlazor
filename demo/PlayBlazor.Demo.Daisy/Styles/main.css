@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* daisyUI + its themes + DaisyBlazor's class safelist, copied into obj/ by the package on build.
+   The safelist is what keeps the playground alive: DaisyBlazor composes classes in C# at RUNTIME
+   (btn-accent, badge-xl) from parameters PlayBlazor flips, and Tailwind only emits classes it has
+   seen. A compiled DLL is not scannable, so there is deliberately no @source on the package — a
+   class missing from the safelist is a hole to report upstream, not to patch here. */
+@import "../obj/daisyblazor/preset.css";
+
+/* No @source here: the Tailwind CLI runs from the project directory and scans it automatically
+   (honouring .gitignore). PlayBlazor's shell and the shared demo chrome style themselves anyway —
+   scoped CSS and demo.css, every class pb-/pbw-/demo- prefixed — and need nothing from Tailwind. */

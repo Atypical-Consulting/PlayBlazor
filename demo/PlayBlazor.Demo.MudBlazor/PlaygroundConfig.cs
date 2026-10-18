@@ -312,13 +312,12 @@ public static class PlaygroundConfig
             .Variant("Filled", v => v.Set("Variant", Variant.Filled))
             .Variant("Outlined", v => v.Set("Variant", Variant.Outlined));
 
-        // MudTable's rows come from RowTemplate, a RenderFragment<T> —
-        // ParameterDictionaryBuilder.BuildSlot accepts only the literal non-generic RenderFragment,
-        // so no preset can fill it and the body stays empty however many Items are supplied. That
-        // is a src/PlayBlazor gap, not a curation one. HeaderContent IS a plain RenderFragment and
-        // fills, so the bench shows a real header over its own chrome, and the chips vary the
-        // chrome — which is where most of MudTable's parameter surface lives anyway. Use
-        // MudSimpleTable above for a fully-populated table.
+        // MudTable's rows come from RowTemplate, a RenderFragment<T>. Until the DaisyBlazor
+        // curation no preset could fill a templated slot; the .Slot<TContext> overload now can, but
+        // this bench has not adopted it yet (a follow-up), so the body stays empty however many
+        // Items are supplied. HeaderContent IS a plain RenderFragment and fills, so the bench shows
+        // a real header over its own chrome, and the chips vary the chrome. Use MudSimpleTable
+        // above for a fully-populated table.
         options.For<MudTable<Person>>()
             .Parameter(nameof(MudTable<Person>.Items), Person.Samples, "@_people")
             .Slot(nameof(MudTable<Person>.HeaderContent), DemoFragments.TableHeader, DemoFragmentSources.TableHeader)
@@ -327,9 +326,9 @@ public static class PlaygroundConfig
             .Variant("Outlined, flat", v => v.Set(nameof(MudTable<Person>.Outlined), true).Set(nameof(MudTable<Person>.Elevation), 0));
 
         // MudFileUpload's only content parameters are CustomContent (RenderFragment<MudFileUpload<T>>)
-        // and SelectedTemplate (RenderFragment<T?>) — both GENERIC render fragments, unfillable for
-        // the same reason as MudTable.RowTemplate above, so the usual "give it an activator button"
-        // curation is out of reach. Hidden defaults to TRUE, which hides the underlying <InputFile>
+        // and SelectedTemplate (RenderFragment<T?>) — both templated slots, not filled for the same
+        // reason as MudTable.RowTemplate above, so the usual "give it an activator button" curation
+        // is not done yet. Hidden defaults to TRUE, which hides the underlying <InputFile>
         // on the assumption that a CustomContent activator stands in for it: with no activator that
         // is an invisible bench, so show the native input instead. Honest, if not handsome.
         options.For<MudFileUpload<IBrowserFile>>()

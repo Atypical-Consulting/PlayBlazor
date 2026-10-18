@@ -41,13 +41,14 @@ public class CurationCompletenessTests
     }
 
     /// <summary>
-    /// All four forms of curation, not just the three a chip-and-slot check would notice: a
+    /// All forms of curation, not just the three a chip-and-slot check would notice: a
     /// component curated only with <c>.Parameter(...)</c> is curated, and several are.
     /// </summary>
     private static bool IsCurated(ComponentDescriptor component, PlayBlazorOptions options)
         => options.GetVariants(component.Type).Count > 0
            || options.TryGetScaffold(component.Type, out _)
            || component.Parameters.Any(p =>
-               (p.Kind is ControlKind.Slot && options.TryGetSlotPreset(component.Type, p.Name, out _))
+               (p.Kind is ControlKind.Slot && (options.TryGetSlotPreset(component.Type, p.Name, out _)
+                                               || options.TryGetTemplatePreset(component.Type, p.Name, out _)))
                || (options.TryGetParameterPreset(component.Type, p.Name, out var preset) && preset is not null));
 }

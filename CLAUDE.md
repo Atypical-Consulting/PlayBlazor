@@ -9,13 +9,14 @@ PlayBlazor generates component playgrounds by reflection: point it at an assembl
 it. It ships as one NuGet package with **no UI dependencies** — that constraint is load-bearing,
 do not introduce a component library, CSS framework or JS library into `src/PlayBlazor`.
 
-MudBlazor appears only in `demo/` and `tests/`, as the library being *pointed at*.
+MudBlazor, Fluent UI and DaisyBlazor appear only in `demo/` and `tests/`, as the libraries being
+*pointed at*.
 
 ## Commands
 
 ```bash
 dotnet build -c Release
-dotnet test -c Release                                     # 367 tests, 4 skipped, ~2s
+dotnet test -c Release                                     # 897 tests, 6 skipped, ~15s
 dotnet test -c Release -- --filter "FullyQualifiedName~X"  # single suite (MTP, note the `--`)
 dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and /explorer
 ```
@@ -30,12 +31,18 @@ project. The migration guide claims `--nologo` still works; it does not. Exit co
 
 Two `[Explicit]` suites (`RenderSweep`, `ListUnsupportedParameterTypes`) are diagnostic inventories
 that print a report instead of asserting; run them on demand when auditing a component library.
-They are parametrized per explored library (currently MudBlazor and Fluent UI), so a normal run
-discovers all 367 tests but skips these 4 (2 suites × 2 libraries) rather than executing them.
+They are parametrized per explored library (MudBlazor, Fluent UI and DaisyBlazor), so a normal run
+discovers all 897 tests but skips these 6 (2 suites × 3 libraries) rather than executing them.
+
+**`dotnet test` does not print a passing test's output**, and these suites only print — the run
+says `passed` and the report is nowhere. Run the built test executable directly to see it:
+`tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests --filter
+"FullyQualifiedName~RenderSweep_ReportsEveryComponentError&Name=DaisyBlazor" --output detailed`
+(the other suite's method is `ListUnsupportedParameterTypes`; `Name=` picks one library).
 
 **Filter an `[Explicit]` suite by its METHOD name, not its class name.** `--filter
 "FullyQualifiedName~RenderSweepTests"` does not run the sweep: the NUnit adapter treats a
-class-name match as a non-explicit run, skips both `[Explicit]` cases and reports `total: 1`,
+class-name match as a non-explicit run, skips every `[Explicit]` case and reports `total: 1`,
 which reads exactly like success. `--filter "FullyQualifiedName~RenderSweep_ReportsEveryComponentError"`
 runs it. Same family as the `--nologo` trap above — the failure mode here is a green-looking
 run that measured nothing.
@@ -49,6 +56,7 @@ run that measured nothing.
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (`DemoLanding`, `LibrarySwitcher`) shared by every showcase app. Zero UI dependencies — same constraint as `src/PlayBlazor`. |
 | `demo/PlayBlazor.Demo.MudBlazor` | `PlaygroundConfig.cs` holds every preset, scaffold, variant and exclusion for the MudBlazor showcase. Namespace stays `PlayBlazor.DemoHost` even though the project and assembly are `PlayBlazor.Demo.MudBlazor`. |
 | `demo/PlayBlazor.Demo.FluentUI` | Fluent UI Blazor showcase, curated to the same depth as MudBlazor's. `FluentPlaygroundConfig.cs` holds every preset, scaffold, variant and the `Infrastructure` deny-list, plus the hand-written `FluentIconCatalogue` (24 SVGs, no dependency on the 23 MB icons package). A few components are deliberately left imperfect rather than faked — see the comments beside them in that file. |
+| `demo/PlayBlazor.Demo.Daisy` | DaisyBlazor showcase, curated to the same depth as MudBlazor's and Fluent's and held to the same gates (CurationCompletenessTests, VariantLivenessTests). `DaisyPlaygroundConfig.cs` holds every preset, scaffold and variant, grouped by family (`Scaffolds`, `ContextAndOverlays`, `FormsAndActions`, `DisplayAndFeedback`, `LayoutAndNavigation`, `DataComponents`), the four-entry `Infrastructure` deny-list, and the `DaisyIconCatalogue` (every `Icons.Material.Filled` ligature, previewed in the Material Symbols font). Templated slots (`Table.RowTemplate`, `TemplateColumn.CellTemplate`) are filled with the `.Slot<TContext>(…)` overload. A few components are deliberately left imperfect rather than faked (child render lag, `Href="#"` leaving the bench, an opt-in Modal that covers the page). Upstream holes and bugs found while curating — including the two 0.6.0 safelist holes, `gap-{n}` above 12 and the safelisted-but-undefined `tooltip-neutral` — are listed in the multi-library spec, §9, and commented beside the preset concerned — never patched here. Its stylesheet is generated: the DaisyBlazor NuGet package compiles `Styles/main.css` to the git-ignored `wwwroot/css/app.css` with the Tailwind standalone CLI on every build (`DaisyBlazorBuildCss`) — no Node, no npm. |
 | `docs/superpowers` | Incubation-era design spec, milestone plans, and the UX concept prototypes (A→G) whose concept G v2 is the shell that exists today. Paths quoted inside them predate the `src`/`tests`/`demo` split. |
 
 ## Traps learned the hard way
@@ -74,6 +82,11 @@ run that measured nothing.
 - **bUnit assertions after an `await`** need `SetupVoid(...).SetVoidResult()` on the JS interop
   mock, otherwise the continuation never runs.
 - **Razor attributes cannot nest quotes** — hoist the value into a `const`.
+- **Tailwind only emits classes it has seen.** DaisyBlazor composes classes in C# at runtime
+  (`btn-{color}`), and a compiled DLL is not scannable, so the Daisy demo depends entirely on the
+  package's `safelist.css`. A parameter value that restyles nothing is a safelist hole to report
+  upstream, never something to patch here. Known at 0.6.0: `gap-{Spacing}` stops at 12 (Stack /
+  Grid take any int), and `tooltip-neutral` is safelisted but daisyUI 5 defines no such class.
 - Do not judge a thin dark chrome's luminance from a screenshot by eye; decode the PNG and probe
   the pixels.
 - **A preset can compile, pass the full suite and the render sweep, and still render nothing

@@ -10,6 +10,8 @@ public sealed class PlayBlazorOptions
 
     private readonly Dictionary<(Type Component, string Parameter), string> _slotSources = new();
 
+    private readonly Dictionary<(Type Component, string Parameter), object> _templatePresets = new();
+
     private readonly Dictionary<(Type Component, string Parameter), string> _parameterSources = new();
 
     private readonly Dictionary<(Type Component, string Parameter), object?> _parameterPresets = new();
@@ -167,6 +169,15 @@ public sealed class PlayBlazorOptions
         }
     }
 
+    internal void AddTemplatePreset(Type componentType, string parameterName, object content, string? source)
+    {
+        _templatePresets[(componentType, parameterName)] = content;
+        if (source is not null)
+        {
+            _slotSources[(Normalize(componentType), parameterName)] = source;
+        }
+    }
+
     internal void AddParameterPreset(Type componentType, string parameterName, object? value, string? source)
     {
         _parameterPresets[(componentType, parameterName)] = value;
@@ -204,6 +215,15 @@ public sealed class PlayBlazorOptions
 
         return _slotPresets.TryGetValue((Normalize(componentType), parameterName), out fragment!);
     }
+
+    /// <summary>The fragment a host registered for a templated slot (a <c>RenderFragment&lt;TContext&gt;</c>).</summary>
+    /// <param name="componentType">The component owning the slot, at its exact generic closing.</param>
+    /// <param name="parameterName">The templated slot parameter.</param>
+    /// <param name="template">The registered <c>RenderFragment&lt;TContext&gt;</c>, when one exists.</param>
+    /// <returns><c>true</c> when a preset was found. Like parameter presets, a template is typed for
+    /// one closing (<c>RenderFragment&lt;Person&gt;</c>), so it matches the exact type only.</returns>
+    public bool TryGetTemplatePreset(Type componentType, string parameterName, out object template)
+        => _templatePresets.TryGetValue((componentType, parameterName), out template!);
 
     /// <summary>The baseline value a host registered for a parameter.</summary>
     /// <param name="componentType">The component owning the parameter, at its exact generic closing.</param>
@@ -254,6 +274,20 @@ public sealed class ComponentOptionsBuilder<TComponent> where TComponent : IComp
     public ComponentOptionsBuilder<TComponent> Slot(string parameterName, RenderFragment content, string? source = null)
     {
         _options.AddSlotPreset(typeof(TComponent), parameterName, content, source);
+        return this;
+    }
+
+    /// <summary>
+    /// Fills a templated slot — a <c>RenderFragment&lt;TContext&gt;</c> such as a table's
+    /// <c>RowTemplate</c> — which takes no typed text, so only a host fragment can fill it.
+    /// </summary>
+    /// <param name="parameterName">The templated slot to fill.</param>
+    /// <param name="content">The template rendered on the stage, once per context value.</param>
+    /// <param name="source">The razor body of the template (it may use <c>@context</c>) — shown
+    /// verbatim inside the slot's element in the generated code.</param>
+    public ComponentOptionsBuilder<TComponent> Slot<TContext>(string parameterName, RenderFragment<TContext> content, string? source = null)
+    {
+        _options.AddTemplatePreset(typeof(TComponent), parameterName, content, source);
         return this;
     }
 
