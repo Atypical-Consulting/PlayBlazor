@@ -310,6 +310,15 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             var all = _components
                 .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
                 .ToList();
+
+            // The host's families win over namespaces: the home page groups by the same hook.
+            if (Options.CategoryResolver is not null)
+            {
+                return all.GroupBy(c => Options.CategoryOf(c.Type)!)
+                    .OrderBy(static g => g.Key == OtherCategory ? 1 : 0)
+                    .ThenBy(static g => g.Key, StringComparer.Ordinal);
+            }
+
             var named = all.GroupBy(static c => c.Category)
                 .Where(g => g.Count() >= 2 && !IsRootCategory(g.Key))
                 .Select(static g => g.Key)
@@ -330,7 +339,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         }
     }
 
-    private const string OtherCategory = "Other";
+    private const string OtherCategory = PlayBlazorOptions.OtherCategory;
 
     /// <summary>"Button" from "MudButton": the name the rail sorts and indexes by.</summary>
     private string Stem(ComponentDescriptor component)
@@ -385,6 +394,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     /// A library's root namespace ("….Components") holds its general-purpose components, so it reads
     /// as "General" instead of repeating the rail's own "Components" title.
     /// </summary>
+    private string GroupLabel(string key)
+        => Options.CategoryResolver is null ? ShortCategory(key) : key;
+
     private static string ShortCategory(string category)
         => category[(category.LastIndexOf('.') + 1)..] is { Length: > 0 } last and not "Components" ? last : "General";
 

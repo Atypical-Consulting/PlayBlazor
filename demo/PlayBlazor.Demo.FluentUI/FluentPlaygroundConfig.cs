@@ -94,6 +94,7 @@ public static class FluentPlaygroundConfig
         // parameterised and written by users in their own markup stays listed even if it needs a
         // later preset to demo well — that's a presets question, not a listing one.
         options.ComponentFilter = type => !Infrastructure.Contains(StripArity(type.Name));
+        options.CategoryResolver = FluentComponentFamilies.FamilyOf;
 
         // Discovery closes an open generic with string, then int. All four of these reject string
         // at construction, naming the types they accept — so declare the closing worth playing.

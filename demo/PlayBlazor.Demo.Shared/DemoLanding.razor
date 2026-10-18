@@ -22,9 +22,10 @@
         </h1>
         <p class="demo-tagline">
             <span class="demo-lede">Auto-generated playgrounds for any Blazor component library.</span>
-            Point it at an assembly — every parameter becomes a control, every
+            @* Phones drop this sentence so the first live bench opens inside the first screen. *@
+            <span class="demo-tagline-more">Point it at an assembly — every parameter becomes a control, every
             <code>EventCallback</code> a log entry, every configuration a shareable link.
-            No story files. Nothing below is hand-written.
+            No story files. Nothing below is hand-written.</span>
         </p>
         <div class="demo-actions">
             @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
@@ -61,7 +62,7 @@
 
     <section class="demo-section demo-catalog" id="catalog" aria-labelledby="catalog-title">
         <h2 class="demo-covered-title" id="catalog-title">Every @LibraryName component, discovered</h2>
-        <p class="demo-note">@_covered.Count components found by reflection, A to Z. Each tile opens its playground.</p>
+        <p class="demo-note">@_covered.Count components found by reflection@(_byFamily ? ", grouped by what they do, A to Z in each group" : ", A to Z"). Each tile opens its playground.@if (_parts.Count > 0){<text> Dashed tiles are parts that render inside another component.</text>}</p>
         @* Sticky inside the section: the filter stays in reach the whole way down the wall. *@
         <div class="demo-filter-bar">
             <input class="demo-filter" type="search" placeholder="Filter by name" aria-label="Filter components by name"
@@ -86,19 +87,20 @@
         }
         else
         {
-            @* An A–Z index: each letter's run is one unbreakable block, so a column never opens on a
-               headless continuation. No tile icons: a category glyph repeated across unrelated
-               components is noise, and the letter already does the grouping. *@
-            <div class="demo-tiles">
-                @foreach (var group in Visible.GroupBy(c => char.ToUpperInvariant(Stem(c.DisplayName)[0])))
+            @* Grouped by the host's families (PlayBlazorOptions.CategoryResolver, the same hook the
+               explorer rail uses), A to Z inside each; without one, an A–Z index where each letter's
+               run is one unbreakable block, so a column never opens on a headless continuation. *@
+            <div class="demo-tiles @(_byFamily ? "demo-tiles-families" : null)">
+                @foreach (var group in Groups)
                 {
                     <div class="demo-letter-group" @key="group.Key">
-                    <h3 class="demo-letter">@group.Key</h3>
+                    <h3 class="demo-letter">@group.Key@if (_byFamily){<span class="demo-family-n">@group.Count()</span>}</h3>
                     @foreach (var component in group)
                     {
                         var name = component.DisplayName;
                         var stem = Stem(name);
-                        <a class="demo-tile" href="@TileHref(name)" title="@name" @key="name">
+                        <a class="demo-tile" href="@TileHref(name)" title="@(_parts.Contains(name) ? $"{name} (renders inside another component)" : name)"
+                           data-child="@(_parts.Contains(name) ? "true" : null)" @key="name">
                             @* <wbr> at each PascalCase seam of the stem: a long name wraps at a word, never mid-word.
                                None between prefix and stem, so "Mud" never strands on a line of its own. *@
                             <span>@if (stem.Length < name.Length){<b class="demo-tile-prefix">@_prefix</b>}@foreach (var word in Words(stem)){@word<wbr />}</span>
@@ -136,6 +138,21 @@
     private string[] _suggestions = [];
     private string _filter = "";
     private string _copyLabel = "Copy";
+    private bool _byFamily;
+    private HashSet<string> _parts = [];
+
+    // The host's families when it names them, else the first letter of the stem.
+    private IEnumerable<IGrouping<string, PlayBlazor.Model.ComponentDescriptor>> Groups => _byFamily
+        ? Visible.GroupBy(c => Options.CategoryOf(c.Type)!)
+            .OrderBy(g => g.Key == PlayBlazorOptions.OtherCategory ? 1 : 0)
+            .ThenBy(g => g.Key, StringComparer.Ordinal)
+        : Visible.GroupBy(c => char.ToUpperInvariant(Stem(c.DisplayName)[0]).ToString());
+
+    // A part is a listed name extended by a part word (CardHeader, SelectItem, TabPanel): it only
+    // renders inside the component it extends, so its tile steps back.
+    // ponytail: name heuristic, misses unrelated names (Td, Tr); a host hook if that matters.
+    private static readonly string[] PartWords =
+        ["Item", "Header", "Content", "Actions", "Action", "Pager", "Title", "Row", "Cell", "Panel", "Pane", "Column", "Subheader", "Footer", "Body", "Hint", "Error"];
 
     /// <summary>The assembly whose components this app explores.</summary>
     [Parameter, EditorRequired] public Assembly Assembly { get; set; } = default!;
@@ -225,6 +242,11 @@
             .ThenBy(c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
         _parameterCount = _covered.Sum(c => c.Parameters.Count);
+        _byFamily = Options.CategoryResolver is not null;
+        var names = _covered.Select(c => c.DisplayName).ToHashSet(StringComparer.Ordinal);
+        _parts = names
+            .Where(n => PartWords.Any(w => n.Length > w.Length && n.EndsWith(w, StringComparison.Ordinal) && names.Contains(n[..^w.Length])))
+            .ToHashSet(StringComparer.Ordinal);
         _suggestions = _covered
             .SelectMany(c => Words(Stem(c.DisplayName)).Distinct())
             .Where(w => w.Length > 2)

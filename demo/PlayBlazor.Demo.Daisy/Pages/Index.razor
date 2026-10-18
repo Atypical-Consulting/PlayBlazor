@@ -26,8 +26,7 @@
                     <a href="#bench-button">Button</a>
                     <a href="#bench-datagrid">DataGrid</a>
                     <a href="#bench-column">PropertyColumn</a>
-                    <a href="#families">By family</a>
-                    <a href="#catalog">A to Z</a>
+                    <a href="#catalog">All components</a>
                 </nav>
             </div>
             @* A small composition, live: DaisyBlazor's Card and Button with daisyUI badges, so the
@@ -73,37 +72,6 @@
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 
-        @* Recognition before recall: the explorer's families, so a visitor can find "the thing that
-           shows progress" without knowing it is called RadialProgress. Parts come last, quieter. *@
-        <section class="demo-section daisy-families" id="families" aria-labelledby="families-title">
-            <h2 class="daisy-h2" id="families-title">Browse by family</h2>
-            <p class="demo-note">The same @_count components, grouped by what they do. Parts that only render inside another component come last in each family.</p>
-            <div class="daisy-family-grid">
-                @foreach (var (label, glyph, main, parts) in _families)
-                {
-                    <div class="daisy-family">
-                        <h3 class="daisy-family-title">
-                            @if (glyph is not null)
-                            {
-                                <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)glyph)</svg>
-                            }
-                            @label <span class="daisy-family-n">@(main.Count + parts.Count)</span>
-                        </h3>
-                        <p class="daisy-family-names">
-                            @foreach (var name in main)
-                            {
-                                <a href="@Href(name)">@name</a>
-                            }
-                            @foreach (var name in parts)
-                            {
-                                <a class="daisy-part" href="@Href(name)">@name</a>
-                            }
-                        </p>
-                    </div>
-                }
-            </div>
-        </section>
-
         @* Long page, long phone scroll: a way back up that appears once the hero is gone. *@
         <a class="daisy-top" href="#top">Back to top</a>
     </Flagships>
@@ -113,26 +81,11 @@
     private const string DocsUrl = "https://phmatray.github.io/daisyblazor/";
     private int _count;
     private bool _following;
-    private List<(string Label, string? Glyph, List<string> Main, List<string> Parts)> _families = [];
-
-    // Same target as the shared tiles: a pristine bench for that component.
-    private static string Href(string name) => $"explorer?pb-{name}=e30";
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        var discovered = Catalog.Discover(typeof(Button).Assembly)
-            .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
-            .ToList();
-        _count = discovered.Count;
-        _families = discovered
-            .GroupBy(c => DaisyComponentIcons.FamilyOf(c.Type))
-            .OrderBy(g => g.Key is null ? int.MaxValue : DaisyComponentIcons.All.ToList().IndexOf(g.Key))
-            .Select(g => (
-                g.Key?.Label ?? "Other",
-                g.Key?.Glyph,
-                g.Where(c => !DaisyComponentIcons.IsPart(c.Type)).Select(c => c.DisplayName).Order().ToList(),
-                g.Where(c => DaisyComponentIcons.IsPart(c.Type)).Select(c => c.DisplayName).Order().ToList()))
-            .ToList();
+        _count = Catalog.Discover(typeof(Button).Assembly)
+            .Count(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true));
     }
 }

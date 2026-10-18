@@ -32,7 +32,7 @@ public partial class PlaygroundExplorer : ComponentBase
     private IEnumerable<IGrouping<string, ComponentDescriptor>> Groups
         => _components
             .Where(c => c.DisplayName.Contains(_search, StringComparison.OrdinalIgnoreCase))
-            .GroupBy(static c => c.Category)
+            .GroupBy(c => Options.CategoryOf(c.Type) ?? c.Category)
             .OrderBy(static g => g.Key, StringComparer.Ordinal);
 
     /// <inheritdoc />

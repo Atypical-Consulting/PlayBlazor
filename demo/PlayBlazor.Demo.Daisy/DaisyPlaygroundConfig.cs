@@ -130,6 +130,7 @@ public static class DaisyPlaygroundConfig
         options.ComponentFilter = type => !Infrastructure.Contains(StripArity(type.Name));
         // Tile and explorer glyphs: one authored SVG per family (actions, inputs, data...).
         options.IconResolver = DaisyComponentIcons.Resolve;
+        options.CategoryResolver = static type => DaisyComponentIcons.FamilyOf(type)?.Label;
 
         // Discovery closes every open generic with string. These declare the closing only where
         // string teaches nonsense; their presets live with the section that curates them.

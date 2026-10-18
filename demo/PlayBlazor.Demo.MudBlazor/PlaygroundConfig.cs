@@ -45,6 +45,7 @@ public static class PlaygroundConfig
     {
         options.ComponentFilter = type => Curated.Contains(StripArity(type.Name));
         options.IconResolver = ComponentIcons.Resolve;
+        options.CategoryResolver = ComponentIcons.FamilyOf;
 
         // Icon parameters are MudBlazor SVG markup strings. Naming them turns a blob field into
         // a picker — and shortens every permalink that carries an icon.

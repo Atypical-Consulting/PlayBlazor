@@ -24,7 +24,7 @@
                 @onchange="OnPickerChanged" aria-label="Component">
             @foreach (var group in PickerGroups)
             {
-                <optgroup label="@($"{ShortCategory(group.Key)} · {group.Count()}")">
+                <optgroup label="@($"{GroupLabel(group.Key)} · {group.Count()}")">
                     @foreach (var component in group)
                     {
                         <option value="@component.DisplayName" selected="@(component.Type == _selected.Type)">@component.DisplayName</option>
@@ -76,7 +76,7 @@
                     railShown += items.Count;
                     @if (PickerGroups.Skip(1).Any())
                     {
-                        <h2 class="pbw-rail-group" @key="group.Key">@ShortCategory(group.Key)</h2>
+                        <h2 class="pbw-rail-group" @key="group.Key">@GroupLabel(group.Key)</h2>
                     }
                     @foreach (var component in items)
                     {
@@ -188,7 +188,7 @@
                     </p>
                 </div>
             }
-            <div class="pbw-stage-name">&#8249;@_selected.DisplayName /&#8250; &#183; @_selected.Parameters.Count parameters &#183; @ShortCategory(_selected.Category)</div>
+            <div class="pbw-stage-name">&#8249;@_selected.DisplayName /&#8250; &#183; @_selected.Parameters.Count parameters &#183; @(Options.CategoryOf(_selected.Type) ?? ShortCategory(_selected.Category))</div>
         </section>
 
         @* Narrow screens: the panels become tabs right under the stage, one shown at a time. *@
@@ -357,8 +357,8 @@
                                          OnClose="() => ClosePanel(ParametersId)"
                                          OnRedock="() => _layout.Redock(ParametersId)">
             <Actions>
-                <button type="button" class="pbw-foldall" title="@(_allFolded ? "Unfold every group" : "Fold every group")"
-                        aria-label="@(_allFolded ? "Unfold every group" : "Fold every group")" @onclick="ToggleFoldAll">@Icon(_allFolded ? IconUnfold : IconFold)</button>
+                <button type="button" class="pbw-foldall pbw-ph-labeled" title="@(_allFolded ? "Unfold every group" : "Fold every group")"
+                        @onclick="ToggleFoldAll">@Icon(_allFolded ? IconUnfold : IconFold) @(_allFolded ? "Unfold all" : "Fold all")</button>
                 <button type="button" class="pbw-preset-node pbw-ph-labeled" title="Reset every parameter to its default" @onclick="ResetNode">@Icon(IconReset) Reset all</button>
             </Actions>
             <Body>

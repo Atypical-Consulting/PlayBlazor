@@ -504,7 +504,8 @@
     .pbw-modes { order: 2; }
     .pbw-bar-right { order: 3; }
     .pbw-picker { display: block; order: 4; flex: 1 1 100%; max-width: none; min-height: 40px; font-size: 1rem; }
-    .pbw-rail, .pbw-btn-label { display: none; }
+    /* Touch has no hover tooltips and no keyboard: the actions keep their words, lose the key hint. */
+    .pbw-rail, .pbw-help-btn .pbw-kbd { display: none; }
     .pbw-work { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "stage" "right" "bottom"; }
     .pbw-stage { min-height: 300px; display: flex; flex-direction: column; align-items: stretch; padding: 0.7rem; gap: 0.7rem; }
     .pbw-stage-top, .pbw-stage-name { position: static; }
@@ -547,7 +548,7 @@
     .pbw ::deep .pbw-panel-collapsed .pbw-panel-body { display: block; }
     .pbw-mode { min-height: 36px; }
     .pbw-bar-right { margin-left: auto; }
-    .pbw-help-btn, .pbw-share { min-height: 40px; min-width: 40px; justify-content: center; padding: 0 0.6rem; }
+    .pbw-help-btn, .pbw-share { min-height: 44px; min-width: 44px; justify-content: center; padding: 0 0.6rem; }
     .pbw-stage-top { flex-direction: column; align-items: stretch; gap: 0.5rem; }
     /* Examples stay on one row that scrolls sideways instead of stacking above the specimen. */
     .pbw-chips {

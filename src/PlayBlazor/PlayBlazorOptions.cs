@@ -48,6 +48,29 @@ public sealed class PlayBlazorOptions
     /// </summary>
     public Func<Type, bool>? ComponentFilter { get; set; }
 
+    /// <summary>
+    /// Names the family a component belongs to ("Inputs", "Feedback"…), so every surface that
+    /// groups components (the explorer's rail and picker, a host's own catalog page) groups them
+    /// the same way. Return null for a component without one: it is listed under a trailing
+    /// "Other". Null (the default) groups by namespace instead.
+    /// </summary>
+    /// <remarks>The type passed in is the discovered one, possibly a closed generic.</remarks>
+    public Func<Type, string?>? CategoryResolver { get; set; }
+
+    /// <summary>
+    /// The group <paramref name="componentType"/> is listed under when
+    /// <see cref="CategoryResolver"/> is set: its category, or "Other" when it has none.
+    /// </summary>
+    /// <param name="componentType">A discovered component type.</param>
+    /// <returns>The category label, or null when no resolver is configured.</returns>
+    public string? CategoryOf(Type componentType)
+        => CategoryResolver is { } resolve
+            ? resolve(componentType) is { Length: > 0 } category ? category : OtherCategory
+            : null;
+
+    /// <summary>The group a component without a category is listed under.</summary>
+    public const string OtherCategory = "Other";
+
     internal void AddVariant(Type componentType, PlaygroundVariantDefinition variant)
     {
         if (!_variants.TryGetValue(componentType, out var list))

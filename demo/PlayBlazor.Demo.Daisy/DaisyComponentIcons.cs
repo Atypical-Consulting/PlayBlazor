@@ -37,15 +37,6 @@ public static class DaisyComponentIcons
         new("Text", Text, ["Typography", "Kbd", "ChatBubble", "Icon"]),
     ];
 
-    // Children that only render inside a parent: the home lists them after the components a
-    // visitor reaches for first, one step quieter.
-    private static readonly HashSet<string> Parts = new(StringComparer.Ordinal)
-    {
-        "Td", "Th", "Tr", "CardHeader", "CardContent", "CardActions", "CarouselItem", "DockItem", "FooterTitle",
-        "ListItem", "ListRow", "MenuItem", "SelectItem", "TimelineItem", "ToggleItem", "Step", "Tab", "FabAction",
-        "DataGridPager", "TablePager", "FieldError", "ValidatorHint", "TemplateColumn", "DetailRow", "Item",
-    };
-
     private static readonly Dictionary<string, Family> ByName = All
         .SelectMany(static f => f.Names.Select(n => (n, f)))
         .ToDictionary(static p => p.n, static p => p.f, StringComparer.Ordinal);
@@ -54,11 +45,6 @@ public static class DaisyComponentIcons
     /// <param name="type">A discovered component type (open or closed generic).</param>
     /// <returns>The family, or null.</returns>
     public static Family? FamilyOf(Type type) => ByName.GetValueOrDefault(BaseName(type));
-
-    /// <summary>Whether <paramref name="type"/> is a part that only renders inside a parent component.</summary>
-    /// <param name="type">A discovered component type.</param>
-    /// <returns>True for a child part such as <c>Td</c> or <c>CardContent</c>.</returns>
-    public static bool IsPart(Type type) => Parts.Contains(BaseName(type));
 
     /// <summary>The family glyph for <paramref name="type"/>, or null when it belongs to none.</summary>
     /// <param name="type">A discovered component type (open or closed generic).</param>

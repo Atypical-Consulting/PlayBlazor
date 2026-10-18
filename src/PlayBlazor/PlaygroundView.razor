@@ -135,9 +135,17 @@
                 <ul>
                     @foreach (var parameter in Uncontrollable)
                     {
+                        @* Same wording as the explorer's parameters panel: never an empty box. *@
                         <li @key="parameter.Name" title="@parameter.Summary">
                             <span>@parameter.Name</span>
-                            <span class="pb-kind">@parameter.Kind</span>
+                            @if (IsHostFilled(parameter))
+                            {
+                                <span class="pb-kind" title="The demo fills this in; the snippet shows it">set by the demo</span>
+                            }
+                            else
+                            {
+                                <span class="pb-kind" title="@($"Set it from code: {PlayBlazor.Shell.Workspace.ParameterSignature.TypeName(parameter.Type)}")">@PlayBlazor.Shell.Workspace.ParameterSignature.FriendlyTypeName(parameter.Type) · code only</span>
+                            }
                         </li>
                     }
                 </ul>

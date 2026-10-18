@@ -927,6 +927,57 @@ a.demo-switch:hover {
     content: none;
 }
 
+/* Families (PlayBlazorOptions.CategoryResolver): one full-width band per family, its tiles in a
+   grid in reading order, so no column ends 600px short of its neighbour. */
+.demo-landing .demo-main .demo-tiles.demo-tiles-families {
+    columns: auto;
+}
+
+.demo-landing .demo-main .demo-tiles-families .demo-letter-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    column-gap: 0.5rem;
+}
+
+.demo-landing .demo-main .demo-tiles-families .demo-letter-group + .demo-letter-group {
+    margin-top: 1.5rem;
+}
+
+.demo-landing .demo-main .demo-tiles-families .demo-letter {
+    grid-column: 1 / -1;
+    padding: 0 0 0.625rem 0.125rem;
+    color: var(--demo-ink);
+    font-family: var(--demo-sans);
+    font-size: 1.0625rem;
+    font-weight: 700;
+}
+
+.demo-family-n {
+    margin-left: 0.5rem;
+    color: var(--demo-ink-2);
+    font-family: var(--demo-mono);
+    font-size: 0.8125rem;
+    font-weight: 400;
+}
+
+@media (max-width: 480px) {
+    .demo-landing .demo-main .demo-tiles-families .demo-letter-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Parts (CardHeader, SelectItem) only render inside a parent: one step quieter than the
+   components a visitor reaches for first. */
+.demo-landing .demo-tiles .demo-tile[data-child] {
+    border-style: dashed;
+    background: transparent;
+    color: var(--demo-ink-2);
+}
+
+.demo-landing .demo-tiles .demo-tile[data-child] span {
+    font-weight: 400;
+}
+
 /* Phones: every bench stacks stage, parameters, snippet, events, in source order. */
 @media (max-width: 720px) {
     .demo-landing .demo-main .pb-playground :is(.pb-panel, .pb-code, .pb-events) {
@@ -1064,5 +1115,80 @@ div.demo-explorer-page .pbw {
         flex: 1;
         justify-content: center;
         padding: 0 0.5rem;
+    }
+}
+
+/* ---- Phones: a live component inside the first screen and a bit ----
+   The hero was ~910px at 390 wide, so the first specimen opened below the second screen. Keep
+   the pitch to its lede, the counts to one line and the install to one row. */
+@media (max-width: 600px) {
+    .demo-hero {
+        padding: 1rem 0 1.5rem;
+    }
+
+    .demo-hero .demo-wordmark {
+        margin-top: 1.25rem;
+        font-size: 1.5rem;
+    }
+
+    .demo-hero .demo-tagline {
+        margin-top: 0.5rem;
+    }
+
+    .demo-hero .demo-lede {
+        margin: 0;
+        font-size: 1.0625rem;
+    }
+
+    .demo-tagline-more,
+    .demo-hero .demo-proof-note,
+    .demo-hero .demo-install-label {
+        display: none;
+    }
+
+    .demo-hero .demo-actions {
+        margin-top: 1rem;
+        gap: 0.25rem 1.25rem;
+    }
+
+    .demo-hero .demo-proof {
+        margin-top: 1rem;
+        padding-top: 0.625rem;
+        gap: 0.25rem 1rem;
+    }
+
+    .demo-hero .demo-proof-counts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
+    }
+
+    .demo-hero .demo-proof-counts > span:not(.demo-proof-arrow) {
+        display: inline;
+    }
+
+    .demo-hero .demo-proof-counts strong {
+        font-size: 1.125rem;
+    }
+
+    /* Command and Copy share a row; the setup link takes the next one, never truncating the command. */
+    .demo-hero .demo-install {
+        margin-top: 0.75rem;
+    }
+
+    .demo-hero .demo-install-cmd {
+        min-width: 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 0.8125rem;
+    }
+
+    .demo-hero .demo-install-copy {
+        flex: none;
+        min-height: 44px;
+    }
+
+    .demo-hero .demo-install-docs {
+        flex-basis: 100%;
     }
 }

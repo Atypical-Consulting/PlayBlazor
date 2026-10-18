@@ -73,6 +73,12 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>True when the host supplies this parameter in any form (slot, template or value).</summary>
+    private bool IsHostFilled(ParameterDescriptor parameter)
+        => Options.TryGetSlotPreset(_descriptor.Type, parameter.Name, out _)
+           || Options.TryGetTemplatePreset(_descriptor.Type, parameter.Name, out _)
+           || Options.TryGetParameterPreset(_descriptor.Type, parameter.Name, out _);
+
     /// <summary>True when the host fills this slot, so an empty text box would misstate the stage.</summary>
     private bool IsDemoFilled(ParameterDescriptor parameter)
         => IsTextSlot(parameter)
