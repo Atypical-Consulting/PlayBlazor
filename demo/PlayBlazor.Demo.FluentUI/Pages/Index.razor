@@ -6,7 +6,7 @@
     <Flagships>
         @* Fragment links stay base-relative too: "#id" resolves against <base href>, which is this page. *@
         <nav class="fx-benches" aria-label="On this page">
-            <span class="fx-benches-label">On this page: three hand-tuned playgrounds, then every component</span>
+            <span class="fx-benches-label">On this page</span>
             <a href="#bench-button">FluentButton</a>
             <a href="#bench-grid">FluentDataGrid</a>
             <a href="#bench-column">PropertyColumn</a>
@@ -16,19 +16,19 @@
 
         <section class="demo-section fx-bench" id="bench-button">
             <h2 class="demo-tag">FluentButton</h2>
-            <p class="demo-note">Opens on Fluent's Primary appearance. Pick an example, flip a parameter, and the snippet below follows; Reset all brings it back.</p>
+            <p class="demo-note">Opens on Fluent's Primary appearance. Each example sets one parameter, such as <code>Appearance</code> or <code>Loading</code>, and the Razor below shows exactly what changed. <a class="fx-open" href="explorer?pb-FluentButton=e30">Open in the Explorer &rarr;</a></p>
             <PlaygroundView Component="typeof(FluentButton)" />
         </section>
 
         <section class="demo-section fx-bench fx-wide" id="bench-grid">
             <h2 class="demo-tag">FluentDataGrid&lt;Person&gt;</h2>
-            <p class="demo-note">The demo supplies three sample rows and their columns. Striped, resizable, auto-fit and the rest are yours to flip.</p>
+            <p class="demo-note">The demo supplies three sample rows and their columns. The examples turn on striped rows, resizable or auto-fit columns, and table display. <a class="fx-open" href="explorer?pb-FluentDataGrid=e30">Open in the Explorer &rarr;</a></p>
             <PlaygroundView Component="typeof(FluentDataGrid<Person>)" />
         </section>
 
         <section class="demo-section fx-bench fx-wide" id="bench-column">
             <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
-            <p class="demo-note">A column cannot render on its own, so the demo places the column you are editing inside a real FluentDataGrid.</p>
+            <p class="demo-note">A column cannot render on its own, so the demo places the column you are editing inside a real FluentDataGrid. <a class="fx-open" href="explorer?pb-PropertyColumn=e30">Open in the Explorer &rarr;</a></p>
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 
