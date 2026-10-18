@@ -53,7 +53,7 @@ public partial class DaisyPresetTests
     private static IRenderedComponent<PlaygroundView> Bench(BunitContext context, Type component)
         => context.Render<PlaygroundView>(ps => ps.Add(c => c.Component, component));
 
-    [TestCase(typeof(Button), "button.btn", "Click me")]
+    [TestCase(typeof(Button), "button.btn:not(.btn-ghost)", "Click me")]
     [TestCase(typeof(ButtonGroup), "div.join > button.btn:not(.btn-ghost)", "Week")]
     [TestCase(typeof(IconButton), "button.btn.btn-circle[title='Add to favourites'] .material-symbols-outlined", "favorite")]
     [TestCase(typeof(Fab), "div.relative > div.fab.absolute > div[role=button][aria-label=Actions].btn-primary", null)]
@@ -204,35 +204,6 @@ public partial class DaisyPresetTests
 
             Normalized(cut.Find(".pb-specimen").InnerHtml).Should().NotBe(
                 before, $"{component.Name} / \"{variant.Name}\" should change what the bench shows");
-        }
-    }
-
-    /// <summary>
-    /// VariantLivenessTests' check, applied to this batch while DaisyBlazor sits outside
-    /// <c>ExploredLibraries.Curated</c>: each variant must change the parameter dictionary.
-    /// </summary>
-    [TestCaseSource(nameof(Curated))]
-    public void EveryVariant_ChangesTheParameterDictionary(Type component)
-    {
-        var options = Configured();
-        var descriptor = new ReflectionCatalogProvider(options: options).Describe(component);
-        var baseline = ParameterDictionaryBuilder.Build(descriptor, new PlaygroundState(), options);
-
-        foreach (var variant in options.GetVariants(component))
-        {
-            var state = new PlaygroundState();
-            foreach (var (name, value) in variant.Values)
-            {
-                if (value is not null)
-                {
-                    state.Set(name, value);
-                }
-            }
-
-            var applied = ParameterDictionaryBuilder.Build(descriptor, state, options);
-            var same = applied.Count == baseline.Count
-                && baseline.All(kv => applied.TryGetValue(kv.Key, out var other) && Equals(kv.Value, other));
-            same.Should().BeFalse($"{component.Name} / \"{variant.Name}\" should change the parameters");
         }
     }
 

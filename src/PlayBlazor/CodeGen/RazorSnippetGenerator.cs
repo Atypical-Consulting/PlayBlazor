@@ -322,7 +322,9 @@ public static class RazorSnippetGenerator
     }
 
     private static bool SlotHasPreset(ComponentDescriptor component, ParameterDescriptor parameter, PlayBlazorOptions? options)
-        => options is not null && options.TryGetSlotPreset(component.Type, parameter.Name, out _);
+        => options is not null
+           && (options.TryGetSlotPreset(component.Type, parameter.Name, out _)
+               || options.TryGetTemplatePreset(component.Type, parameter.Name, out _));
 
     /// <summary>Host-provided razor text for a slot, dedented and split into lines.</summary>
     private static string[]? SlotSource(ComponentDescriptor component, ParameterDescriptor parameter, PlayBlazorOptions? options)

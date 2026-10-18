@@ -236,6 +236,9 @@ propre, pas les tests.
    landing statique. Le site tourne à trois apps dont deux vides.
 3. **Fluent UI** — sweep, puis `PlaygroundConfig` à parité.
 4. **DaisyBlazor** — merge de #20, montée en 1.0.0, sweep, puis `PlaygroundConfig` à parité.
+   *Livré sur DaisyBlazor.Components 0.6.0* (pas de 1.0.0 publiée) : le paquet NuGet compile
+   lui-même le CSS (`DaisyBlazorBuildCss`), sans Node ; les 127 composants listés sont curés et
+   tenus par les mêmes portes que MudBlazor et Fluent.
 
 Les jalons 1 et 2 ne changent **aucun** comportement visible de la démo MudBlazor actuelle :
 c'est le filet de sécurité de la restructuration.
@@ -318,6 +321,18 @@ c'est le filet de sécurité de la restructuration.
   demande une surcharge générique publique de `Slot(…)`, donc de la documentation XML sous
   `CS1591`, des tests, et une décision sur ce que devient un tel slot dans un permalien : c'est
   une fonctionnalité, pas un correctif, et elle mérite son propre jalon.
+
+  *Résolu côté package (jalon 4, lot 7).* La surcharge existe : `Slot<TContext>(nom,
+  RenderFragment<TContext>, source)`, stockée comme un preset de paramètre — liée à la fermeture
+  générique **exacte**, pour la même raison (`RenderFragment<Person>` servi à `<string>` serait un
+  `InvalidCastException`) — et lue par `TryGetTemplatePreset`. `BuildSlot`, le générateur
+  d'extraits (qui émet `<RowTemplate>…@context…</RowTemplate>`, compilé par le corpus), le graphe
+  et le badge « host preset » la consultent. La question du permalien se tranche d'elle-même : un
+  gabarit n'entre jamais dans l'état, donc n'est jamais sérialisé. Adopté par la vitrine Daisy
+  (`Table.RowTemplate`, `DataTable.Actions`, `TemplateColumn.CellTemplate`) ; **pas encore** par
+  MudBlazor (`MudTable.RowTemplate`, `MudFileUpload`) ni Fluent (`TemplateColumn`,
+  `FluentSortableList`) — leurs commentaires disent désormais « pas encore adopté », plus « trou
+  du package ». Une variante ne peut toujours pas changer un gabarit (il n'est pas dans l'état).
 - **Les deux filets mécaniques ont un plancher, pas un plafond** — écrits en clôture du jalon 3
   après que le défaut « compile, passe les tests et le sweep, et n'affiche rien » soit ressorti
   dix fois. Ils valent largement leur coût : le test de vivacité a échoué à sa première
@@ -341,3 +356,35 @@ c'est le filet de sécurité de la restructuration.
     troisième cas d'extrait omettant un paramètre `[EditorRequired]` passera donc en silence.
     Remède : compiler chaque extrait dans sa propre unité plutôt qu'en corpus, ou assertion
     explicite sur la liste des paramètres attendus.
+- **DaisyBlazor 0.6.0 : trous de safelist et défauts à remonter en amont** — relevés pendant la
+  curation (jalon 4, lots 1 à 7), chacun vérifié contre le `.razor` au tag `v0.6.0` et le
+  `app.css` compilé. **Rien n'est corrigé ici** : la vitrine les montre tels quels, avec un
+  commentaire à côté du preset concerné dans `DaisyPlaygroundConfig.cs`, et un test qui épingle
+  chaque trou de CSS pour qu'il échoue le jour où l'amont le comble.
+  - *Safelist.* `gap-{n}` s'arrête à 12 alors que `Stack.Spacing` et `Grid.Spacing` acceptent
+    tout entier : au-delà, aucun espacement (`DaisyLayoutPresetTests` épingle `gap-16` absent).
+    `tooltip-neutral` est safelisté mais daisyUI 5 ne le définit pas : `Tooltip Color=Dark`
+    garde la couleur par défaut (`DisplayClasses_AreCompiledIntoAppCss`).
+  - *Classes daisyUI 4 mortes sous daisyUI 5* (sans perte visible, daisyUI 5 dessinant la
+    bordure par défaut) : `label-text` (FieldError, Field, TextField), `input-bordered` /
+    `select-bordered` (TextField, NumericField, Select, DatePicker, **DataGridPager**),
+    `input-disabled` (Autocomplete).
+  - *Enfants qui s'enregistrent avec un rendu de retard* : Tab, SelectItem, PropertyColumn,
+    TemplateColumn — l'enfant ne signale jamais au parent que ses paramètres ont changé, et le
+    parent rend avant que l'enfant ne les reçoive. Même cause pour `DataTable.ActionsTitle`
+    (via son `TemplateColumn` interne), que la vitrine ne propose donc pas en variante.
+  - *RadioGroup* se cascade `IsFixed` : une `Value` posée de l'extérieur ne déplace pas la coche
+    tant que rien ne re-rend les radios. *Menu* : `Open` ne prime l'état interne que lorsque le
+    paramètre lui-même change (#108 amont).
+  - *Dialog* : son commentaire d'en-tête conseille `Class="modal-box"` pour un aperçu statique,
+    or `.modal-box` est à opacité 0 hors d'un `.modal` ouvert — l'aperçu conseillé est invisible.
+  - *FieldError* : sa doc dit que `request.Name` correspond à `Name` sans dire dans quel sens ;
+    `ErrorsFor` ne compare que le dernier segment de la **clé serveur** à `For`, jamais
+    l'inverse. `For="request.Email"` face à la clé `Email` ne rend rien — c'est ce qu'enseignait
+    une variante du lot 3, attrapé au navigateur au lot 7 et corrigé (`For="Phone"` face à
+    `request.Phone`).
+  - *QuickAccessButton* : `BadgeText` désactive aussi le bouton. *FeatureNavCard* : la `Card`
+    interne reçoit toujours un `OnClick`, donc `role="button" tabindex="0"` même sans `Href`.
+  - *Table* : `Hover` est sans effet dès qu'`OnRowClick` a un délégué (la ligne prend alors
+    `row-hover` d'office) — documenté côté vitrine, où le banc branche toujours les événements.
+

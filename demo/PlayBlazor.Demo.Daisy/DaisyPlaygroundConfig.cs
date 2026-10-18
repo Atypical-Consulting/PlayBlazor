@@ -9,10 +9,15 @@ using DaisyBlazor.Validation;
 namespace PlayBlazor.Demo.Daisy;
 
 /// <summary>
-/// Curation for the DaisyBlazor showcase, in progress (milestone 4): the listed surface, the icon
-/// catalogue, the flagship <see cref="Button" />, the scaffolds of the child components
-/// (<see cref="Scaffolds" />), the cascading, validation and overlay components (<see cref="ContextAndOverlays" />), the actions and form inputs (<see cref="FormsAndActions" />), the data display and feedback components (<see cref="DisplayAndFeedback" />) and the layout, navigation, mockup and app-level helpers (<see cref="LayoutAndNavigation" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
-/// package's own markup (its <c>.razor</c> source at tag v0.6.0 and shipped <c>safelist.css</c>).
+/// Curation for the DaisyBlazor showcase (milestone 4): the listed surface, the icon catalogue, the
+/// flagship <see cref="Button" />, the scaffolds of the child components (<see cref="Scaffolds" />),
+/// the cascading, validation and overlay components (<see cref="ContextAndOverlays" />), the actions
+/// and form inputs (<see cref="FormsAndActions" />), the data display and feedback components
+/// (<see cref="DisplayAndFeedback" />), the layout, navigation, mockup and app-level helpers
+/// (<see cref="LayoutAndNavigation" />) and the tables, grids and dashboard tiles
+/// (<see cref="DataComponents" />). Every listed component carries curation, verified against the
+/// pinned 0.6.0 package's own markup (its <c>.razor</c> source at tag v0.6.0 and shipped
+/// <c>safelist.css</c>); CurationCompletenessTests and VariantLivenessTests gate it.
 /// </summary>
 /// <remarks>
 /// Rendering hazards every preset must respect:
@@ -31,6 +36,8 @@ namespace PlayBlazor.Demo.Daisy;
 /// is a daisyUI 4 class that daisyUI 5 no longer defines, so it styles nothing; and Dialog's header
 /// comment advises <c>Class="modal-box"</c> for a static preview, which daisyUI renders at opacity 0
 /// outside an open <c>.modal</c> (see <see cref="ContextAndOverlays" />).</item>
+/// <item>The full upstream list (safelist holes, dead daisyUI 4 classes, the child-registration
+/// render lag) is kept in the multi-library spec, §9.</item>
 /// </list>
 /// </remarks>
 public static class DaisyPlaygroundConfig
@@ -39,7 +46,8 @@ public static class DaisyPlaygroundConfig
     /// Not components a user plays with. Each is excluded for its own reason, and nothing else is:
     /// <list type="bullet">
     /// <item><see cref="ThemeProvider" /> calls JS to set <c>data-theme</c> on <c>&lt;html&gt;</c>
-    /// and writes localStorage and a cookie, so a specimen would re-theme the whole shell.</item>
+    /// and writes localStorage and a cookie, so a specimen would re-theme the whole shell. Its
+    /// Themes and DarkThemes collections are therefore never driven either.</item>
     /// <item><see cref="DialogProvider" /> and <see cref="SnackbarProvider" /> only render the
     /// output of <c>IDialogService</c> and <c>ISnackbar</c>; alone they show nothing.</item>
     /// <item><see cref="PageBreadcrumb" /> injects an <c>IBreadcrumbService</c> that only
@@ -64,8 +72,9 @@ public static class DaisyPlaygroundConfig
     ];
 
     /// <summary>
-    /// One server error, for "Email", cascaded by the ServerValidation preset and the FieldError
-    /// scaffold. Nothing on the bench mutates it: inputs only read their error from the state.
+    /// Two server errors, cascaded by the ServerValidation preset and the FieldError scaffold: one
+    /// for "Email", and one the server reported under a qualified key, "request.Phone", which a
+    /// field named "Phone" still finds. Nothing on the bench mutates it: inputs only read from it.
     /// </summary>
     public static ServerValidationState SampleValidation { get; } = CreateSampleValidation();
 
@@ -73,6 +82,7 @@ public static class DaisyPlaygroundConfig
     {
         var state = new ServerValidationState();
         state.AddError("Email", "This email is already registered.");
+        state.AddError("request.Phone", "This number cannot receive texts.");
         return state;
     }
 
@@ -88,6 +98,25 @@ public static class DaisyPlaygroundConfig
     private static string Photo(string sky, string sun, string hills) => "data:image/svg+xml," + Uri.EscapeDataString(
         $"""<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" fill="{sky}"/><circle cx="140" cy="52" r="22" fill="{sun}"/><path d="M0 192 64 96l48 56 32-28 48 68z" fill="{hills}"/></svg>""");
 
+    /// <summary>
+    /// The filters the FilterPanel preset shows as chips. FilterPanel.ActiveFilters is an
+    /// IReadOnlyList, which no control can drive, so the chips come from this static list.
+    /// </summary>
+    public static IReadOnlyList<ActiveFilter> SampleFilters { get; } =
+        [new("plan", "Plan: Pro"), new("region", "Region: Europe")];
+
+    /// <summary>
+    /// The StatusChip preset's map, as the website's StatusChipMapExample declares it: one
+    /// colour and icon per <see cref="Shipment" /> status, declared once and reused everywhere.
+    /// </summary>
+    public static StatusMap ShipmentStatus { get; } = StatusMap.For<Shipment>()
+        .Add(Shipment.Processing, Color.Info, Icons.Material.Filled.Autorenew)
+        .Add(Shipment.Shipped, Color.Primary, Icons.Material.Filled.LocalShipping)
+        .Add(Shipment.Delivered, Color.Success, Icons.Material.Filled.CheckCircle)
+        .Add(Shipment.Delayed, Color.Warning, Icons.Material.Filled.Schedule)
+        .Add(Shipment.Lost, Color.Error, Icons.Material.Filled.Error)
+        .Build();
+
     /// <summary>The options the Autocomplete preset searches, so typing "an" finds three.</summary>
     public static IReadOnlyList<string> ListOptions { get; } =
         ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Mango", "Orange", "Pineapple"];
@@ -100,7 +129,7 @@ public static class DaisyPlaygroundConfig
         options.ComponentFilter = type => !Infrastructure.Contains(StripArity(type.Name));
 
         // Discovery closes every open generic with string. These declare the closing only where
-        // string teaches nonsense; presets for them land with the batches that curate them.
+        // string teaches nonsense; their presets live with the section that curates them.
         // NumericField parses through Convert.ChangeType(raw, Nullable.GetUnderlyingType(T) ?? T),
         // so int round-trips ("42" -> 42, "4.5" -> default) and step stays the browser's 1 (only
         // double/float/decimal switch to step="any"). With string the sweep passes but the bench
@@ -148,6 +177,7 @@ public static class DaisyPlaygroundConfig
         FormsAndActions(options);
         DisplayAndFeedback(options);
         LayoutAndNavigation(options);
+        DataComponents(options);
     }
 
     /// <summary>
@@ -219,17 +249,15 @@ public static class DaisyPlaygroundConfig
             .Variant("Bold cells", v => v.Set(nameof(PropertyColumn<Person, string>.CellClass), "font-bold"))
             .Variant("Custom title", v => v.Set(nameof(PropertyColumn<Person, string>.Title), "Full name"));
 
-        // Deliberately imperfect: the cell template (CellTemplate, or its ChildContent alias) is a
-        // RenderFragment<CellContext<Person>>, and PlayBlazor's ParameterDictionaryBuilder.BuildSlot
-        // only fills the non-generic RenderFragment; a generic one takes neither a slot nor a
-        // parameter preset. So the specimen's cells render empty beside the scaffold's Age column,
-        // and only the header-side parameters are curated. Closing that is a src/PlayBlazor change
-        // (it would also unlock Fluent's TemplateColumn), not something a preset can fake.
-        // SortBy stays undriven: without a template there is nothing to sort by.
+        // The cell template (CellTemplate, or its ChildContent alias) is a RenderFragment<CellContext<Person>>,
+        // filled by a templated slot preset: each cell reads its row through context.Item.
+        // SortBy stays undriven: it is a Func<Person, object> selector, which no control can build;
+        // without it a TemplateColumn is simply not sortable, which is its documented default.
         options.For<TemplateColumn<Person>>()
             .Scaffold(DaisyDemoFragments.InDataGrid, DaisyDemoFragmentSources.InDataGrid)
             .Related<DataGrid<Person>>()
             .Parameter(nameof(TemplateColumn<Person>.Title), "Role")
+            .Slot(nameof(TemplateColumn<Person>.CellTemplate), DaisyDemoFragments.RoleBadge, DaisyDemoFragmentSources.RoleBadge)
             .Variant("Custom title", v => v.Set(nameof(TemplateColumn<Person>.Title), "Position"))
             .Variant("Primary header", v => v.Set(nameof(TemplateColumn<Person>.HeaderClass), "text-primary"));
 
@@ -433,7 +461,10 @@ public static class DaisyPlaygroundConfig
             .Related<ServerValidation>()
             .Parameter(nameof(FieldError.For), "Email")
             .Variant("Field without an error", v => v.Set(nameof(FieldError.For), "Name"))
-            .Variant("Qualified server name", v => v.Set(nameof(FieldError.For), "request.Email"));
+            // The fallback runs one way only (v0.6.0 ErrorsFor): a QUALIFIED SERVER KEY
+            // ("request.Phone") matches a plain For ("Phone"), never the reverse. FieldError's own
+            // doc reads both ways; For="request.Email" against the "Email" key renders nothing.
+            .Variant("Qualified server key", v => v.Set(nameof(FieldError.For), "Phone"));
 
         // Form is a flex column that fields register with (TextField, NumericField and Select call
         // Form?.Register); a field validates on edit, so clearing the Required name shows "Required".
@@ -566,7 +597,7 @@ public static class DaisyPlaygroundConfig
     /// the few classes a variant passes itself (join-vertical, mask-heart) are literal below, which
     /// is what makes Tailwind emit them. DaisyPresetTests pins the control each preset renders.
     /// Upstream at 0.6.0, not safelist holes: TextField, NumericField, Select and DatePicker add
-    /// <c>input-bordered</c>/<c>select-bordered</c> and Autocomplete <c>input-disabled</c>, daisyUI 4
+    /// <c>input-bordered</c>/<c>select-bordered</c> (as does DataGridPager) and Autocomplete <c>input-disabled</c>, daisyUI 4
     /// classes daisyUI 5 no longer defines. They style nothing, and nothing is lost: daisyUI 5 draws
     /// the border by default and Autocomplete's disabled input greys itself out.
     /// </summary>
@@ -1572,6 +1603,126 @@ public static class DaisyPlaygroundConfig
             .Variant("Long name", v => v.Set(nameof(AppCard.Name), "Purchase orders and approvals"));
     }
 
+    /// <summary>
+    /// Tables, grids, the filter panel and the dashboard tiles. Rows come from
+    /// <see cref="SampleRows" />, preset as a parameter (IEnumerable takes no control) with the
+    /// <c>@_people</c> field a page would declare as its source. Their markup lives in
+    /// DaisyDemoFragments.razor; DaisyDataPresetTests pins what each bench renders.
+    /// </summary>
+    private static void DataComponents(PlayBlazorOptions options)
+    {
+        // Rows render only through RowTemplate, a RenderFragment<Person>: a templated slot preset
+        // fills it. Striped is table-zebra, Dense table-sm. Hover is deliberately not a variant: the
+        // bench wires OnRowClick to its event log, and Table adds row-hover (and cursor-pointer) to
+        // every row whenever OnRowClick has a delegate, so the bench's rows already highlight and a
+        // Hover chip would change nothing. RowsPerPage only pages under a TablePager in
+        // PagerContent, which TablePager's own bench shows.
+        options.For<Table<Person>>()
+            .Parameter(nameof(Table<Person>.Items), SampleRows, "@_people")
+            .Slot(nameof(Table<Person>.HeaderContent), DaisyDemoFragments.PeopleHeader, DaisyDemoFragmentSources.PeopleHeader)
+            .Slot(nameof(Table<Person>.RowTemplate), DaisyDemoFragments.PersonRow, DaisyDemoFragmentSources.PersonRow)
+            .Related<TablePager>()
+            .Variant("Zebra", v => v.Set(nameof(Table<Person>.Striped), true))
+            .Variant("Compact", v => v.Set(nameof(Table<Person>.Dense), true))
+            .Variant("Loading", v => v.Set(nameof(Table<Person>.Loading), true));
+
+        // The caller writes thead/tbody; SimpleTable adds .table and the scroll wrapper. Hover is
+        // table-scoped arbitrary classes ([&_tbody_tr:hover]:bg-base-200/300), both safelisted.
+        options.For<SimpleTable>()
+            .Slot(nameof(SimpleTable.ChildContent), DaisyDemoFragments.PeopleTable, DaisyDemoFragmentSources.PeopleTable)
+            .Related<Tr>()
+            .Variant("Zebra hover", v => v.Set(nameof(SimpleTable.Striped), true).Set(nameof(SimpleTable.Hover), true))
+            .Variant("Compact", v => v.Set(nameof(SimpleTable.Dense), true))
+            .Variant("Bordered", v => v.Set(nameof(SimpleTable.Bordered), true));
+
+        // Columns register with the grid, which renders the sortable headers (PropertyColumn is
+        // Sortable by default: click a header to sort) and the cells. DataGrid has no filter row at
+        // v0.6.0, so there is no filter variant. The pager is preset in PagerContent, so "Two per
+        // page" really pages. ServerData and ServerDataFunc stay undriven: they are loaders
+        // (Func<GridState<T>, ..., Task<GridData<T>>>), mutually exclusive with Items, and Items
+        // already demonstrates every visual the grid has.
+        options.For<DataGrid<Person>>()
+            .Parameter(nameof(DataGrid<Person>.Items), SampleRows, "@_people")
+            .Slot(nameof(DataGrid<Person>.Columns), DaisyDemoFragments.PeopleColumns, DaisyDemoFragmentSources.PeopleColumns)
+            .Slot(nameof(DataGrid<Person>.PagerContent), DaisyDemoFragments.PeoplePager, DaisyDemoFragmentSources.PeoplePager)
+            .Related<PropertyColumn<Person, string>>()
+            .Related<DataGridPager<Person>>()
+            .Variant("Striped hover", v => v.Set(nameof(DataGrid<Person>.Striped), true).Set(nameof(DataGrid<Person>.Hover), true))
+            .Variant("Dense bordered", v => v.Set(nameof(DataGrid<Person>.Dense), true).Set(nameof(DataGrid<Person>.Bordered), true))
+            .Variant("Two per page", v => v.Set(nameof(DataGrid<Person>.RowsPerPage), 2))
+            .Variant("Loading", v => v.Set(nameof(DataGrid<Person>.Loading), true).Set(nameof(DataGrid<Person>.SkeletonRows), 3))
+            .Variant("Elevated", v => v.Set(nameof(DataGrid<Person>.Elevation), 2));
+
+        // DataTable wraps DataGrid with its own pager, zebra and hover, and an Actions column (a
+        // RenderFragment<Person>, preset as a templated slot). With no RowsPerPage it starts at the
+        // first PageSizeOptions entry, so the bench opens paged, two rows of three. The website's DataTableStatesExample
+        // shows two states: Loading is a variant here; the empty state needs Items=[] and Items is
+        // an IEnumerable, which no control or variant can set, so its EmptyIcon and EmptyMessage are
+        // offered but only show once a page passes no rows. ServerData stays undriven, as on DataGrid.
+        options.For<DataTable<Person>>()
+            .Parameter(nameof(DataTable<Person>.Items), SampleRows, "@_people")
+            .Slot(nameof(DataTable<Person>.Columns), DaisyDemoFragments.PeopleColumns, DaisyDemoFragmentSources.PeopleColumns)
+            .Slot(nameof(DataTable<Person>.Actions), DaisyDemoFragments.PersonActions, DaisyDemoFragmentSources.PersonActions)
+            .Parameter(nameof(DataTable<Person>.PageSizeOptions), new[] { 2, 5, 10 }, "@(new[] { 2, 5, 10 })")
+            .Related<DataGrid<Person>>()
+            .Variant("Dense", v => v.Set(nameof(DataTable<Person>.Dense), true))
+            .Variant("Five per page", v => v.Set(nameof(DataTable<Person>.RowsPerPage), 5))
+            .Variant("Loading", v => v.Set(nameof(DataTable<Person>.Loading), true).Set(nameof(DataTable<Person>.SkeletonRows), 3))
+            .Variant("Elevated", v => v.Set(nameof(DataTable<Person>.Elevation), 2));
+        // ActionsTitle is not a variant: it reaches the header through the inner TemplateColumn,
+        // which shares the one-render lag noted in Scaffolds() (a column never tells the grid its
+        // parameters changed), so a chip would show the old title until the next render.
+
+        // ChildContent sits in FilterPanel's own 12-column Grid, so the inputs are Items. OnApply,
+        // OnClear, OnReset and OnRemoveFilter are wired to the bench's event log; because OnReset
+        // then has a delegate, the header Reset button shows beside the active chips.
+        options.For<FilterPanel>()
+            .Slot(nameof(FilterPanel.ChildContent), DaisyDemoFragments.CustomerFilters, DaisyDemoFragmentSources.CustomerFilters)
+            .Parameter(nameof(FilterPanel.ActiveFilters), SampleFilters, "@_activeFilters")
+            .Related<Chip>()
+            .Variant("Custom title", v => v.Set(nameof(FilterPanel.Title), "Customers"))
+            .Variant("French labels", v => v
+                .Set(nameof(FilterPanel.Title), "Filtres")
+                .Set(nameof(FilterPanel.ActiveFiltersLabel), "Filtres actifs :")
+                .Set(nameof(FilterPanel.ResetLabel), "Réinitialiser")
+                .Set(nameof(FilterPanel.ClearLabel), "Effacer")
+                .Set(nameof(FilterPanel.ApplyLabel), "Filtrer"));
+
+        // Color is a CSS colour for the left border (not the Color enum); the value text keeps the
+        // base colour by design. The tile is height:100% and full width, so it sits in a w-80 frame.
+        options.For<KpiCard>()
+            .Scaffold(DaisyDemoFragments.InNarrowFrame, DaisyDemoFragmentSources.InNarrowFrame)
+            .Parameter(nameof(KpiCard.Label), "Monthly recurring revenue")
+            .Parameter(nameof(KpiCard.Value), "€48.2 k")
+            .Parameter(nameof(KpiCard.Subtitle), "+12% vs. September")
+            .Related<Stats>()
+            .Variant("Trend down", v => v
+                .Set(nameof(KpiCard.Label), "Failed deployments")
+                .Set(nameof(KpiCard.Value), "6")
+                .Set(nameof(KpiCard.Subtitle), "+2 this week")
+                .Set(nameof(KpiCard.Color), "var(--color-error)"))
+            .Variant("Success", v => v
+                .Set(nameof(KpiCard.Label), "Uptime")
+                .Set(nameof(KpiCard.Value), "99.98%")
+                .Set(nameof(KpiCard.Subtitle), "last 30 days")
+                .Set(nameof(KpiCard.Color), "var(--color-success)"))
+            .Variant("Warning", v => v.Set(nameof(KpiCard.Color), "var(--color-warning)"))
+            .Variant("No subtitle", v => v.Set(nameof(KpiCard.Subtitle), string.Empty));
+
+        // The map resolves colour and icon from Status. Map (StatusMap) takes no control and
+        // Status is a bare object, so both are presets; Status stays fixed (a variant could not
+        // update its snippet) and the variants show the explicit-wins overrides and the sizes, as in
+        // the website's StatusChipOverridesExample and StatusChipSizesExample.
+        options.For<StatusChip>()
+            .Parameter(nameof(StatusChip.Map), ShipmentStatus, "@_shipmentStatus")
+            .Parameter(nameof(StatusChip.Status), Shipment.Delayed, "Shipment.Delayed")
+            .Related<Chip>()
+            .Variant("Label override", v => v.Set(nameof(StatusChip.Label), "Running late"))
+            .Variant("Colour override", v => v.Set(nameof(StatusChip.Label), "Disputed").Set(nameof(StatusChip.Color), Color.Error))
+            .Variant("Icon override", v => v.Set(nameof(StatusChip.Icon), Icons.Material.Filled.Draw))
+            .Variant("Large", v => v.Set(nameof(StatusChip.Size), Size.Large));
+    }
+
     private static Task<IEnumerable<string>> SearchFruits(string text, CancellationToken cancellationToken)
         => Task.FromResult(ListOptions.Where(f => f.Contains(text, StringComparison.OrdinalIgnoreCase)));
 
@@ -1580,4 +1731,23 @@ public static class DaisyPlaygroundConfig
         var backtick = name.IndexOf('`');
         return backtick < 0 ? name : name[..backtick];
     }
+}
+
+/// <summary>The shipment statuses the StatusChip preset maps, as in the website's StatusChipMapExample.</summary>
+public enum Shipment
+{
+    /// <summary>Being prepared.</summary>
+    Processing,
+
+    /// <summary>Handed to the carrier.</summary>
+    Shipped,
+
+    /// <summary>Received by the customer.</summary>
+    Delivered,
+
+    /// <summary>Behind schedule.</summary>
+    Delayed,
+
+    /// <summary>Never arrived.</summary>
+    Lost,
 }

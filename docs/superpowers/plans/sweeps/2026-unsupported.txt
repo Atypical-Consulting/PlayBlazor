@@ -1,8 +1,6 @@
-[16:35:06.708] SynchronizedRunTestsAsync: ENTRY
-[16:35:06.714] SynchronizedRunTestsAsync: Creating executor
-NUnit Adapter 1.0.0.0: Test execution started
-Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
-   NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Explicit run
+NUnit Adapter 6.3.0.0: Test execution started
+Running selected tests in /home/phmatray/Projects/PlayBlazor/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll
+   NUnit3TestExecutor discovered 3 of 3 NUnit test cases using Current Discovery mode, Explicit run
 === MudBlazor ===
   23 × CultureInfo                                                  e.g. MudAutocomplete.Culture, MudBooleanInput.Culture, MudCheckBox.Culture, MudColorPicker.Culture
   16 × Func<String,Boolean>                                         e.g. HierarchyColumn.ButtonDisabledFunc, HierarchyColumn.InitiallyExpandedFunc, MudAutocomplete.ItemDisabledFunc, MudDataGrid.QuickFilter
@@ -88,7 +86,7 @@ Running selected tests in /Users/philippe/repo/Atypical-Consulting/public/PlayBl
    1 × StackedBarChartOptions                                       e.g. StackedBar.ChartOptions
    1 × TimeSeriesChartOptions                                       e.g. TimeSeries.ChartOptions
 
-passed MudBlazor (183ms)
+passed MudBlazor (138ms)
 === Microsoft.FluentUI.AspNetCore.Components ===
   20 × Func<String,String>                                          e.g. FluentAutocomplete.OptionValue, FluentAutocomplete.OptionValueToString, FluentAutocomplete.OptionText, FluentCombobox.OptionValue
   16 × Func<IFluentField,Boolean>                                   e.g. FluentAutocomplete.MessageCondition, FluentCalendar.MessageCondition, FluentCheckbox.MessageCondition, FluentColorPickerInput.MessageCondition
@@ -136,11 +134,27 @@ passed MudBlazor (183ms)
    1 × Expression<Func<String,String>>                              e.g. PropertyColumn.Property
    1 × IComparer<String>                                            e.g. PropertyColumn.Comparer
 
-passed FluentUI (45ms)
+passed FluentUI (40ms)
+=== DaisyBlazor.Components ===
+   5 × IEnumerable<String>                                          e.g. DataGrid.Items, DataTable.Items, Select.SelectedValues, Table.Items
+   2 × Func<GridState<String>,CancellationToken,Task<GridData<String>>> e.g. DataGrid.ServerData, DataTable.ServerData
+   2 × IReadOnlyList<String>                                        e.g. MockupCode.Lines, ThemeProvider.Themes
+   2 × Func<String,Object>                                          e.g. PropertyColumn.SortBy, TemplateColumn.SortBy
+   1 × Func<String,CancellationToken,Task<IEnumerable<String>>>     e.g. Autocomplete.SearchFunc
+   1 × Func<String,String>                                          e.g. Autocomplete.ToStringFunc
+   1 × List<BreadcrumbItem>                                         e.g. Breadcrumbs.Items
+   1 × Func<GridState<String>,Task<GridData<String>>>               e.g. DataGrid.ServerDataFunc
+   1 × IReadOnlyList<ActiveFilter>                                  e.g. FilterPanel.ActiveFilters
+   1 × Expression<Func<String,String>>                              e.g. PropertyColumn.Property
+   1 × ServerValidationState                                        e.g. ServerValidation.State
+   1 × StatusMap                                                    e.g. StatusChip.Map
+   1 × IReadOnlyCollection<String>                                  e.g. ThemeProvider.DarkThemes
 
-Test run summary: Passed! - /Users/philippe/repo/Atypical-Consulting/public/PlayBlazor/.claude/worktrees/quizzical-conjuring-quasar/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
-  total: 2
+passed DaisyBlazor (37ms)
+
+Test run summary: Passed! - /home/phmatray/Projects/PlayBlazor/tests/PlayBlazor.UnitTests/bin/Release/net10.0/PlayBlazor.UnitTests.dll (net10.0|arm64)
+  total: 3
   failed: 0
-  succeeded: 2
+  succeeded: 3
   skipped: 0
-  duration: 419ms
+  duration: 400ms

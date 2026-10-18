@@ -610,4 +610,52 @@ public static class DaisyDemoFragmentSources
     <DetailRow Label="Region" Value="EU West" />
 </DetailCard>
 """;
+
+    public const string PeopleHeader = """
+<Th>Name</Th>
+<Th>Role</Th>
+<Th>Age</Th>
+""";
+
+    public const string PersonRow = """
+<Td>@context.Name</Td>
+<Td>@context.Role</Td>
+<Td>@context.Age</Td>
+""";
+
+    public const string PeopleTable = """
+<thead>
+    <tr><th>Name</th><th>Role</th><th>Age</th></tr>
+</thead>
+<tbody>
+    <tr><td>Ada Lovelace</td><td>Analyst</td><td>36</td></tr>
+    <tr><td>Grace Hopper</td><td>Rear Admiral</td><td>45</td></tr>
+    <tr><td>Alan Turing</td><td>Cryptanalyst</td><td>41</td></tr>
+</tbody>
+""";
+
+    public const string PeopleColumns = """
+<PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
+<PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />
+<PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+""";
+
+    public const string RoleBadge = """<span class="badge badge-soft badge-primary">@context.Item.Role</span>""";
+
+    public const string PeoplePager = """<DataGridPager T="Person" PageSizeOptions="@(new[] { 2, 5, 10 })" />""";
+
+    public const string PersonActions = """<IconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Title="@($"Edit {context.Name}")" />""";
+
+    public const string CustomerFilters = """
+<Item xs="12" sm="6">
+    <TextField Label="Customer" Placeholder="Northwind Traders" />
+</Item>
+<Item xs="12" sm="6">
+    <Select T="string" Label="Plan" Value="@("Pro")">
+        <SelectItem T="string" Value="@("Free")">Free</SelectItem>
+        <SelectItem T="string" Value="@("Pro")">Pro</SelectItem>
+        <SelectItem T="string" Value="@("Enterprise")">Enterprise</SelectItem>
+    </Select>
+</Item>
+""";
 }

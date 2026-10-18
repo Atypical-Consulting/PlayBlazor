@@ -1,4 +1,5 @@
 @page "/"
+@using DaisyBlazor.Data
 <DemoLanding Assembly="typeof(Button).Assembly"
              LibraryName="DaisyBlazor"
              DocsUrl="https://phmatray.github.io/daisyblazor/"
@@ -8,6 +9,18 @@
             <h2 class="demo-tag">Button</h2>
             <p class="demo-note">The flagship demo — flip Color, Variant and Size, watch the snippet follow. Every class is daisyUI's, compiled by Tailwind at build time.</p>
             <PlaygroundView Component="typeof(Button)" />
+        </section>
+
+        <section class="demo-section">
+            <h2 class="demo-tag">DataGrid&lt;Person&gt;</h2>
+            <p class="demo-note">Sample rows, columns and the pager come from host presets — click a header to sort; Striped, Dense, Bordered… stay yours to play with.</p>
+            <PlaygroundView Component="typeof(DataGrid<Person>)" />
+        </section>
+
+        <section class="demo-section">
+            <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
+            <p class="demo-note">A column cannot live outside its grid: the host scaffold renders the played column inside a real DataGrid.</p>
+            <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
     </Flagships>
 </DemoLanding>

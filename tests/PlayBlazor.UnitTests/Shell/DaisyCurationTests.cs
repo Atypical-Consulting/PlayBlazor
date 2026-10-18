@@ -56,6 +56,16 @@ public class DaisyCurationTests
     }
 
     [Test]
+    public void IconCatalogue_OffersMaterialLigatures_AndDrivesIconParameters()
+    {
+        DaisyIconCatalogue.Material.Should().HaveCountGreaterThan(1000);
+        DaisyIconCatalogue.Material["Check"].Should().Be("check");
+
+        var button = new ReflectionCatalogProvider(options: Curated().Options).Describe(typeof(Button));
+        button.Parameters.Single(p => p.Name == nameof(Button.StartIcon)).Kind.Should().Be(PlayBlazor.Model.ControlKind.Icon);
+    }
+
+    [Test]
     public void NumericFieldInt_ParsesTypedInputBackToAnInt()
     {
         using var context = new BunitContext();

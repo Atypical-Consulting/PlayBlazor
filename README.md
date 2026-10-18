@@ -86,11 +86,11 @@ dockable workspace on `/explorer`. MudBlazor is the **demo subject, not a depend
 | Path | What it is |
 |------|-----------|
 | `src/PlayBlazor` | The shipped Razor class library (the `PlayBlazor` NuGet package). |
-| `tests/PlayBlazor.UnitTests` | 393 bUnit/NUnit tests (6 skipped by default — `[Explicit]` diagnostic sweeps over a whole component library, once per explored library). |
+| `tests/PlayBlazor.UnitTests` | 897 bUnit/NUnit tests (6 skipped by default — `[Explicit]` diagnostic sweeps over a whole component library, once per explored library). |
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (landing page, library switcher) shared by every showcase app. |
 | `demo/PlayBlazor.Demo.MudBlazor` | Blazor WebAssembly showcase driving MudBlazor. |
 | `demo/PlayBlazor.Demo.FluentUI` | Blazor WebAssembly showcase driving Fluent UI Blazor, curated to the same depth as the MudBlazor app. |
-| `demo/PlayBlazor.Demo.Daisy` | Blazor WebAssembly showcase driving DaisyBlazor (daisyUI on Tailwind CSS v4, stylesheet compiled at build time by the DaisyBlazor package — no Node). A seed, curation to come. |
+| `demo/PlayBlazor.Demo.Daisy` | Blazor WebAssembly showcase driving DaisyBlazor (daisyUI on Tailwind CSS v4, stylesheet compiled at build time by the DaisyBlazor package — no Node), curated to the same depth as the MudBlazor and Fluent UI apps. |
 | `demo/landing` | Plain static HTML served at the Pages site root — picks a library, no WASM to boot. |
 | `docs/superpowers` | Design spec, milestone plans and the UX concept prototypes (A→G) that produced the current shell. |
 
@@ -106,10 +106,12 @@ release PR bumps `Directory.Build.props`, tags `vX.Y.Z` and publishes the packag
 
 ## Status
 
-v1 is complete and exercised: 387 of 393 tests green (the other 6 are diagnostic sweeps, skipped
-by default and run on demand). Browser sweeps land the two curated libraries healthy with zero
-escaped exceptions: 159 of 169 MudBlazor components, 106 of 108 Fluent UI components. DaisyBlazor,
-newly added and not yet curated, already sweeps 129 of 131 healthy. Next up:
+v1 is complete and exercised: 891 of 897 tests green (the other 6 are diagnostic sweeps, skipped
+by default and run on demand). All three libraries are curated — every listed component carries a
+preset, scaffold or variant, and every variant changes the bench — and their render sweeps show
+zero escaped exceptions on the listed surface: 159 of 169 MudBlazor components, 106 of 108 Fluent
+UI components, 130 of 131 DaisyBlazor components (the one escape is `PageBreadcrumb`, kept off the
+listing because it needs an app-defined breadcrumb service). Next up:
 
 - **v2** — edit the snippet itself, parsed back into the controls (no arbitrary compilation).
 - **v3** — full in-browser REPL (Roslyn).

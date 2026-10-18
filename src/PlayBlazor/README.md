@@ -37,6 +37,11 @@ builder.Services.AddPlayBlazor(options =>
     // Give slots realistic content (the user's typed text always wins):
     options.For<MudButton>().Slot(nameof(MudButton.ChildContent), b => b.AddContent(0, "Click me"));
 
+    // Templated slots (RenderFragment<T>, e.g. a table's RowTemplate) take a typed template,
+    // matched to that exact generic closing; the source is what the code panel shows:
+    options.For<MudTable<Person>>().Slot<Person>(nameof(MudTable<Person>.RowTemplate),
+        person => builder => builder.AddContent(0, person.Name), "<MudTd>@context.Name</MudTd>");
+
     // Baseline parameter values (resolution: user modification > preset > component default).
     // Also makes non-drivable parameters usable — collections, expressions…
     options.For<MudDataGrid<Person>>().Parameter(nameof(MudDataGrid<Person>.Items), Person.Samples);

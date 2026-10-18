@@ -34,15 +34,13 @@ public static class ExploredLibraries
             {
                 yield return library;
             }
-
-            yield return Daisy;
         }
     }
 
     /// <summary>
     /// The libraries whose showcase is curated to depth — every listed component carries curation
-    /// and every variant is live. DaisyBlazor is a seed until milestone 4, so it is swept,
-    /// inventoried and corpus-checked with the others, but not held to the curation gates yet.
+    /// and every variant is live. Today that is every explored library; the split stays so a new
+    /// library can be swept and inventoried before it is curated.
     /// </summary>
     public static IEnumerable<TestCaseData> Curated
     {
@@ -50,6 +48,7 @@ public static class ExploredLibraries
         {
             yield return Mud;
             yield return Fluent;
+            yield return Daisy;
         }
     }
 }

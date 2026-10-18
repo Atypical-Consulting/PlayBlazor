@@ -25,8 +25,8 @@ namespace PlayBlazor.UnitTests.Shell;
 /// variant can never express "unset" (an indeterminate progress bar, an inherited colour).</description></item>
 /// <item><description><see cref="ControlKind.Unsupported" />: <see cref="ParameterDictionaryBuilder" />
 /// reads only the host preset for those, never <see cref="PlaygroundState" />.</description></item>
-/// <item><description>A generic <c>RenderFragment&lt;T&gt;</c> slot: <c>BuildSlot</c> accepts only
-/// the literal non-generic <see cref="Microsoft.AspNetCore.Components.RenderFragment" />.</description></item>
+/// <item><description>A generic <c>RenderFragment&lt;T&gt;</c> slot: <c>BuildSlot</c> fills it only
+/// from a host template preset, never from state.</description></item>
 /// </list>
 /// The check is on the parameter dictionary rather than on rendered HTML deliberately: the
 /// dictionary is the entire input to the render, needs no browser and no JS interop, and cannot be

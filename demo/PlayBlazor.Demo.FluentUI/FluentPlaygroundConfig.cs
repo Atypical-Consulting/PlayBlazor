@@ -356,14 +356,11 @@ public static class FluentPlaygroundConfig
             .Variant("Multiple selection", v => v.Set(nameof(SelectColumn<Person>.SelectMode), DataGridSelectMode.Multiple))
             .Variant("Sticky single selection", v => v.Set(nameof(SelectColumn<Person>.SelectMode), DataGridSelectMode.SingleSticky));
 
-        // TemplateColumn.ChildContent is RenderFragment<TGridItem> — a CLOSED generic RenderFragment,
-        // which ParameterDictionaryBuilder.BuildSlot cannot honor: it special-cases only the literal
-        // non-generic RenderFragment (see src/PlayBlazor/Rendering/ParameterDictionaryBuilder.cs), and
-        // ControlKind.Slot parameters never fall through to the Parameter-preset or Variant-state
-        // paths either. No preset reaches ChildContent, so it keeps the field's own default
-        // (a no-op fragment) and every cell in this column renders empty — a src/PlayBlazor gap this
-        // demo-only task cannot close. What follows curates every OTHER reachable ColumnBase property
-        // so the column is not left completely uncurated.
+        // TemplateColumn.ChildContent is RenderFragment<TGridItem>, a templated slot. Until the
+        // DaisyBlazor curation (milestone 4) no preset could fill one; the templated .Slot<TContext>
+        // overload now can, but this bench has not adopted it yet (a follow-up), so ChildContent
+        // keeps the field's own no-op default and every cell in this column renders empty. What
+        // follows curates every OTHER reachable ColumnBase property.
         options.For<TemplateColumn<Person>>()
             .Parameter(nameof(TemplateColumn<Person>.Title), "Bio")
             .Scaffold(specimen => builder =>

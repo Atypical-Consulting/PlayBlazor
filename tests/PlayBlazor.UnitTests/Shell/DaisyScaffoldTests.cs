@@ -151,6 +151,19 @@ public partial class DaisyScaffoldTests
     }
 
     [Test]
+    public void FieldError_PlainFor_FindsAQualifiedServerKey()
+    {
+        // The fallback matches the server key's last segment against For, one way only: caught in
+        // a real browser, where the earlier For="request.Email" variant rendered nothing.
+        using var context = NewContext();
+        var cut = Bench(context, typeof(FieldError));
+
+        cut.FindAll("button.pb-variant").Single(b => b.TextContent == "Qualified server key").Click();
+
+        cut.Find(".pb-specimen span.text-error").TextContent.Should().Contain("cannot receive texts");
+    }
+
+    [Test]
     public void Modal_StaysClosedUntilAVariantOpensIt()
     {
         // An open Modal is a native top-layer modal over the whole explorer: never by default.

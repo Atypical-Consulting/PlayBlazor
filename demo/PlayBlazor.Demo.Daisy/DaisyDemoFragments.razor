@@ -295,6 +295,60 @@
         </Item>
     </text>;
 
+    // --- Data components ----------------------------------------------------------------------
+
+    public static RenderFragment PeopleHeader => @<text>
+        <Th>Name</Th>
+        <Th>Role</Th>
+        <Th>Age</Th>
+    </text>;
+
+    // A templated slot. The lambda names its row "context", as Razor does for a page's <RowTemplate>,
+    // so the source string below is the same markup.
+    public static RenderFragment<Person> PersonRow => context => @<text>
+        <Td>@context.Name</Td>
+        <Td>@context.Role</Td>
+        <Td>@context.Age</Td>
+    </text>;
+
+    public static RenderFragment PeopleTable => @<text>
+        <thead>
+            <tr><th>Name</th><th>Role</th><th>Age</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Ada Lovelace</td><td>Analyst</td><td>36</td></tr>
+            <tr><td>Grace Hopper</td><td>Rear Admiral</td><td>45</td></tr>
+            <tr><td>Alan Turing</td><td>Cryptanalyst</td><td>41</td></tr>
+        </tbody>
+    </text>;
+
+    public static RenderFragment PeopleColumns => @<text>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </text>;
+
+    public static RenderFragment<CellContext<Person>> RoleBadge => context => @<span class="badge badge-soft badge-primary">@context.Item.Role</span>;
+
+    public static RenderFragment PeoplePager => @<DataGridPager T="Person" PageSizeOptions="PageSizes" />;
+
+    public static RenderFragment<Person> PersonActions => context => @<text>
+        <IconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Title="@($"Edit {context.Name}")" />
+    </text>;
+
+    public static RenderFragment CustomerFilters => @<text>
+        <Item xs="12" sm="6">
+            <TextField Label="Customer" Placeholder="Northwind Traders" />
+        </Item>
+        <Item xs="12" sm="6">
+            <Select T="string" Label="Plan" Value="@("Pro")">
+                <SelectItem T="string" Value="@("Free")">Free</SelectItem>
+                <SelectItem T="string" Value="@("Pro")">Pro</SelectItem>
+                <SelectItem T="string" Value="@("Enterprise")">Enterprise</SelectItem>
+            </Select>
+        </Item>
+    </text>;
+
     // --- Scaffolds --------------------------------------------------------------------------
 
     // The specimen initialises (so registers) after the sibling wherever it sits in the markup, and

@@ -160,10 +160,6 @@ public partial class DaisyPresetTests
         }
     }
 
-    [TestCaseSource(nameof(LayoutCurated))]
-    public void EveryLayoutVariant_ChangesTheParameterDictionary(Type component)
-        => EveryVariant_ChangesTheParameterDictionary(component);
-
     [Test]
     public void NavMenuLink_CurrentPageVariant_IsHighlightedOnTheExplorer()
     {

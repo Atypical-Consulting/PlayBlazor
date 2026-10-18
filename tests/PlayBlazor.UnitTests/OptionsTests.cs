@@ -39,6 +39,21 @@ public class OptionsTests
     }
 
     [Test]
+    public void TemplatePreset_MatchesItsExactClosingOnly()
+    {
+        // A RenderFragment<int> served to GenericFixture<string> would be an InvalidCastException.
+        RenderFragment<int> template = value => builder => builder.AddContent(0, value);
+        var options = new PlayBlazorOptions();
+        options.For<GenericFixture<int>>().Slot("RowTemplate", template, "@context");
+
+        options.TryGetTemplatePreset(typeof(GenericFixture<int>), "RowTemplate", out var found).Should().BeTrue();
+        found.Should().BeSameAs(template);
+        options.TryGetTemplatePreset(typeof(GenericFixture<string>), "RowTemplate", out _).Should().BeFalse();
+        options.TryGetSlotSource(typeof(GenericFixture<int>), "RowTemplate", out var source).Should().BeTrue();
+        source.Should().Be("@context");
+    }
+
+    [Test]
     public void AddPlayBlazor_WithConfigure_RegistersConfiguredOptions()
     {
         var services = new ServiceCollection()

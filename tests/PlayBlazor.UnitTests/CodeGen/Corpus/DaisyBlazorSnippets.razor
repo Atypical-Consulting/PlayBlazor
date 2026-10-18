@@ -4,8 +4,8 @@
    panel actually builds. Do not hand-edit the block between the markers — SnippetCorpusTests
    regenerates it and will fail if it drifts. Fix the curation, not the corpus.
 
-   The showcase is a seed (milestone 4 curates it), so most snippets below are bare tags: what
-   they prove today is that every listed component's default snippet compiles.
+   Every listed component is curated (milestone 4), so each snippet below is the preset bench
+   a visitor sees first, scaffold included.
 
    The @code block at the bottom stands in for the fields a host declares beside its own bench;
    the snippets reference them by the @_camelCase names the generator emits for values that have
@@ -156,7 +156,16 @@
 <Countdown Value="42" Class="font-mono text-5xl" />
 
 @* DataGrid *@
-<DataGrid T="Person" />
+<DataGrid T="Person" Items="@_people">
+    <Columns>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+    <PagerContent>
+        <DataGridPager T="Person" PageSizeOptions="@(new[] { 2, 5, 10 })" />
+    </PagerContent>
+</DataGrid>
 
 @* DataGridPager *@
 <DataGrid T="Person" Items="@_people" RowsPerPage="2" PageSizeOptions="@(new[] { 2, 5, 10 })">
@@ -170,7 +179,18 @@
 </DataGrid>
 
 @* DataTable *@
-<DataTable T="Person" />
+<DataTable T="Person"
+           Items="@_people"
+           PageSizeOptions="@(new[] { 2, 5, 10 })">
+    <Columns>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+    <Actions>
+        <IconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Title="@($"Edit {context.Name}")" />
+    </Actions>
+</DataTable>
 
 @* DatePicker *@
 <DatePicker Date="@(new DateTime(1815, 12, 10))" Label="Birth date" />
@@ -364,7 +384,18 @@
 <FileInput Label="Profile picture" Accept="image/*" />
 
 @* FilterPanel *@
-<FilterPanel />
+<FilterPanel ActiveFilters="@_activeFilters">
+    <Item xs="12" sm="6">
+        <TextField Label="Customer" Placeholder="Northwind Traders" />
+    </Item>
+    <Item xs="12" sm="6">
+        <Select T="string" Label="Plan" Value="@("Pro")">
+            <SelectItem T="string" Value="@("Free")">Free</SelectItem>
+            <SelectItem T="string" Value="@("Pro")">Pro</SelectItem>
+            <SelectItem T="string" Value="@("Enterprise")">Enterprise</SelectItem>
+        </Select>
+    </Item>
+</FilterPanel>
 
 @* FloatingLabel *@
 <FloatingLabel Label="Email"><input type="email" class="input" placeholder="ada@example.com" /></FloatingLabel>
@@ -459,7 +490,11 @@
 <Kbd>Ctrl</Kbd>
 
 @* KpiCard *@
-<KpiCard />
+<div class="w-80">
+    <KpiCard Label="Monthly recurring revenue"
+             Value="€48.2 k"
+             Subtitle="+12% vs. September" />
+</div>
 
 @* List *@
 <List Class="w-80">
@@ -678,7 +713,16 @@
 <ServerValidation State="@_validation"><TextField Label="Email" FieldName="Email" Value="@("ada@example.com")" /></ServerValidation>
 
 @* SimpleTable *@
-<SimpleTable />
+<SimpleTable>
+    <thead>
+        <tr><th>Name</th><th>Role</th><th>Age</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Ada Lovelace</td><td>Analyst</td><td>36</td></tr>
+        <tr><td>Grace Hopper</td><td>Rear Admiral</td><td>45</td></tr>
+        <tr><td>Alan Turing</td><td>Cryptanalyst</td><td>41</td></tr>
+    </tbody>
+</SimpleTable>
 
 @* Skeleton *@
 <Skeleton Width="12rem" Height="1rem" />
@@ -723,7 +767,7 @@
 <Status Color="Color.Success" AriaLabel="Online" />
 
 @* StatusChip *@
-<StatusChip />
+<StatusChip Status="Shipment.Delayed" Map="@_shipmentStatus" />
 
 @* Step *@
 <Steps>
@@ -760,7 +804,18 @@
 </Tabs>
 
 @* Table *@
-<Table T="Person" />
+<Table T="Person" Items="@_people">
+    <HeaderContent>
+        <Th>Name</Th>
+        <Th>Role</Th>
+        <Th>Age</Th>
+    </HeaderContent>
+    <RowTemplate>
+        <Td>@context.Name</Td>
+        <Td>@context.Role</Td>
+        <Td>@context.Age</Td>
+    </RowTemplate>
+</Table>
 
 @* TablePager *@
 <Table T="Person" Items="@_people" RowsPerPage="2">
@@ -800,7 +855,11 @@
 @* TemplateColumn *@
 <DataGrid T="Person" Items="@_people">
     <Columns>
-        <TemplateColumn T="Person" Title="Role" />
+        <TemplateColumn T="Person" Title="Role">
+            <CellTemplate>
+                <span class="badge badge-soft badge-primary">@context.Item.Role</span>
+            </CellTemplate>
+        </TemplateColumn>
         <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
     </Columns>
 </DataGrid>
@@ -896,4 +955,6 @@
     private readonly IReadOnlyList<string> _fruits = DaisyPlaygroundConfig.ListOptions;
     private readonly string _photo = DaisyPlaygroundConfig.SamplePhoto;
     private readonly string _photoMuted = DaisyPlaygroundConfig.SamplePhotoMuted;
+    private readonly IReadOnlyList<ActiveFilter> _activeFilters = DaisyPlaygroundConfig.SampleFilters;
+    private readonly StatusMap _shipmentStatus = DaisyPlaygroundConfig.ShipmentStatus;
 }
