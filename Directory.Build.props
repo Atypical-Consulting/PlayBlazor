@@ -26,12 +26,10 @@
   </PropertyGroup>
 
   <!-- Versioning -->
-  <!-- MinVer derives the version from the nearest v-prefixed git tag; untagged builds become
-       the next patch as a -preview. Skipped in Debug so local builds do not shell out to git. -->
+  <!-- One version for the package, bumped by the release-please PR (see release-please-config.json).
+       Do not hand-edit it. -->
   <PropertyGroup>
-    <MinVerTagPrefix>v</MinVerTagPrefix>
-    <MinVerDefaultPreReleaseIdentifiers>preview</MinVerDefaultPreReleaseIdentifiers>
-    <MinVerSkip Condition="'$(Configuration)' == 'Debug'">true</MinVerSkip>
+    <Version>0.1.0</Version> <!-- x-release-please-version -->
   </PropertyGroup>
 
   <!-- Source Link -->

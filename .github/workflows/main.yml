@@ -1,7 +1,8 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
 # This workflow triggers on pushes to the main branch.
-# It builds the project, runs tests to ensure stability and creates a release draft.
+# It builds the project, runs the tests and packs + validates the NuGet package. Releasing and
+# publishing to NuGet live in release-please.yml.
 
 name: Main Branch CI
 
@@ -11,9 +12,6 @@ on:
     branches:
       - "main"       # Trigger the workflow on pushes to the main branch
   pull_request:
-  release:
-    types:
-      - published    # Run the workflow when a new GitHub release is published
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -61,8 +59,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
 
       # Install the .NET SDK indicated in the global.json file
       - name: Setup .NET
@@ -118,62 +114,3 @@ jobs:
       # using the --excluded-rules or --excluded-rule-ids option
       - name: Validate package
         run: meziantou.validate-nuget-package (Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg")
-
-  update_release_draft:
-    permissions:
-      contents: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: release-drafter/release-drafter@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy:
-    # Publish only when creating a GitHub Release
-    # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
-    if: github.event_name == 'release'
-    runs-on: ubuntu-latest
-    needs: [ validate_nuget, run_test ]
-
-    # Job-level, so it must restate contents: read — a job-level block REPLACES the
-    # workflow-level one rather than adding to it.
-    permissions:
-      contents: read
-      id-token: write # request the GitHub OIDC token for NuGet Trusted Publishing
-
-    steps:
-      # Download the NuGet package created in the previous job
-      - uses: actions/download-artifact@v8
-        with:
-          name: nuget
-          path: ${{ env.NuGetDirectory }}
-
-      # Install the .NET SDK indicated in the global.json file
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 10.x
-
-      # Publish all NuGet packages to NuGet.org
-      # Use --skip-duplicate to prevent errors if a package with the same version already exists.
-      # If you retry a failed workflow, already published packages will be skipped without error.
-      # Trusted Publishing: exchanges the OIDC token (needs `id-token: write` above) for a NuGet
-      # key valid ~1 hour, so no long-lived secret is stored. Keep it adjacent to the push so the
-      # key cannot expire in between. Requires a Trusted Publishing policy on nuget.org naming
-      # this repository and `main.yml`, plus the NUGET_USER secret (the nuget.org profile name).
-      # Deliberately UNGUARDED: this job only runs on a published Release, so publishing is
-      # expected. A missing policy must fail loudly rather than skip and leave the release
-      # unpublished behind a green check.
-      - name: NuGet login (OIDC -> short-lived key)
-        id: nuget-login
-        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
-        with:
-          user: ${{ secrets.NUGET_USER }}
-
-      - name: Publish NuGet package
-        run: |
-          foreach($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
-              dotnet nuget push $file --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          }
