@@ -16,7 +16,7 @@ MudBlazor, Fluent UI and DaisyBlazor appear only in `demo/` and `tests/`, as the
 
 ```bash
 dotnet build -c Release
-dotnet test -c Release                                     # 393 tests, 6 skipped, ~2s
+dotnet test -c Release                                     # 401 tests, 6 skipped, ~2s
 dotnet test -c Release -- --filter "FullyQualifiedName~X"  # single suite (MTP, note the `--`)
 dotnet run --project demo/PlayBlazor.Demo.MudBlazor         # showcase on / and /explorer
 ```
@@ -32,7 +32,7 @@ project. The migration guide claims `--nologo` still works; it does not. Exit co
 Two `[Explicit]` suites (`RenderSweep`, `ListUnsupportedParameterTypes`) are diagnostic inventories
 that print a report instead of asserting; run them on demand when auditing a component library.
 They are parametrized per explored library (MudBlazor, Fluent UI and DaisyBlazor), so a normal run
-discovers all 393 tests but skips these 6 (2 suites × 3 libraries) rather than executing them.
+discovers all 401 tests but skips these 6 (2 suites × 3 libraries) rather than executing them.
 
 **`dotnet test` does not print a passing test's output**, and these suites only print — the run
 says `passed` and the report is nowhere. Run the built test executable directly to see it:
@@ -56,7 +56,7 @@ run that measured nothing.
 | `demo/PlayBlazor.Demo.Shared` | The library-agnostic demo chrome (`DemoLanding`, `LibrarySwitcher`) shared by every showcase app. Zero UI dependencies — same constraint as `src/PlayBlazor`. |
 | `demo/PlayBlazor.Demo.MudBlazor` | `PlaygroundConfig.cs` holds every preset, scaffold, variant and exclusion for the MudBlazor showcase. Namespace stays `PlayBlazor.DemoHost` even though the project and assembly are `PlayBlazor.Demo.MudBlazor`. |
 | `demo/PlayBlazor.Demo.FluentUI` | Fluent UI Blazor showcase, curated to the same depth as MudBlazor's. `FluentPlaygroundConfig.cs` holds every preset, scaffold, variant and the `Infrastructure` deny-list, plus the hand-written `FluentIconCatalogue` (24 SVGs, no dependency on the 23 MB icons package). A few components are deliberately left imperfect rather than faked — see the comments beside them in that file. |
-| `demo/PlayBlazor.Demo.Daisy` | DaisyBlazor showcase — a **seed** until milestone 4: `DaisyPlaygroundConfig.cs` holds only the `Infrastructure` deny-list, the `DaisyIconCatalogue` (every `Icons.Material.Filled` ligature, previewed in the Material Symbols font) and the flagship `Button`. It is swept, inventoried and corpus-checked like the others, but sits outside `ExploredLibraries.Curated`, so the curation-completeness and variant-liveness gates skip it. Its stylesheet is generated: the DaisyBlazor NuGet package compiles `Styles/main.css` to the git-ignored `wwwroot/css/app.css` with the Tailwind standalone CLI on every build (`DaisyBlazorBuildCss`) — no Node, no npm. |
+| `demo/PlayBlazor.Demo.Daisy` | DaisyBlazor showcase — a **seed** until milestone 4: `DaisyPlaygroundConfig.cs` holds only the `Infrastructure` deny-list, the generic closings (`NumericField<int>`, the `Person`-row tables and grids), the `DaisyIconCatalogue` (every `Icons.Material.Filled` ligature, previewed in the Material Symbols font) and the flagship `Button`. It is swept, inventoried and corpus-checked like the others, but sits outside `ExploredLibraries.Curated`, so the curation-completeness and variant-liveness gates skip it. Its stylesheet is generated: the DaisyBlazor NuGet package compiles `Styles/main.css` to the git-ignored `wwwroot/css/app.css` with the Tailwind standalone CLI on every build (`DaisyBlazorBuildCss`) — no Node, no npm. |
 | `docs/superpowers` | Incubation-era design spec, milestone plans, and the UX concept prototypes (A→G) whose concept G v2 is the shell that exists today. Paths quoted inside them predate the `src`/`tests`/`demo` split. |
 
 ## Traps learned the hard way

@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- data-theme pins the light daisyblazor theme. The preset marks daisyblazor-dark --prefersdark,
+     applied under "@media (prefers-color-scheme: dark) { :root:not([data-theme]) }": on a dark OS every
+     specimen would turn dark inside the light-only PlayBlazor shell. Any data-theme value disables that
+     rule. ThemeController still works: its ":root:has(input.theme-controller[value=x]:checked)"
+     selector outranks [data-theme=daisyblazor] on specificity. -->
+<html lang="en" data-theme="daisyblazor">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

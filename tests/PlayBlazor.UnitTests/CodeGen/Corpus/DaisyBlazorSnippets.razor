@@ -6,7 +6,12 @@
 
    The showcase is a seed (milestone 4 curates it), so most snippets below are bare tags: what
    they prove today is that every listed component's default snippet compiles.
+
+   The @code block at the bottom stands in for the fields a host declares beside its own bench;
+   the snippets reference them by the @_camelCase names the generator emits for values that have
+   no literal form.
 *@
+@using System.Linq.Expressions
 @using DaisyBlazor
 @using DaisyBlazor.Data
 @using DaisyBlazor.Feedback
@@ -84,13 +89,13 @@
 <Countdown />
 
 @* DataGrid *@
-<DataGrid T="string" />
+<DataGrid T="Person" />
 
 @* DataGridPager *@
-<DataGridPager T="string" />
+<DataGridPager T="Person" />
 
 @* DataTable *@
-<DataTable T="string" />
+<DataTable T="Person" />
 
 @* DatePicker *@
 <DatePicker />
@@ -252,7 +257,7 @@
 <Navbar />
 
 @* NumericField *@
-<NumericField T="string" />
+<NumericField T="int" />
 
 @* PageHeader *@
 <PageHeader />
@@ -270,7 +275,9 @@
 <ProgressLinear />
 
 @* PropertyColumn *@
-<PropertyColumn T="string" TProperty="string" />
+<PropertyColumn T="Person"
+                TProperty="string"
+                Property="@_property" />
 
 @* QuickAccessButton *@
 <QuickAccessButton />
@@ -345,7 +352,7 @@
 <Tab />
 
 @* Table *@
-<Table T="string" />
+<Table T="Person" />
 
 @* TablePager *@
 <TablePager />
@@ -357,7 +364,7 @@
 <Td />
 
 @* TemplateColumn *@
-<TemplateColumn T="string" />
+<TemplateColumn T="Person" />
 
 @* TextField *@
 <TextField />
@@ -398,3 +405,7 @@
 @* ValidatorHint *@
 <ValidatorHint />
 @* ==> generated snippets end <== *@
+
+@code {
+    private readonly Expression<Func<Person, string>> _property = p => p.Name;
+}

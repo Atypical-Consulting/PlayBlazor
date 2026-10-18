@@ -271,6 +271,14 @@ c'est le filet de sécurité de la restructuration.
   « vérifié empiriquement » sans la commande ni la sortie qui l'établissent ne vaut pas
   vérification, et une erreur inscrite au spec survit à toutes les revues qui le prennent pour
   autorité.
+- **`Icon.Name` de DaisyBlazor n'obtient pas le sélecteur d'icônes** — découvert en posant
+  l'infrastructure de la curation Daisy (jalon 4, lot 1). La règle 1 du §3.3 exige un nom finissant
+  par `Icon` ; `Icon.Name` est pourtant la ligature même que le catalogue `DaisyIconCatalogue`
+  connaît. `Button.StartIcon`, `IconButton.Icon`, `ToggleItem.Icon` & co. reçoivent bien le
+  sélecteur, le composant `Icon` lui-même non. Contourné côté démo par un preset et des variantes
+  (lot 5), sans toucher au package : élargir la règle (un attribut, ou une liste de paramètres
+  nommés par l'hôte) est une décision d'API qui mérite son propre examen, et la règle « un
+  catalogue remplit, n'élargit jamais un kind » doit rester intacte.
 - **`demo.css` fait fuiter un nom MudBlazor dans le chrome partagé** —
   `demo/PlayBlazor.Demo.Shared/wwwroot/css/demo.css:207` utilise
   `var(--mud-palette-text-primary, inherit)`, une custom property nommée pour MudBlazor, à
