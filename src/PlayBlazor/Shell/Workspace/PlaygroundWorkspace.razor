@@ -18,15 +18,20 @@
         @* "./" resolves against <base href>, so the wordmark lands on the app root wherever the host
            mounts it. A bare "/" would jump to the domain root instead. *@
         <a class="pbw-wordmark" href="./" title="Back to the landing page"><span>&#9654;</span> PlayBlazor</a>
-        @* The rail is the browser on wide screens; on narrow ones this searchable input takes over. *@
-        <input class="pbw-picker" list="pbw-components" value="@_selected.DisplayName" @key="_pickerVersion"
-               onfocus="this.select()" @onchange="OnPickerChanged" aria-label="Component" placeholder="Component…" />
-        <datalist id="pbw-components">
-            @foreach (var component in PickerGroups.SelectMany(static g => g))
+        @* The rail is the browser on wide screens; on narrow ones this grouped picker takes over,
+           so categories and counts stay visible without the rail. *@
+        <select class="pbw-picker" value="@_selected.DisplayName" @key="_pickerVersion"
+                @onchange="OnPickerChanged" aria-label="Component">
+            @foreach (var group in PickerGroups)
             {
-                <option value="@component.DisplayName">@ShortCategory(component.Category)</option>
+                <optgroup label="@($"{ShortCategory(group.Key)} · {group.Count()}")">
+                    @foreach (var component in group)
+                    {
+                        <option value="@component.DisplayName" selected="@(component.Type == _selected.Type)">@component.DisplayName</option>
+                    }
+                </optgroup>
             }
-        </datalist>
+        </select>
         <div class="pbw-pills" role="group" aria-label="Panels">
             @for (var i = 0; i < Panels.Length; i++)
             {
@@ -45,9 +50,9 @@
             <button type="button" class="pbw-mode @(_present ? "pbw-mode-active" : null)" aria-pressed="@(_present ? "true" : "false")" @onclick="() => SetPresent(true)">Present</button>
         </div>
         <div class="pbw-bar-right">
-            <button type="button" class="pbw-help-btn" aria-keyshortcuts="?" title="Keyboard shortcuts (?)" @onclick="() => _help = !_help">Shortcuts <kbd class="pbw-kbd">?</kbd></button>
+            <button type="button" class="pbw-help-btn" aria-keyshortcuts="?" aria-label="Help and keyboard shortcuts" title="Help and keyboard shortcuts (?)" @onclick="() => _help = !_help"><span class="pbw-btn-label">Help</span> <kbd class="pbw-kbd">?</kbd></button>
             <button type="button" class="pbw-reset-layout" title="Restore the default panel arrangement" @onclick="ResetLayout">Reset layout</button>
-            <button type="button" class="pbw-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">@Icon(IconShare) Share</button>
+            <button type="button" class="pbw-share" title="Copy a link to this exact configuration" aria-label="Share this configuration" @onclick="CopyShareLink">@Icon(IconShare) <span class="pbw-btn-label">Share</span></button>
         </div>
     </header>
 
@@ -127,6 +132,10 @@
             {
                 <div class="pbw-error" role="alert">
                     <strong>This component cannot be rendered.</strong>
+                    <p class="pbw-error-hint">
+                        The playground cannot create it on its own. Pick another component in the list;
+                        the reason below tells the host what this one needs.
+                    </p>
                     <pre>@_selected.Warning</pre>
                 </div>
             }
@@ -235,7 +244,7 @@
         <div class="pbw-help-scrim" @onclick="() => _help = false"></div>
         <div class="pbw-help" role="dialog" aria-modal="true" aria-labelledby="pbw-help-title">
             <div class="pbw-help-head">
-                <h2 id="pbw-help-title">Keyboard shortcuts</h2>
+                <h2 id="pbw-help-title">Help and shortcuts</h2>
                 <button type="button" class="pbw-help-close" aria-label="Close" @onclick="() => _help = false">@Icon(IconClose)</button>
             </div>
             <dl class="pbw-help-list">
@@ -247,7 +256,16 @@
                 <dt><kbd class="pbw-kbd">Esc</kbd></dt><dd>Leave Present, close this sheet</dd>
                 <dt><kbd class="pbw-kbd">?</kbd></dt><dd>Show this sheet</dd>
             </dl>
-            <p class="pbw-help-note">Drag a panel by its header to dock it elsewhere or float it; double-click the header to send it back.</p>
+            <h3 class="pbw-help-sub">Reading the bench</h3>
+            <dl class="pbw-help-terms">
+                <dt>Tree</dt><dd>What the stage renders. A <em>wrapped</em> component sits inside the parent it needs.</dd>
+                <dt>Parameters</dt><dd>Every [Parameter] the component declares. A dot marks a changed value; <em>set by the demo</em> means the demo fills it for you; <em>code only</em> means it has no control here.</dd>
+                <dt>Events</dt><dd>Every EventCallback the component raises, newest first.</dd>
+            </dl>
+            <p class="pbw-help-note">
+                Drag a panel by its header to dock it elsewhere or float it; double-click the header to send it back.
+                <button type="button" class="pbw-help-reset" @onclick="ResetLayout">Reset layout</button>
+            </p>
         </div>
     }
 
@@ -269,7 +287,7 @@
     private RenderFragment PanelFragment(string id) => id switch
     {
         GraphId => @<WorkspacePanel @key="GraphId" Id="@GraphId" Title="Tree"
-                                    Badge="@(Options.TryGetScaffold(_selected!.Type, out _) ? "scaffold" : null)"
+                                    Badge="@(Options.TryGetScaffold(_selected!.Type, out _) ? "wrapped" : null)"
                                     Collapsed="_collapsed.Contains(GraphId)" FloatInfo="_layout.Float(GraphId)"
                                     OnToggleCollapse="() => ToggleCollapse(GraphId)"
                                     OnClose="() => TogglePanel(GraphId)"
@@ -280,7 +298,8 @@
                     switch (node.Kind)
                     {
                         case GraphNodeKind.Scaffold:
-                            <span class="pbw-tnode pbw-tnode-info" style="padding-left:@(0.45 + node.Depth * 0.85)rem">
+                            <span class="pbw-tnode pbw-tnode-info" style="padding-left:@(0.45 + node.Depth * 0.85)rem"
+                                  title="The demo renders the component inside this wrapper, because it needs a parent">
                                 <span class="pbw-tag-p">&#9671;</span> @node.Label
                             </span>
                             break;
@@ -309,7 +328,7 @@
                     @foreach (var component in related)
                     {
                         <button type="button" @key="component.Type"
-                                class="pbw-tnode pbw-tnode-link" title="Open this component's bench"
+                                class="pbw-tnode pbw-tnode-link" title="Open this component"
                                 @onclick="() => SelectComponent(component)">
                             <span class="pbw-tnode-arrow">&#8599;</span>
                             <span class="pbw-tag-p">&lt;</span><span class="pbw-tag-n">@component.DisplayName</span>@if (GenericAttrs(component.Type) is { } attrs)
@@ -317,13 +336,9 @@
                         </button>
                     }
                 }
-                <div class="pbw-tree-hint">
-                    The tree is what the stage renders: scaffold, component, filled slots.
-                    Related opens another component's bench.
-                </div>
             </Body>
         </WorkspacePanel>,
-        ParametersId => @<WorkspacePanel @key="ParametersId" Id="@ParametersId" Title="Parameters" Badge="@_selected!.DisplayName"
+        ParametersId => @<WorkspacePanel @key="ParametersId" Id="@ParametersId" Title="Parameters"
                                          Collapsed="_collapsed.Contains(ParametersId)" FloatInfo="_layout.Float(ParametersId)"
                                          OnToggleCollapse="() => ToggleCollapse(ParametersId)"
                                          OnClose="() => TogglePanel(ParametersId)"
@@ -369,18 +384,29 @@
                                     {
                                         <button type="button" class="pbw-prow-reset" title="Restore default"
                                                 aria-label="@($"Restore the default {parameter.Name}")"
-                                                @onclick="() => _state.Reset(parameter.Name)">@Icon(IconClose)</button>
+                                                @onclick="() => _state.Reset(parameter.Name)">@Icon(IconReset)</button>
                                     }
                                 }
                                 else if (parameter.Kind is ControlKind.Event)
                                 {
                                     <span class="pbw-prow-name">@parameter.Name</span>
-                                    <span class="pbw-wired">&#9889; wired</span>
+                                    <span class="pbw-wired" title="Every time the component raises it, it shows in the Events panel">logged in Events</span>
                                 }
                                 else
                                 {
                                     <span class="pbw-prow-name">@parameter.Name</span>
-                                    <span class="pbw-slot-badge">&#9671; @(Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _) || Options.TryGetTemplatePreset(_selected!.Type, parameter.Name, out _) || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _) ? "host preset" : ParameterSignature.TypeName(parameter.Type))</span>
+                                    @if (Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _) || Options.TryGetTemplatePreset(_selected!.Type, parameter.Name, out _) || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _))
+                                    {
+                                        <span class="pbw-slot-badge" title="The demo fills this in for you; it shows in the Tree and Razor panels">set by the demo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pbw-slot-badge" title="@($"Set it from code: {ParameterSignature.TypeName(parameter.Type)}")">@ParameterSignature.FriendlyTypeName(parameter.Type) · code only</span>
+                                    }
+                                }
+                                @if (parameter.Summary is { Length: > 0 } summary)
+                                {
+                                    <p class="pbw-prow-doc">@summary</p>
                                 }
                             </div>
                         }

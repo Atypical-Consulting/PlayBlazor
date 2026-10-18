@@ -5,7 +5,7 @@
         @if (Parameter.IsNullable)
         {
             @* Without this option a null value silently displays as the first member. *@
-            <option value="">(null)</option>
+            <option value="">Default</option>
         }
         @foreach (var name in Enum.GetNames(EnumType))
         {

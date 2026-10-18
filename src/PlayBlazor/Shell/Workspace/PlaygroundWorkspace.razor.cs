@@ -304,9 +304,13 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private ComponentDescriptor DefaultComponent()
         => _components.FirstOrDefault(c => c.CanInstantiate && Options.GetVariants(c.Type).Count > 0) ?? _components[0];
 
-    /// <summary>The last namespace segment: "Utilities" reads as a category, the full namespace does not.</summary>
+    /// <summary>
+    /// The last namespace segment: "Utilities" reads as a category, the full namespace does not.
+    /// A library's root namespace ("….Components") holds its general-purpose components, so it reads
+    /// as "General" instead of repeating the rail's own "Components" title.
+    /// </summary>
     private static string ShortCategory(string category)
-        => category.Length == 0 ? "Components" : category[(category.LastIndexOf('.') + 1)..];
+        => category[(category.LastIndexOf('.') + 1)..] is { Length: > 0 } last and not "Components" ? last : "General";
 
     private void OnPickerChanged(ChangeEventArgs e)
     {
@@ -633,7 +637,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             {
                 nodes.Add(new GraphNode(
                     GraphNodeKind.Slot, parameter.Name,
-                    filledByHost && !filledByUser ? "host preset" : null, null, false, depth + 1));
+                    filledByHost && !filledByUser ? "set by the demo" : null, null, false, depth + 1));
             }
         }
 

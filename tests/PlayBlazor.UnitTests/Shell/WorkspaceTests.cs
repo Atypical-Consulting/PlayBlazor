@@ -186,7 +186,7 @@ public class WorkspaceTests
                 PlayBlazor.Model.ControlKind.Enum, IsNullable: true,
                 DefaultValue: null, HasDefault: true, Summary: null)));
 
-        cut.FindAll("option")[0].TextContent.Should().Be("(null)");
+        cut.FindAll("option")[0].TextContent.Should().Be("Default");
         cut.Find("select").GetAttribute("value").Should().BeNullOrEmpty();
     }
 

@@ -6,6 +6,7 @@
     --pbw-line: #e0e0ea;
     --pbw-hair: #ececf3;
     --pbw-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --pbw-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     background: #ffffff;
     border: 1px solid var(--pbw-line);
     border-radius: 12px;
@@ -42,10 +43,11 @@
 .pbw-ph-grip { color: #9d9db0; font-size: 0.75rem; }
 .pbw-ph-title {
     margin: 0;
-    font-family: var(--pbw-mono);
-    font-size: 0.6875rem;
+    font-family: var(--pbw-ui);
+    font-size: 0.75rem;
+    line-height: 1.3; /* Fluent UI gives bare h2 a 40px line box */
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 .pbw-ph-badge {
@@ -74,7 +76,7 @@
     border: 0;
     color: var(--pbw-muted);
     cursor: pointer;
-    font-family: var(--pbw-mono);
+    font-family: var(--pbw-ui);
     font-size: 0.6875rem;
     font-weight: 600;
     padding: 0 0.35rem;

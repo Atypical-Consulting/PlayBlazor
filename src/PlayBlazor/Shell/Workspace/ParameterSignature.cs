@@ -53,6 +53,39 @@ public static class ParameterSignature
         };
     }
 
+    /// <summary>
+    /// A plain-language name for a type the bench cannot drive, shown in place of a control:
+    /// "attributes" reads better than <c>IReadOnlyDictionary&lt;string, object&gt;</c>.
+    /// The exact type stays in the row tooltip.
+    /// </summary>
+    internal static string FriendlyTypeName(Type type)
+    {
+        var underlying = Nullable.GetUnderlyingType(type) ?? type;
+        if (underlying == typeof(object))
+        {
+            return "any value";
+        }
+
+        if (typeof(Delegate).IsAssignableFrom(underlying))
+        {
+            return "callback";
+        }
+
+        if (underlying.IsGenericType && underlying.GetInterfaces().Append(underlying)
+                .Any(static i => i.IsGenericType && i.GetGenericTypeDefinition() is var d
+                    && (d == typeof(IDictionary<,>) || d == typeof(IReadOnlyDictionary<,>))))
+        {
+            return "attributes";
+        }
+
+        if (underlying != typeof(string) && typeof(System.Collections.IEnumerable).IsAssignableFrom(underlying))
+        {
+            return "list";
+        }
+
+        return underlying.IsGenericType ? underlying.Name[..underlying.Name.IndexOf('`')] : underlying.Name;
+    }
+
     internal static string TypeName(Type type)
     {
         if (Nullable.GetUnderlyingType(type) is { } underlying)
