@@ -45,8 +45,8 @@
 .pbw-pill {
     display: inline-flex; align-items: center; gap: 0.4rem;
     font-family: var(--pbw-ui); font-size: 0.75rem; font-weight: 600;
-    color: #a9a9bd; background: transparent; border: 1px solid #2f2f40;
-    border-radius: 999px; padding: 0.3rem 0.4rem 0.3rem 0.7rem; min-height: 30px; cursor: pointer;
+    color: #8d8da3; background: transparent; border: 1px solid transparent;
+    border-radius: 8px; padding: 0.3rem 0.4rem 0.3rem 0.6rem; min-height: 30px; cursor: pointer;
 }
 .pbw-kbd {
     font-family: var(--pbw-mono); font-size: 0.6875rem; font-weight: 600; line-height: 1;
@@ -56,7 +56,9 @@
     background: transparent; color: inherit; box-shadow: none; margin: 0; vertical-align: baseline;
 }
 .pbw-pill:hover { color: #e8e8f2; }
-.pbw-pill-on { color: var(--pbw-accent-soft); border-color: var(--pbw-accent); }
+/* View toggles, not actions: quiet at rest, a soft fill when the panel is showing. */
+.pbw-pill-on { color: #e8e8f2; background: rgba(161, 139, 255, 0.16); }
+.pbw-pill-on .pbw-kbd { color: var(--pbw-accent-soft); }
 .pbw-modes {
     position: absolute; left: 50%; transform: translateX(-50%);
     display: flex; background: rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 3px;
@@ -69,13 +71,13 @@
 .pbw-mode:hover { color: #e8e8f2; }
 .pbw-mode-active { color: #fff; background: var(--pbw-accent); }
 .pbw-bar-right { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; }
-.pbw-reset-layout, .pbw-help-btn {
+.pbw-help-btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
     font-family: var(--pbw-ui); font-size: 0.75rem; color: #a9a9bd;
     background: transparent; border: 1px solid #2f2f40; border-radius: 8px;
     padding: 0.3rem 0.65rem; min-height: 32px; cursor: pointer;
 }
-.pbw-reset-layout:hover, .pbw-help-btn:hover { color: #e8e8f2; border-color: #a9a9bd; }
+.pbw-help-btn:hover { color: #e8e8f2; border-color: #a9a9bd; }
 .pbw-share {
     display: inline-flex; align-items: center; gap: 0.4rem;
     font-family: var(--pbw-ui); font-size: 0.75rem; font-weight: 600; color: #fff;
@@ -123,6 +125,9 @@
 }
 .pbw-rail-item:hover { background: var(--pbw-bg); }
 .pbw-rail-item-on, .pbw-rail-item-on:hover { background: rgba(109, 74, 255, 0.12); color: #4c30c4; font-weight: 650; }
+/* The prefix every component shares ("Mud", "Fluent") steps back so the distinguishing name leads. */
+.pbw-rail-prefix { color: #85859a; font-weight: 400; }
+.pbw-rail-item-on .pbw-rail-prefix { color: #7d67e0; }
 .pbw-rail-empty { font-family: var(--pbw-ui); font-size: 0.75rem; color: var(--pbw-muted); padding: 0.5rem; margin: 0; line-height: 1.6; }
 .pbw-rail-hint {
     margin: 0; padding: 0.5rem 0.8rem; border-top: 1px solid var(--pbw-hair);
@@ -151,10 +156,12 @@
 /* One row: chips on the left, surface tools on the right. Long chip sets scroll sideways
    so the toolbar never drops under them. */
 .pbw-stage-top {
-    position: absolute; top: 0.7rem; left: 0.8rem; right: 0.8rem; z-index: 2;
-    display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem;
-    pointer-events: none;
+    position: absolute; top: 0; left: 0; right: 0; z-index: 2;
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+    padding: 0.5rem 0.7rem 0.5rem 0.8rem;
+    background: var(--pbw-card); border-bottom: 1px solid var(--pbw-hair);
 }
+.pbw-stage-dark .pbw-stage-top { background: #14141c; border-bottom-color: #2b2b3a; }
 .pbw-stage-top > * { pointer-events: auto; }
 .pbw-chips {
     display: flex; gap: 0.375rem; align-items: center; min-width: 0;
@@ -169,17 +176,22 @@
 }
 .pbw-chip:hover { border-color: var(--pbw-accent); color: var(--pbw-accent); }
 .pbw-chip-active { color: #fff; background: var(--pbw-accent); border-color: var(--pbw-accent); }
-.pbw-stage-toolbar { display: flex; flex: none; gap: 0.3rem; margin-left: auto; }
+/* The surface tools form one segmented group, so they never read as more example chips. */
+.pbw-stage-toolbar {
+    display: flex; flex: none; gap: 2px; margin-left: auto; padding: 2px;
+    background: #fff; border: 1px solid var(--pbw-line); border-radius: 10px;
+}
 .pbw-env-btn {
     font-family: var(--pbw-ui); font-size: 0.75rem; font-weight: 600; color: var(--pbw-muted);
-    background: #fff; border: 1px solid var(--pbw-line); border-radius: 8px;
-    min-width: 32px; height: 32px; padding: 0 0.6rem; cursor: pointer;
+    background: transparent; border: 0; border-radius: 8px;
+    min-width: 32px; height: 30px; padding: 0 0.6rem; cursor: pointer;
 }
-.pbw-env-btn:hover { color: var(--pbw-ink); }
-.pbw-env-on { color: var(--pbw-accent); border-color: var(--pbw-accent); background: rgba(109, 74, 255, 0.1); }
+.pbw-env-btn:hover { color: var(--pbw-ink); background: var(--pbw-bg); }
+.pbw-env-on, .pbw-env-on:hover { color: #4c30c4; background: rgba(109, 74, 255, 0.12); }
 .pbw-env-width {
     font-family: var(--pbw-ui); font-size: 0.75rem; color: var(--pbw-ink);
-    background: #fff; border: 1px solid var(--pbw-line); border-radius: 8px; height: 32px; padding: 0 0.4rem; cursor: pointer;
+    background: transparent; border: 0; border-left: 1px solid var(--pbw-hair); border-radius: 0 8px 8px 0;
+    height: 30px; padding: 0 0.4rem 0 0.55rem; cursor: pointer;
 }
 .pbw-specimen-zone { padding: 3.6rem 1.5rem 2.4rem; max-width: 100%; transition: transform 400ms ease; }
 /* playground-workspace.js sets data-blank when the specimen draws nothing measurable. */
@@ -216,6 +228,7 @@
 .pbw-error-reset:hover { filter: brightness(1.1); }
 
 /* ── Zones ──────────────────────────────────────────── */
+.pbw-mtabs { display: none; }
 .pbw-zone { position: relative; min-width: 0; min-height: 0; display: flex; gap: 0.625rem; }
 .pbw-zone-bottom { grid-area: bottom; height: var(--pbw-bottom); flex-direction: row; }
 .pbw-zone-right { grid-area: right; width: var(--pbw-right); flex-direction: column; }
@@ -269,21 +282,50 @@
    instead of pushing the control left when a value changes. */
 .pbw-prow {
     position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    gap: 0.15rem 0.6rem; padding: 0.3rem 30px 0.3rem 0;
+    gap: 0.15rem 0.6rem; padding: 0.3rem 26px 0.3rem 0;
 }
+/* Two columns: the name, then a control that runs all the way to the reset gutter. */
 .pbw-prow ::deep .pb-control {
-    display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 0.6rem;
+    display: grid; grid-template-columns: minmax(6rem, 0.85fr) minmax(0, 1.4fr); flex: 1; align-items: center; gap: 0.6rem;
     font-family: var(--pbw-mono); font-size: 0.78125rem;
 }
+.pbw-prow > .pbw-prow-name { flex: 1 1 6rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pbw-demo-filled { display: flex; align-items: center; justify-content: flex-end; gap: 0.45rem; }
+.pbw-override {
+    font: 600 0.6875rem var(--pbw-ui); color: var(--pbw-ink);
+    background: transparent; border: 1px solid var(--pbw-line); border-radius: 6px;
+    padding: 0 0.55rem; min-height: 26px; cursor: pointer;
+}
+.pbw-override:hover { border-color: var(--pbw-accent); color: var(--pbw-accent); }
+.pbw-prow ::deep input::placeholder { color: var(--pbw-muted); opacity: 0.8; }
 .pbw-prow ::deep .pb-control-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pbw-prow-modified ::deep .pb-control-label::after { content: " ●"; color: var(--pbw-accent); font-size: 0.5625rem; }
 .pbw-prow ::deep select, .pbw-prow ::deep input[type="text"], .pbw-prow ::deep input[type="number"] {
     font-family: var(--pbw-mono); font-size: 0.75rem; color: var(--pbw-ink);
     background: var(--pbw-bg); border: 1px solid var(--pbw-line); border-radius: 6px;
-    padding: 0.3rem 0.45rem; width: 150px; max-width: 150px; box-sizing: border-box;
+    padding: 0.3rem 0.45rem; width: 100%; min-width: 0; box-sizing: border-box;
 }
 .pbw-prow ::deep select:hover, .pbw-prow ::deep input:hover { border-color: var(--pbw-accent); }
-.pbw-prow ::deep input[type="checkbox"] { accent-color: var(--pbw-accent); }
+.pbw-prow ::deep select:focus-visible, .pbw-prow ::deep input:focus-visible {
+    outline: none; border-color: var(--pbw-accent); box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.18);
+}
+/* Same select and switch as the embedded bench: one product, one set of controls. */
+.pbw-prow ::deep select {
+    appearance: none; cursor: pointer; padding-right: 1.4rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='%236e6e7a' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.5rem center;
+}
+.pbw-prow ::deep input[type="checkbox"] {
+    appearance: none; justify-self: start; position: relative; flex: none; margin: 0; cursor: pointer;
+    width: 30px; height: 17px; border: 1px solid var(--pbw-line); border-radius: 999px; background: var(--pbw-line);
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+.pbw-prow ::deep input[type="checkbox"]::after {
+    content: ""; position: absolute; top: 1px; left: 1px; width: 13px; height: 13px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(27, 27, 34, 0.25); transition: transform 140ms ease;
+}
+.pbw-prow ::deep input[type="checkbox"]:checked { background: var(--pbw-accent); border-color: var(--pbw-accent); }
+.pbw-prow ::deep input[type="checkbox"]:checked::after { transform: translateX(13px); }
 .pbw-prow ::deep input[type="datetime-local"], .pbw-prow ::deep input[type="date"], .pbw-prow ::deep input[type="time"] {
     font-family: var(--pbw-mono); font-size: 0.65rem; color: var(--pbw-ink);
     background: var(--pbw-bg); border: 1px solid var(--pbw-line); border-radius: 6px; padding: 0.2rem 0.35rem;
@@ -405,6 +447,7 @@
 .pbw-hud-pause { background: transparent; border: 0; color: #9a9ab0; cursor: pointer; font-size: 0.8125rem; padding: 0.2rem 0.4rem; }
 .pbw-hud-pause:hover { color: #fff; }
 .pbw-hud-exit { font-family: var(--pbw-ui); font-size: 0.6875rem; color: #8f8fa6; border-left: 1px solid #2b2b3a; padding-left: 0.75rem; }
+.pbw-toast:empty { clip-path: inset(50%); padding: 0; border: 0; }
 .pbw-toast {
     position: fixed; top: 58px; left: 50%; transform: translateX(-50%); z-index: 70;
     font-family: var(--pbw-ui); font-size: 0.71875rem; font-weight: 600;
@@ -455,14 +498,20 @@
 @media (max-width: 860px) {
     /* Stacked layout: the page scrolls, every panel keeps its natural height. */
     .pbw { height: auto; min-height: 100dvh; overflow: visible; }
-    .pbw-picker { display: block; flex: 1 1 10rem; max-width: none; min-height: 40px; font-size: 1rem; }
-    .pbw-rail, .pbw-reset-layout, .pbw-btn-label { display: none; }
+    /* One header shape for every library: wordmark, mode and actions on row one, the picker
+       across row two, the panel toggles as one sideways-scrolling row three. */
+    .pbw-wordmark { order: 1; }
+    .pbw-modes { order: 2; }
+    .pbw-bar-right { order: 3; }
+    .pbw-picker { display: block; order: 4; flex: 1 1 100%; max-width: none; min-height: 40px; font-size: 1rem; }
+    .pbw-rail, .pbw-btn-label { display: none; }
     .pbw-work { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "stage" "right" "bottom"; }
-    .pbw-stage { min-height: 360px; display: flex; flex-direction: column; align-items: stretch; padding: 0.7rem; gap: 0.7rem; }
+    .pbw-stage { min-height: 300px; display: flex; flex-direction: column; align-items: stretch; padding: 0.7rem; gap: 0.7rem; }
     .pbw-stage-top, .pbw-stage-name { position: static; }
     .pbw-stage-toolbar { margin-left: 0; flex-wrap: wrap; }
     .pbw-specimen-zone { margin: auto; padding: 1rem 0.5rem; }
     .pbw-env-btn, .pbw-env-width, .pbw-chip { min-height: 40px; height: auto; }
+    .pbw-chips-label { margin-right: 0.1rem; }
     .pbw-zone-right { width: auto; flex-direction: column; }
     .pbw-zone-bottom { height: auto; flex-direction: column; }
     .pbw-zone-right ::deep .pbw-panel[data-panel="graph"]:not(.pbw-panel-collapsed) { max-height: none; }
@@ -472,15 +521,52 @@
     /* Floating palettes make no sense on a stacked narrow layout — flow them inline. */
     .pbw ::deep .pbw-panel-float { position: static !important; width: auto !important; height: auto !important; max-height: none !important; box-shadow: none; }
     .pbw-zgrip, .pbw ::deep .pbw-ph-grip { display: none; }
-    .pbw-modes { position: static; transform: none; margin-left: 0; }
+    .pbw-modes { position: static; transform: none; margin-left: auto; }
     .pbw-bar { flex-wrap: wrap; height: auto; padding: 0.6rem 1rem; gap: 0.5rem; }
-    .pbw-pills { margin-left: 0; flex-wrap: wrap; order: 5; width: 100%; }
-    .pbw-pill { min-height: 40px; padding: 0.3rem 0.8rem; }
-    .pbw-pill .pbw-kbd { display: none; }
+    /* Panels become tabs under the stage: one panel at a time, so the page stays short. */
+    .pbw-pills { display: none; }
+    .pbw-work { grid-template-areas: "stage" "tabs" "right" "bottom"; }
+    .pbw-mtabs {
+        grid-area: tabs; display: flex; gap: 2px; padding: 3px;
+        background: var(--pbw-card); border: 1px solid var(--pbw-line); border-radius: 12px;
+    }
+    .pbw-mtab {
+        flex: 1 1 0; min-width: 0; min-height: 40px; padding: 0 0.4rem; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+        font: 600 0.8125rem var(--pbw-ui); color: var(--pbw-muted);
+        background: transparent; border: 0; border-radius: 9px;
+    }
+    .pbw-mtab-on { color: #4c30c4; background: rgba(109, 74, 255, 0.12); }
+    .pbw-mtab-count { font: 600 0.6875rem var(--pbw-mono); color: inherit; }
+    .pbw[data-mtab="graph"] ::deep .pbw-panel:not([data-panel="graph"]),
+    .pbw[data-mtab="parameters"] ::deep .pbw-panel:not([data-panel="parameters"]),
+    .pbw[data-mtab="razor"] ::deep .pbw-panel:not([data-panel="razor"]),
+    .pbw[data-mtab="signals"] ::deep .pbw-panel:not([data-panel="signals"]) { display: none; }
+    /* The tabs own visibility here: closing or folding the one shown panel would leave a blank tab. */
+    .pbw ::deep .pbw-ph-close, .pbw ::deep .pbw-ph-collapse { display: none; }
+    .pbw ::deep .pbw-panel-collapsed .pbw-panel-body { display: block; }
     .pbw-mode { min-height: 36px; }
     .pbw-bar-right { margin-left: auto; }
     .pbw-help-btn, .pbw-share { min-height: 40px; min-width: 40px; justify-content: center; padding: 0 0.6rem; }
-    .pbw-stage-top { flex-wrap: wrap; }
-    .pbw-chips { flex-wrap: wrap; overflow: visible; }
+    .pbw-stage-top { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    /* Examples stay on one row that scrolls sideways instead of stacking above the specimen. */
+    .pbw-chips {
+        margin: 0 -0.7rem; padding: 0 2.5rem 2px 0.7rem; scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+        mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+    }
+    .pbw-stage-top { border-bottom: 0; background: transparent; padding: 0; }
+    .pbw-stage-toolbar { align-self: flex-start; }
+    .pbw-env-btn, .pbw-env-width { min-height: 40px; }
     .pbw-prow-doc { -webkit-line-clamp: 2; line-clamp: 2; }
+}
+/* Phone width: the name sits above a full-width control, so values are never cut short. */
+@media (max-width: 480px) {
+    .pbw-prow ::deep .pb-control { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+    .pbw-prow ::deep .pb-control-bool { grid-template-columns: minmax(0, 1fr) auto; }
+    /* The name has its own line, so the reset sits beside it and the control runs edge to edge. */
+    .pbw-prow { padding-right: 0; }
+    .pbw-prow-reset { top: 0.2rem; }
+    .pbw-prow-modified ::deep .pb-control-bool { padding-right: 30px; }
+    .pbw-demo-filled { flex: 1 1 100%; justify-content: space-between; }
 }

@@ -10,7 +10,7 @@
             {
                 <span class="pb-icon-preview">@preview(Value)</span>
             }
-            <input type="text" list="@_listId" value="@SelectedName" title="@SelectedName" @onchange="OnPicked" />
+            <input type="text" list="@_listId" value="@SelectedName" title="@SelectedName" placeholder="Pick an icon" @onchange="OnPicked" />
             <datalist id="@_listId">
                 @foreach (var name in catalogue.Named.Keys.Order(StringComparer.Ordinal))
                 {
@@ -23,9 +23,9 @@
             @if (Value is string { Length: > 0 } markup && markup.TrimStart().StartsWith('<'))
             {
                 @* MudBlazor icon strings ARE svg inner markup — preview them live. *@
-                <svg class="pb-icon-preview" viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)markup)</svg>
+                <svg class="pb-icon-preview" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">@((MarkupString)markup)</svg>
             }
-            <input type="text" value="@(Value as string)" title="@(Value as string)" @onchange="OnChanged" />
+            <input type="text" value="@(Value as string)" title="@(Value as string)" placeholder="not set" @onchange="OnChanged" />
         }
     </span>
 </label>

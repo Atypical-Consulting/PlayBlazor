@@ -35,8 +35,8 @@ public sealed class WorkspaceLayout
     public event Action? Changed;
 
     /// <summary>Width of the right dock zone in pixels, between 240 and 560.</summary>
-    // 380 rather than the handoff's 330: the parameter rows breathe (user feedback).
-    public double RightWidth { get; private set; } = 380;
+    // 420 rather than the handoff's 330: value fields show a sentence, not a clipped fragment.
+    public double RightWidth { get; private set; } = 420;
 
     /// <summary>Height of the bottom dock zone in pixels, between 120 and 520.</summary>
     public double BottomHeight { get; private set; } = 235;
@@ -129,7 +129,7 @@ public sealed class WorkspaceLayout
         _bottom.AddRange(DefaultBottom);
         _floats.Clear();
         _hidden.Clear();
-        RightWidth = 380;
+        RightWidth = 420;
         BottomHeight = 235;
         Notify();
     }

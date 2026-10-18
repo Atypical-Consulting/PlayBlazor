@@ -54,6 +54,20 @@ export function init(dotnetRef) {
             ctx.root.querySelector(".pbw-rail-item")?.click();
             return;
         }
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "k") {
+            // Jump to the component finder: the rail filter, or the picker where the rail is hidden.
+            const filter = ctx.root.querySelector(".pbw-rail-filter");
+            const target = filter && filter.offsetParent ? filter : ctx.root.querySelector(".pbw-picker");
+            if (target) {
+                e.preventDefault();
+                target.focus();
+                target.select?.();
+            }
+            return;
+        }
+        if (e.ctrlKey || e.metaKey || e.altKey) {
+            return;
+        }
         if (!inField && ((e.key >= "1" && e.key <= "4") || e.key === "?" || e.key === "[" || e.key === "]")) {
             ctx.ref.invokeMethodAsync("OnKey", e.key);
         } else if (!inField && e.key === "/") {
@@ -281,8 +295,10 @@ function paintTransients() {
     }
     const current = ctx.root.querySelector(".pbw-rail-item[aria-current=true]");
     if (current && current !== ctx.railCurrent) {
+        // First paint centres the selection so it never opens pinned to the list's edge;
+        // later moves only scroll as far as needed.
+        current.scrollIntoView({ block: ctx.railCurrent ? "nearest" : "center" });
         ctx.railCurrent = current;
-        current.scrollIntoView({ block: "nearest" });
     }
     const help = ctx.root.querySelector(".pbw-help");
     if (help && help !== ctx.help) {

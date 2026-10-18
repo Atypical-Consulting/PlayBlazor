@@ -2,7 +2,7 @@
 @using System.Globalization
 <label class="pb-control pb-control-number">
     <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
-    <input type="number" value="@FormattedValue" step="@Step" @onchange="OnChanged" />
+    <input type="number" value="@FormattedValue" step="@Step" placeholder="not set" @onchange="OnChanged" />
 </label>
 @code {
     [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
