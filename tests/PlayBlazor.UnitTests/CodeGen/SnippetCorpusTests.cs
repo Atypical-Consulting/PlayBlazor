@@ -115,7 +115,12 @@ public class SnippetCorpusTests
     }
 
     private static string CorpusFileName(Assembly assembly)
-        => assembly.GetName().Name == "MudBlazor" ? "MudBlazorSnippets.razor" : "FluentUiSnippets.razor";
+        => assembly.GetName().Name switch
+        {
+            "MudBlazor" => "MudBlazorSnippets.razor",
+            "DaisyBlazor.Components" => "DaisyBlazorSnippets.razor",
+            _ => "FluentUiSnippets.razor",
+        };
 
     private static string Normalize(string text) => text.Replace("\r\n", "\n");
 }

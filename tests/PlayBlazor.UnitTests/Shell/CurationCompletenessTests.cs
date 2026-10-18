@@ -21,7 +21,7 @@ namespace PlayBlazor.UnitTests.Shell;
 public class CurationCompletenessTests
 {
     [Test]
-    [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.All))]
+    [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.Curated))]
     public void EveryListedComponent_CarriesCuration(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
         var options = new PlayBlazorOptions();

@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using AwesomeAssertions;
 using Bunit;
+using DaisyBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -61,9 +62,7 @@ public class RenderSweepTests
     }
 
     /// <summary>
-    /// Registers the explored library's own services. DaisyBlazor is not yet a sweep case: a third
-    /// branch will register its services once the DaisyBlazor demo app exists — see the note in
-    /// ExploredLibraries for the blocker.
+    /// Registers the explored library's own services.
     /// </summary>
     private static void AddLibraryServices(IServiceCollection services, Assembly assembly)
     {
@@ -74,6 +73,9 @@ public class RenderSweepTests
                 break;
             case "Microsoft.FluentUI.AspNetCore.Components":
                 services.AddFluentUIComponents();
+                break;
+            case "DaisyBlazor.Components":
+                services.AddDaisyBlazor();
                 break;
         }
     }

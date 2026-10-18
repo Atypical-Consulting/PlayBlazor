@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <EnableNUnitRunner>true</EnableNUnitRunner>
     <IsPackable>false</IsPackable>
-    <!-- This project references two Blazor WebAssembly demo apps purely for reflection (their
+    <!-- This project references the Blazor WebAssembly demo apps purely for reflection (their
          compiled assembly and Configure method) — never their wwwroot. Left enabled, the static
          web assets pipeline tries to bundle both apps' _framework runtime files into one output
          and fails with "Conflicting assets with the same target path" the moment a second
@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\src\PlayBlazor\PlayBlazor.csproj" />
     <ProjectReference Include="..\..\demo\PlayBlazor.Demo.MudBlazor\PlayBlazor.Demo.MudBlazor.csproj" />
     <ProjectReference Include="..\..\demo\PlayBlazor.Demo.FluentUI\PlayBlazor.Demo.FluentUI.csproj" />
+    <ProjectReference Include="..\..\demo\PlayBlazor.Demo.Daisy\PlayBlazor.Demo.Daisy.csproj" />
     <ProjectReference Include="..\..\demo\PlayBlazor.Demo.Shared\PlayBlazor.Demo.Shared.csproj" />
   </ItemGroup>
 

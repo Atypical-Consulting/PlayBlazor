@@ -36,7 +36,7 @@ namespace PlayBlazor.UnitTests.Shell;
 public class VariantLivenessTests
 {
     [Test]
-    [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.All))]
+    [TestCaseSource(typeof(ExploredLibraries), nameof(ExploredLibraries.Curated))]
     public void EveryVariant_ChangesTheParameterDictionary(Assembly assembly, Action<PlayBlazorOptions> configure)
     {
         var options = new PlayBlazorOptions();

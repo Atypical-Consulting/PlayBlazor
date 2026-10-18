@@ -1645,6 +1645,11 @@ git commit -m "Feat: scaffold the Fluent UI demo app"
 
 ### Task 8: Scaffold the DaisyBlazor app
 
+> **Done 2026-10-18, superseding the steps below.** DaisyBlazor shipped as 0.6.0, not 1.0.0, and its
+> NuGet package now carries the whole CSS pipeline (preset copied into `obj/daisyblazor/`, Tailwind
+> standalone CLI downloaded and run on build with `DaisyBlazorBuildCss=true`). No `package.json`, no
+> npm, no Node step in CI. See `demo/PlayBlazor.Demo.Daisy` and the CLAUDE.md layout row.
+>
 > **BLOCKED.** This task needs `DaisyBlazor.Components` 1.0.0 on NuGet and `@daisyblazor/tailwind` on npm, both published by merging the release-please PR `phmatray/blazor-tailwind-ui#20`. Verify before starting:
 >
 > ```bash

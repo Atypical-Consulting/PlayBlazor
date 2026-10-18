@@ -13,11 +13,13 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
   </ItemGroup>
   <!-- Demo & Test Dependencies -->
-  <!-- MudBlazor is NOT a dependency of the PlayBlazor package: it is the library the demo and
-       the render-sweep tests point PlayBlazor AT. Any Blazor library would do. -->
+  <!-- MudBlazor, Fluent UI and DaisyBlazor are NOT dependencies of the PlayBlazor package: they are
+       the libraries the demo and the render-sweep tests point PlayBlazor AT. Any Blazor library would do. -->
   <ItemGroup>
     <PackageVersion Include="MudBlazor" Version="9.11.0" />
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.1" />
+    <!-- Components only: DaisyBlazor.Charts is a separate assembly the demo does not explore. -->
+    <PackageVersion Include="DaisyBlazor.Components" Version="0.6.0" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="bunit" Version="2.11.3" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />

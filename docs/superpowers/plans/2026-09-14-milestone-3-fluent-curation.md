@@ -1009,6 +1009,6 @@ git commit -m "Feat: complete the Fluent UI showcase"
 
 ## What this plan does NOT cover
 
-- **Milestone 4, the DaisyBlazor curation** — still blocked on `phmatray/blazor-tailwind-ui#20`; `DaisyBlazor.Components` 1.0.0 is not on NuGet and `@daisyblazor/tailwind` is not on npm. Its plan gets written from its own sweep once the app exists.
+- **Milestone 4, the DaisyBlazor curation** — unblocked: the app exists (scaffolded on DaisyBlazor.Components 0.6.0, NuGet-only CSS pipeline). Its plan gets written from its own sweep.
 - **The generated-snippet gap for catalogued icons** (spec §9): `RazorSnippetGenerator.FormatValue` omits the attribute rather than emitting uncompilable Razor, and the proper fix — an optional source expression on `Catalogue<T>` — is a deliberate follow-up, not this milestone's work.
 - **The `--mud-palette-text-primary` leak** in the shared demo CSS (spec §9).
