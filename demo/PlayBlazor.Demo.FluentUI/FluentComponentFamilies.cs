@@ -2,7 +2,9 @@ namespace PlayBlazor.Demo.FluentUI;
 
 /// <summary>
 /// The listed Fluent UI surface by family: the same ten families as the MudBlazor and DaisyBlazor
-/// showcases, so the explorer rail and the home wall group every library alike.
+/// showcases, so the explorer rail and the home wall group every library alike. Accordion is a
+/// disclosure that sits in the page flow, so it files under Layout, not Overlays; AddTag (an
+/// element-name helper) has no family and lists under "Other" on purpose.
 /// </summary>
 public static class FluentComponentFamilies
 {
@@ -13,8 +15,8 @@ public static class FluentComponentFamilies
         ("Choices", ["FluentCheckbox", "FluentRadio", "FluentRadioGroup", "FluentRatingDisplay", "FluentSwitch"]),
         ("Data", ["FluentDataGrid", "FluentDataGridCell", "FluentDataGridRow", "PropertyColumn", "TemplateColumn", "SelectColumn", "HierarchicalSelectColumn", "FluentPaginator", "FluentSortableList", "FluentTreeView", "FluentTreeItem"]),
         ("Feedback", ["FluentBadge", "FluentCounterBadge", "FluentPresenceBadge", "FluentErrorBoundary", "FluentMessageBar", "FluentProgress", "FluentProgressBar", "FluentProgressRing", "FluentSkeleton", "FluentSpinner", "FluentToast", "FluentTooltip"]),
-        ("Overlays", ["FluentAccordion", "FluentAccordionItem", "FluentDialog", "FluentDialogBody", "FluentMessageBox", "FluentOverlay", "FluentPopover"]),
-        ("Layout", ["AddTag", "FluentCard", "FluentDivider", "FluentDragContainer", "FluentDropZone", "FluentGrid", "FluentGridItem", "FluentLayout", "FluentLayoutHamburger", "FluentLayoutItem", "FluentMultiSplitter", "FluentMultiSplitterPane", "FluentOverflow", "FluentPullToRefresh", "FluentSpacer", "FluentStack"]),
+        ("Overlays", ["FluentDialog", "FluentDialogBody", "FluentMessageBox", "FluentOverlay", "FluentPopover"]),
+        ("Layout", ["FluentAccordion", "FluentAccordionItem", "FluentCard", "FluentDivider", "FluentDragContainer", "FluentDropZone", "FluentGrid", "FluentGridItem", "FluentLayout", "FluentLayoutHamburger", "FluentLayoutItem", "FluentMultiSplitter", "FluentMultiSplitterPane", "FluentOverflow", "FluentPullToRefresh", "FluentSpacer", "FluentStack"]),
         ("Navigation", ["FluentAppBar", "FluentAppBarItem", "FluentLink", "FluentNav", "FluentNavCategory", "FluentNavItem", "FluentNavSectionHeader", "FluentTab", "FluentTabs", "FluentWizard", "FluentWizardStep", "FluentWizardStepValidator"]),
         ("Media", ["FluentAvatar", "FluentImage"]),
         ("Text", ["FluentHighlighter", "FluentLabel", "FluentLabelInfo", "FluentText"]),

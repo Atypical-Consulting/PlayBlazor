@@ -128,18 +128,15 @@
                 var(--pb-panel);
         }
 
-        /* Each bench leads with the parameters its examples exercise. The rows below are hidden on
-           the home benches only (each note says so; the Explorer lists them all). PlaygroundView
-           gives rows no name hook, so they are picked by position in Fluent 5.0.1's reflection
-           order: re-check them when the package changes (the csproj warns on a version bump).
-           Button rows 2-7: FormId, FormAction, FormEncType, FormMethod, FormNoValidate, FormTarget.
-           Grid rows 2-5: Virtualize, OverscanCount, MaxItemCount, ItemSize.
-           Column rows 3-5: Index, Class, Style. */
-        #bench-button .pb-panel > :nth-child(n+2 of .pb-row):nth-child(-n+7 of .pb-row),
-        #bench-grid .pb-panel > :nth-child(n+2 of .pb-row):nth-child(-n+5 of .pb-row),
-        #bench-column .pb-panel > :nth-child(n+3 of .pb-row):nth-child(-n+5 of .pb-row) {
-            display: none;
-        }
+        /* Each bench leads with the parameters its examples set, by name (data-param is tagged by the
+           script at the end of <body>; PlaygroundView rows carry no name of their own). Nothing is
+           hidden: every row the Explorer lists is here too, just in example-first order. A renamed
+           parameter only falls back to reflection order; it never makes the wrong row vanish. */
+        .fx-bench .pb-panel > :is(.pb-panel-header, .pb-eyebrow, .pb-variants) { order: -10; }
+        #bench-button [data-param=Appearance], #bench-grid [data-param=StripedRows], #bench-column [data-param=Sortable] { order: -6; }
+        #bench-button [data-param=IconStart], #bench-grid [data-param=ResizableColumns], #bench-column [data-param=Align] { order: -5; }
+        #bench-button [data-param=Loading], #bench-grid [data-param=AutoFit], #bench-column [data-param=Tooltip] { order: -4; }
+        #bench-button [data-param=Disabled], #bench-grid [data-param=DisplayMode] { order: -3; }
 
         /* Per-bench jump into the full Explorer, and the docs link set apart from the in-page
            anchors (it leaves the site). */
@@ -200,6 +197,12 @@
 
             .fx-bench .pb-playground .pb-preview {
                 min-height: 0;
+            }
+
+            /* One button: the list stops just after its four example rows (Disabled is the last),
+               so the stage around the button stays short and no lead row is cut. */
+            #bench-button .pb-playground .pb-panel {
+                max-height: 320px;
             }
 
             /* One column of three cells: a shorter list keeps its stage from standing half empty. */
@@ -297,6 +300,15 @@
             <div class="boot-caption">Loading the .NET runtime <span class="boot-pct"></span></div>
         </div>
     </div>
+    <script>
+        // Name hook for the home benches' parameter rows (see the bench CSS above).
+        new MutationObserver(function () {
+            document.querySelectorAll(".fx-bench .pb-row:not([data-param])").forEach(function (row) {
+                var label = row.querySelector(".pb-control-label");
+                if (label) row.setAttribute("data-param", label.textContent.trim());
+            });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>
