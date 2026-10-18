@@ -3,6 +3,13 @@
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
     </Found>
     <NotFound>
-        <p>Page not found.</p>
+        <LayoutView Layout="typeof(MainLayout)">
+            <main class="demo-main">
+                <h1 class="demo-covered-title">Page not found</h1>
+                <p class="demo-note">Nothing lives at this address.</p>
+                @* Base-relative: an empty href is the app root under any <base href>. *@
+                <a class="demo-back" href="">&larr; Back to the Fluent UI showcase</a>
+            </main>
+        </LayoutView>
     </NotFound>
 </Router>
