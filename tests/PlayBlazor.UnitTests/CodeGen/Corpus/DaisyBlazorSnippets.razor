@@ -53,19 +53,40 @@
 <Card />
 
 @* CardActions *@
-<CardActions />
+<Card Class="w-80">
+    <CardContent>Wrote the first published algorithm.</CardContent>
+    <CardActions><Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button></CardActions>
+</Card>
 
 @* CardContent *@
-<CardContent />
+<Card Class="w-80">
+    <CardContent>
+        <h2 class="card-title">Analytical Engine</h2>
+        <p>The first design for a general-purpose computer.</p>
+    </CardContent>
+</Card>
 
 @* CardHeader *@
-<CardHeader />
+<Card Class="w-80">
+    <CardHeader>
+        <CardHeaderContent>
+            <h2 class="card-title">Ada Lovelace</h2>
+            <p class="text-sm opacity-70">Analyst</p>
+        </CardHeaderContent>
+    </CardHeader>
+    <CardContent>Wrote the first published algorithm.</CardContent>
+</Card>
 
 @* Carousel *@
 <Carousel />
 
 @* CarouselItem *@
-<CarouselItem />
+<Carousel Class="rounded-box gap-4">
+    <CarouselItem><div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div></CarouselItem>
+    <CarouselItem>
+        <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+    </CarouselItem>
+</Carousel>
 
 @* ChatBubble *@
 <ChatBubble />
@@ -92,7 +113,15 @@
 <DataGrid T="Person" />
 
 @* DataGridPager *@
-<DataGridPager T="Person" />
+<DataGrid T="Person" Items="@_people" RowsPerPage="2" PageSizeOptions="@(new[] { 2, 5, 10 })">
+    <Columns>
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" />
+        <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" />
+    </Columns>
+    <PagerContent>
+        <DataGridPager T="Person" RowsPerPageText="People per page:" />
+    </PagerContent>
+</DataGrid>
 
 @* DataTable *@
 <DataTable T="Person" />
@@ -122,7 +151,10 @@
 <Dock />
 
 @* DockItem *@
-<DockItem />
+<Dock Fixed="false">
+    <DockItem Label="Home" Icon="home" />
+    <DockItem Icon="settings" Label="Settings" />
+</Dock>
 
 @* Drawer *@
 <Drawer />
@@ -137,7 +169,10 @@
 <ErrorAlert />
 
 @* ExpansionPanel *@
-<ExpansionPanel />
+<ExpansionPanels>
+    <ExpansionPanel Text="Shipping" IsExpanded="true">Orders ship within two business days.</ExpansionPanel>
+    <ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+</ExpansionPanels>
 
 @* ExpansionPanels *@
 <ExpansionPanels />
@@ -146,7 +181,12 @@
 <Fab />
 
 @* FabAction *@
-<FabAction />
+<div class="relative isolate h-64">
+    <Fab Fixed="false" AriaLabel="Actions">
+        <FabAction Icon="edit" Tooltip="Edit" />
+        <FabAction Icon="share" Tooltip="Share" />
+    </Fab>
+</div>
 
 @* FeatureHero *@
 <FeatureHero />
@@ -176,7 +216,13 @@
 <Footer />
 
 @* FooterTitle *@
-<FooterTitle />
+<Footer Class="bg-base-200 text-base-content">
+    <nav>
+        <FooterTitle>Services</FooterTitle>
+        <a class="link link-hover">Branding</a>
+        <a class="link link-hover">Design</a>
+    </nav>
+</Footer>
 
 @* Form *@
 <Form />
@@ -200,7 +246,10 @@
 <Indicator />
 
 @* Item *@
-<Item />
+<Grid Spacing="4">
+    <Item xs="6"><div class="bg-base-200 rounded-box p-4">Grid cell</div></Item>
+    <Item xs="6"><div class="bg-base-200 rounded-box p-4">Sibling</div></Item>
+</Grid>
 
 @* ItemList *@
 <ItemList />
@@ -215,10 +264,18 @@
 <List />
 
 @* ListItem *@
-<ListItem />
+<ItemList>
+    <ListItem Icon="inbox" Text="Inbox" />
+    <ListItem Icon="send" Text="Sent" />
+</ItemList>
 
 @* ListRow *@
-<ListRow />
+<List>
+    <ListRow Icon="person"
+             Title="Ada Lovelace"
+             Subtitle="Analyst" />
+    <ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+</List>
 
 @* Loading *@
 <Loading />
@@ -230,7 +287,13 @@
 <Menu />
 
 @* MenuItem *@
-<MenuItem />
+<div class="h-48">
+    @* The transform keeps the open menu's fixed backdrop inside the menu. *@
+    <Menu Label="Actions" Open="true" Style="transform: translateZ(0)">
+        <MenuItem Icon="edit">Edit</MenuItem>
+        <MenuItem Icon="share">Share</MenuItem>
+    </Menu>
+</div>
 
 @* MessageBoxDialog *@
 <MessageBoxDialog />
@@ -275,9 +338,15 @@
 <ProgressLinear />
 
 @* PropertyColumn *@
-<PropertyColumn T="Person"
-                TProperty="string"
-                Property="@_property" />
+<DataGrid T="Person" Items="@_people">
+    <Columns>
+        <PropertyColumn T="Person"
+                        TProperty="string"
+                        Property="p => p.Name"
+                        Title="Name" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+</DataGrid>
 
 @* QuickAccessButton *@
 <QuickAccessButton />
@@ -286,7 +355,12 @@
 <RadialProgress />
 
 @* Radio *@
-<Radio T="string" />
+<RadioGroup T="string" Label="Fruit" Value="@("apple")">
+    <Radio T="string"
+           Value="@("apple")"
+           Label="Apple" />
+    <Radio Value="@("banana")" Label="Banana" />
+</RadioGroup>
 
 @* RadioGroup *@
 <RadioGroup T="string" />
@@ -304,7 +378,10 @@
 <Select T="string" />
 
 @* SelectItem *@
-<SelectItem T="string" />
+<Select T="string" Label="Fruit" Value="@("banana")">
+    <SelectItem Value="@("apple")">Apple</SelectItem>
+    <SelectItem T="string" Value="@("banana")">Banana</SelectItem>
+</Select>
 
 @* ServerValidation *@
 <ServerValidation />
@@ -325,7 +402,12 @@
 <StackOverlay />
 
 @* Stat *@
-<Stat />
+<Stats Shadow="true">
+    <Stat Title="Downloads"
+          Value="31K"
+          Desc="Jan 1st - Feb 1st" />
+    <Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" />
+</Stats>
 
 @* Stats *@
 <Stats />
@@ -337,7 +419,11 @@
 <StatusChip />
 
 @* Step *@
-<Step />
+<Steps>
+    <Step Completed="true">Register</Step>
+    <Step>Choose plan</Step>
+    <Step>Purchase</Step>
+</Steps>
 
 @* Steps *@
 <Steps />
@@ -349,22 +435,52 @@
 <Switch />
 
 @* Tab *@
-<Tab />
+<Tabs ActiveIndex="1">
+    <Tab Title="Overview">Born in London in 1815.</Tab>
+    <Tab Title="Biography"><p>Ada Lovelace wrote the first published algorithm.</p></Tab>
+</Tabs>
 
 @* Table *@
 <Table T="Person" />
 
 @* TablePager *@
-<TablePager />
+<Table T="Person" Items="@_people" RowsPerPage="2">
+    <HeaderContent>
+        <Th>Name</Th>
+        <Th>Role</Th>
+    </HeaderContent>
+    <RowTemplate>
+        <Td>@context.Name</Td>
+        <Td>@context.Role</Td>
+    </RowTemplate>
+    <PagerContent>
+        <TablePager PageSizeOptions="@(new[] { 2, 5, 10 })" />
+    </PagerContent>
+</Table>
 
 @* Tabs *@
 <Tabs />
 
 @* Td *@
-<Td />
+<SimpleTable>
+    <thead>
+        <Tr><Th>Name</Th><Th>Role</Th></Tr>
+    </thead>
+    <tbody>
+        <Tr>
+            <Td>Ada Lovelace</Td>
+            <Td>Analyst</Td>
+        </Tr>
+    </tbody>
+</SimpleTable>
 
 @* TemplateColumn *@
-<TemplateColumn T="Person" />
+<DataGrid T="Person" Items="@_people">
+    <Columns>
+        <TemplateColumn T="Person" Title="Role" />
+        <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+    </Columns>
+</DataGrid>
 
 @* TextField *@
 <TextField />
@@ -373,7 +489,17 @@
 <TextLink />
 
 @* Th *@
-<Th />
+<SimpleTable>
+    <thead>
+        <Tr>
+            <Th>Name</Th>
+            <Th>Role</Th>
+        </Tr>
+    </thead>
+    <tbody>
+        <Tr><Td>Ada Lovelace</Td><Td>Analyst</Td></Tr>
+    </tbody>
+</SimpleTable>
 
 @* ThemeController *@
 <ThemeController />
@@ -382,19 +508,38 @@
 <Timeline />
 
 @* TimelineItem *@
-<TimelineItem />
+<Timeline>
+    <TimelineItem Color="Color.Primary">1815: Ada Lovelace is born</TimelineItem>
+    <TimelineItem>1843: Notes on the Analytical Engine</TimelineItem>
+</Timeline>
 
 @* ToggleGroup *@
 <ToggleGroup T="string" />
 
 @* ToggleItem *@
-<ToggleItem T="string" />
+<ToggleGroup T="string" Value="@("grid")">
+    <ToggleItem T="string"
+                Value="@("grid")"
+                Text="Grid" />
+    <ToggleItem Value="@("list")" Text="List" />
+</ToggleGroup>
 
 @* Tooltip *@
 <Tooltip />
 
 @* Tr *@
-<Tr />
+<SimpleTable>
+    <thead>
+        <Tr><Th>Name</Th><Th>Role</Th></Tr>
+    </thead>
+    <tbody>
+        <Tr>
+            <Td>Ada Lovelace</Td>
+            <Td>Analyst</Td>
+        </Tr>
+        <Tr><Td>Grace Hopper</Td><Td>Rear Admiral</Td></Tr>
+    </tbody>
+</SimpleTable>
 
 @* Typography *@
 <Typography />
@@ -407,5 +552,5 @@
 @* ==> generated snippets end <== *@
 
 @code {
-    private readonly Expression<Func<Person, string>> _property = p => p.Name;
+    private readonly IReadOnlyList<Person> _people = DaisyPlaygroundConfig.SampleRows;
 }

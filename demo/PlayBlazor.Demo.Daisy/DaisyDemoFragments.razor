@@ -1,7 +1,246 @@
 @namespace PlayBlazor.Demo.Daisy
+@using DaisyBlazor.Data
 @* Static example fragments used as slot presets, each mirrored verbatim by a string in
    DaisyDemoFragmentSources.cs. Any Tailwind class written here is compiled into app.css, since the
    CLI scans this project's .razor and .cs files; runtime-composed classes come from DaisyBlazor's
-   safelist instead. Fragments land with the batches that curate their components. *@
+   safelist instead. Fragments land with the batches that curate their components.
+
+   The In* members are scaffolds: they take the played specimen and place it inside the parent it
+   needs, beside a sibling so the child shows as one of several (tab strips, timelines and steps
+   draw their connectors and selection between siblings). *@
 @code {
+    // --- Slot fragments ---------------------------------------------------------------------
+
+    public static RenderFragment TabPanel => @<p>Ada Lovelace wrote the first published algorithm.</p>;
+
+    public static RenderFragment CarouselSlide => @<div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div>;
+
+    public static RenderFragment GridCell => @<div class="bg-base-200 rounded-box p-4">Grid cell</div>;
+
+    public static RenderFragment RowCells => @<text>
+        <Td>Ada Lovelace</Td>
+        <Td>Analyst</Td>
+    </text>;
+
+    public static RenderFragment CardHeaderText => @<text>
+        <h2 class="card-title">Ada Lovelace</h2>
+        <p class="text-sm opacity-70">Analyst</p>
+    </text>;
+
+    public static RenderFragment CardBodyText => @<text>
+        <h2 class="card-title">Analytical Engine</h2>
+        <p>The first design for a general-purpose computer.</p>
+    </text>;
+
+    public static RenderFragment CardButtons => @<Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button>;
+
+    // --- Scaffolds --------------------------------------------------------------------------
+
+    // The specimen initialises (so registers) after the sibling wherever it sits in the markup, and
+    // again after a reset re-keys it: it is always tab 1, which ActiveIndex=1 selects.
+    public static RenderFragment InTabs(RenderFragment specimen) =>
+        @<Tabs ActiveIndex="1">
+            <Tab Title="Overview">Born in London in 1815.</Tab>
+            @specimen
+        </Tabs>;
+
+    public static RenderFragment InSelect(RenderFragment specimen) =>
+        @<Select T="string" Label="Fruit" Value="@("banana")">
+            <SelectItem Value="@("apple")">Apple</SelectItem>
+            @specimen
+        </Select>;
+
+    public static RenderFragment InTable(RenderFragment specimen) =>
+        @<Table T="Person" Items="DaisyPlaygroundConfig.SampleRows" RowsPerPage="2">
+            <HeaderContent>
+                <Th>Name</Th>
+                <Th>Role</Th>
+            </HeaderContent>
+            <RowTemplate>
+                <Td>@context.Name</Td>
+                <Td>@context.Role</Td>
+            </RowTemplate>
+            <PagerContent>
+                @specimen
+            </PagerContent>
+        </Table>;
+
+    public static RenderFragment InDataGridPager(RenderFragment specimen) =>
+        @<DataGrid T="Person" Items="DaisyPlaygroundConfig.SampleRows" RowsPerPage="2" PageSizeOptions="PageSizes">
+            <Columns>
+                <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" />
+                <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" />
+            </Columns>
+            <PagerContent>
+                @specimen
+            </PagerContent>
+        </DataGrid>;
+
+    public static RenderFragment InDataGrid(RenderFragment specimen) =>
+        @<DataGrid T="Person" Items="DaisyPlaygroundConfig.SampleRows">
+            <Columns>
+                @specimen
+                <PropertyColumn T="Person" TProperty="int" Property="p => p.Age" Title="Age" />
+            </Columns>
+        </DataGrid>;
+
+    public static RenderFragment InRadioGroup(RenderFragment specimen) =>
+        @<RadioGroup T="string" Label="Fruit" Value="@("apple")">
+            @specimen
+            <Radio Value="@("banana")" Label="Banana" />
+        </RadioGroup>;
+
+    public static RenderFragment InToggleGroup(RenderFragment specimen) =>
+        @<ToggleGroup T="string" Value="@("grid")">
+            @specimen
+            <ToggleItem Value="@("list")" Text="List" />
+        </ToggleGroup>;
+
+    // Menu renders its items only while open, and an open Menu lays a `fixed inset-0` backdrop over
+    // the whole viewport that swallows the next click anywhere (closing the menu, which then stays
+    // closed). The transform makes the Menu root the containing block of that backdrop, so it only
+    // covers the activator. The h-48 box leaves room for the absolutely positioned list.
+    public static RenderFragment InMenu(RenderFragment specimen) =>
+        @<div class="h-48">
+            <Menu Label="Actions" Open="true" Style="@MenuContainment">
+                @specimen
+                <MenuItem Icon="share">Share</MenuItem>
+            </Menu>
+        </div>;
+
+    public static RenderFragment InExpansionPanels(RenderFragment specimen) =>
+        @<ExpansionPanels>
+            @specimen
+            <ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+        </ExpansionPanels>;
+
+    public static RenderFragment InTimeline(RenderFragment specimen) =>
+        @<Timeline>
+            @specimen
+            <TimelineItem>1843: Notes on the Analytical Engine</TimelineItem>
+        </Timeline>;
+
+    public static RenderFragment InCarousel(RenderFragment specimen) =>
+        @<Carousel Class="rounded-box gap-4">
+            @specimen
+            <CarouselItem>
+                <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+            </CarouselItem>
+        </Carousel>;
+
+    // Fixed defaults to true, which pins the dock to the bottom of the viewport, over the explorer.
+    public static RenderFragment InDock(RenderFragment specimen) =>
+        @<Dock Fixed="false">
+            @specimen
+            <DockItem Icon="settings" Label="Settings" />
+        </Dock>;
+
+    // daisyUI's .fab is position:fixed (bottom-right of the viewport). Fixed="false" swaps it for
+    // `absolute`, anchored to this relative box, which is tall enough for the actions to unfold;
+    // `isolate` keeps the .fab's z-index:999 from rising above the explorer's own overlays.
+    public static RenderFragment InFab(RenderFragment specimen) =>
+        @<div class="relative isolate h-64">
+            <Fab Fixed="false" AriaLabel="Actions">
+                @specimen
+                <FabAction Icon="share" Tooltip="Share" />
+            </Fab>
+        </div>;
+
+    public static RenderFragment InSteps(RenderFragment specimen) =>
+        @<Steps>
+            @specimen
+            <Step>Choose plan</Step>
+            <Step>Purchase</Step>
+        </Steps>;
+
+    public static RenderFragment InItemList(RenderFragment specimen) =>
+        @<ItemList>
+            @specimen
+            <ListItem Icon="send" Text="Sent" />
+        </ItemList>;
+
+    public static RenderFragment InList(RenderFragment specimen) =>
+        @<List>
+            @specimen
+            <ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+        </List>;
+
+    public static RenderFragment InGrid(RenderFragment specimen) =>
+        @<Grid Spacing="4">
+            @specimen
+            <Item xs="6"><div class="bg-base-200 rounded-box p-4">Sibling</div></Item>
+        </Grid>;
+
+    public static RenderFragment InTbody(RenderFragment specimen) =>
+        @<SimpleTable>
+            <thead>
+                <Tr><Th>Name</Th><Th>Role</Th></Tr>
+            </thead>
+            <tbody>
+                @specimen
+                <Tr><Td>Grace Hopper</Td><Td>Rear Admiral</Td></Tr>
+            </tbody>
+        </SimpleTable>;
+
+    public static RenderFragment InBodyRow(RenderFragment specimen) =>
+        @<SimpleTable>
+            <thead>
+                <Tr><Th>Name</Th><Th>Role</Th></Tr>
+            </thead>
+            <tbody>
+                <Tr>
+                    @specimen
+                    <Td>Analyst</Td>
+                </Tr>
+            </tbody>
+        </SimpleTable>;
+
+    public static RenderFragment InHeaderRow(RenderFragment specimen) =>
+        @<SimpleTable>
+            <thead>
+                <Tr>
+                    @specimen
+                    <Th>Role</Th>
+                </Tr>
+            </thead>
+            <tbody>
+                <Tr><Td>Ada Lovelace</Td><Td>Analyst</Td></Tr>
+            </tbody>
+        </SimpleTable>;
+
+    public static RenderFragment InCardTop(RenderFragment specimen) =>
+        @<Card Class="w-80">
+            @specimen
+            <CardContent>Wrote the first published algorithm.</CardContent>
+        </Card>;
+
+    public static RenderFragment InCard(RenderFragment specimen) =>
+        @<Card Class="w-80">
+            @specimen
+        </Card>;
+
+    public static RenderFragment InCardBottom(RenderFragment specimen) =>
+        @<Card Class="w-80">
+            <CardContent>Wrote the first published algorithm.</CardContent>
+            @specimen
+        </Card>;
+
+    public static RenderFragment InStats(RenderFragment specimen) =>
+        @<Stats Shadow="true">
+            @specimen
+            <Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" />
+        </Stats>;
+
+    public static RenderFragment InFooter(RenderFragment specimen) =>
+        @<Footer Class="bg-base-200 text-base-content">
+            <nav>
+                @specimen
+                <a class="link link-hover">Branding</a>
+                <a class="link link-hover">Design</a>
+            </nav>
+        </Footer>;
+
+    private const string MenuContainment = "transform: translateZ(0)";
+
+    private static readonly int[] PageSizes = [2, 5, 10];
 }
