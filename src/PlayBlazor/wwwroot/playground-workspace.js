@@ -74,7 +74,9 @@ export function init(dotnetRef) {
             e.preventDefault();
             ctx.ref.invokeMethodAsync("OnKey", "/");
             focusFilter(6);
-        } else if (e.key === "Escape" && document.activeElement?.classList?.contains("pbw-pfilter")) {
+        } else if (e.key === "Escape" && document.activeElement?.matches?.(".pbw-pfilter, .pbw-rail-filter")) {
+            // Esc leaves a filter empty and unfocused, so the next shortcut key is not typed into it.
+            e.preventDefault();
             const input = document.activeElement;
             input.value = "";
             input.dispatchEvent(new Event("input", { bubbles: true }));

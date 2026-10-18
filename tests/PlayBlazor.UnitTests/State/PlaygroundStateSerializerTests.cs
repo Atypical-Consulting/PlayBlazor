@@ -58,7 +58,8 @@ public class PlaygroundStateSerializerTests
         var state = new PlaygroundState();
         var environment = new PlaygroundEnvironment();
 
-        PlaygroundStateSerializer.Decode("not base64 at all!!!", Describe(), state, environment);
+        PlaygroundStateSerializer.Decode("not base64 at all!!!", Describe(), state, environment)
+            .Should().BeFalse("the caller tells the visitor the link was broken");
 
         state.ModifiedValues.Should().BeEmpty();
         environment.Dark.Should().BeFalse();

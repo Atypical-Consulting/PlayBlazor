@@ -206,7 +206,12 @@
     padding: 0.75rem 0.75rem 0.875rem;
     overflow-y: auto;
     border-left: 1px solid var(--pb-line);
-    background: var(--pb-panel);
+    /* Scroll cue: a soft shade along the bottom edge while more parameters sit below it. The
+       panel-coloured cover scrolls with the content and hides the shade once the end is reached. */
+    background:
+        linear-gradient(var(--pb-panel), var(--pb-panel)) center bottom / 100% 1.25rem no-repeat local,
+        linear-gradient(rgba(27, 27, 34, 0), rgba(27, 27, 34, 0.12)) center bottom / 100% 1.25rem no-repeat scroll,
+        var(--pb-panel);
 }
 
 .pb-panel-header {
@@ -234,6 +239,9 @@
 
 .pb-share,
 .pb-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     padding: 0.2rem 0.6rem;
     border: 1px solid var(--pb-line);
     border-radius: 6px;
@@ -269,7 +277,8 @@
     margin-bottom: 0.375rem;
 }
 
-.pb-variant {
+.pb-variant,
+.pb-variant-default {
     padding: 0.2rem 0.55rem;
     border: 1px solid var(--pb-line);
     border-radius: 999px;
@@ -281,12 +290,14 @@
     transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
 }
 
-.pb-variant:hover {
+.pb-variant:hover,
+.pb-variant-default:hover {
     border-color: var(--pb-accent);
     color: var(--pb-accent);
 }
 
-.pb-variant:focus-visible {
+.pb-variant:focus-visible,
+.pb-variant-default:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--pb-accent-soft);
 }
@@ -704,6 +715,9 @@
 }
 
 .pb-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     position: absolute;
     top: 0.55rem;
     right: 0.55rem;
@@ -726,6 +740,29 @@
 .pb-copy:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--pb-accent-soft);
+}
+
+.pb-copy-failed {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #f0c8c8;
+    background: #fdf3f3;
+    color: #8f1d1d;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+.pb-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* ---- Responsive & motion ---- */
@@ -764,7 +801,8 @@
         scrollbar-width: thin;
     }
 
-    .pb-variant {
+    .pb-variant,
+    .pb-variant-default {
         flex: none;
         min-height: 2.25rem;
     }

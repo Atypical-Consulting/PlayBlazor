@@ -60,11 +60,15 @@ public static class PlaygroundStateSerializer
     /// <param name="state">The state to populate.</param>
     /// <param name="environment">The environment to populate.</param>
     /// <param name="options">The host configuration, consulted for value catalogues. Omit it and values are carried in their raw text form.</param>
+    /// <returns>
+    /// <c>false</c> when the value is not a permalink at all (truncated, mistyped or tampered with),
+    /// so the caller can tell the visitor the bench fell back to its defaults; <c>true</c> otherwise.
+    /// </returns>
     /// <remarks>
     /// Never throws: malformed input, unknown parameter names and values that no longer parse are
     /// each ignored, so a permalink shared before an API change still opens.
     /// </remarks>
-    public static void Decode(
+    public static bool Decode(
         string encoded,
         ComponentDescriptor descriptor,
         PlaygroundState state,
@@ -82,12 +86,12 @@ public static class PlaygroundStateSerializer
         }
         catch (Exception)
         {
-            return;
+            return false;
         }
 
         if (payload is null)
         {
-            return;
+            return false;
         }
 
         environment.Dark = payload.Dark;
@@ -97,7 +101,7 @@ public static class PlaygroundStateSerializer
 
         if (payload.Values is null)
         {
-            return;
+            return true;
         }
 
         foreach (var (name, text) in payload.Values)
@@ -114,6 +118,8 @@ public static class PlaygroundStateSerializer
                 state.Set(name, value);
             }
         }
+
+        return true;
     }
 
     // Gated on Icon so a catalogue registered for a shared type (typically `string`) never widens

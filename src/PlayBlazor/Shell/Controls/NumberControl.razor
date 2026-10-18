@@ -2,7 +2,7 @@
 @using System.Globalization
 <label class="pb-control pb-control-number">
     <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
-    <input type="number" value="@FormattedValue" step="@Step" placeholder="not set" @onchange="OnChanged" />
+    <input type="number" value="@FormattedValue" step="@Step" min="@Min" placeholder="not set" @onchange="OnChanged" />
 </label>
 @code {
     [Parameter, EditorRequired] public ParameterDescriptor Parameter { get; set; } = default!;
@@ -15,6 +15,12 @@
         => NumberType == typeof(double) || NumberType == typeof(float) || NumberType == typeof(decimal)
             ? "any"
             : "1";
+
+    // An unsigned parameter cannot go below zero: the spinner stops there instead of offering a value that fails.
+    private string? Min
+        => NumberType == typeof(byte) || NumberType == typeof(ushort) || NumberType == typeof(uint) || NumberType == typeof(ulong)
+            ? "0"
+            : null;
 
     private string FormattedValue
         => Value is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture) : string.Empty;

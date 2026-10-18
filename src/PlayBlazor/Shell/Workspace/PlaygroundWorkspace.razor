@@ -47,11 +47,12 @@
         </div>
         <div class="pbw-modes" role="group" aria-label="Workspace mode">
             <button type="button" class="pbw-mode @(!_present ? "pbw-mode-active" : null)" aria-pressed="@(!_present ? "true" : "false")" @onclick="() => SetPresent(false)">Play</button>
-            <button type="button" class="pbw-mode @(_present ? "pbw-mode-active" : null)" aria-pressed="@(_present ? "true" : "false")" @onclick="() => SetPresent(true)">Present</button>
+            <button type="button" class="pbw-mode @(_present ? "pbw-mode-active" : null)" aria-pressed="@(_present ? "true" : "false")"
+                    title="Full-screen stage that plays through the examples; Esc comes back to Play" @onclick="() => SetPresent(true)">Present</button>
         </div>
         <div class="pbw-bar-right">
             <button type="button" class="pbw-help-btn" aria-keyshortcuts="?" aria-label="Help and keyboard shortcuts" title="Help and keyboard shortcuts (?)" @onclick="() => _help = !_help"><span class="pbw-btn-label">Help</span> <kbd class="pbw-kbd">?</kbd></button>
-            <button type="button" class="pbw-share" title="Copy a link to this exact configuration" aria-label="Share this configuration" @onclick="CopyShareLink">@Icon(IconShare) <span class="pbw-btn-label">Share</span></button>
+            <button type="button" class="pbw-share" title="Copy a link to this exact configuration" aria-label="Share this configuration" @onclick="CopyShareLink">@Icon(_copied == "share" ? IconCheck : IconShare) <span class="pbw-btn-label">@(_copied == "share" ? "Copied" : "Share")</span></button>
         </div>
     </header>
 
@@ -83,7 +84,7 @@
                         var current = component.Type == _selected.Type;
                         <button type="button" @key="component.Type"
                                 class="pbw-rail-item @(current ? "pbw-rail-item-on" : null)"
-                                aria-current="@(current ? "true" : null)"
+                                aria-current="@(current ? "true" : null)" title="@component.DisplayName"
                                 @onclick="() => SelectComponent(component)">@if (RailPrefix.Length > 0 && component.DisplayName.StartsWith(RailPrefix, StringComparison.Ordinal))
                                 {<span class="pbw-rail-prefix">@RailPrefix</span>@component.DisplayName[RailPrefix.Length..]}
                                 else
@@ -92,20 +93,29 @@
                 }
                 @if (railShown == 0)
                 {
-                    <p class="pbw-rail-empty">No component matches “@_railFilter”.</p>
+                    <p class="pbw-rail-empty">
+                        No component matches “@_railFilter”.
+                        <button type="button" class="pbw-rail-clear" @onclick="() => _railFilter = string.Empty">Clear the filter</button>
+                    </p>
                 }
             </div>
             <p class="pbw-rail-hint"><kbd class="pbw-kbd">[</kbd> <kbd class="pbw-kbd">]</kbd> previous / next</p>
         </nav>
 
-        <section class="pbw-stage @(_environment.Dark || _present ? "pbw-stage-dark" : null) @(_environment.Checkerboard ? "pbw-stage-checker" : null)" aria-label="Stage">
+        <section class="pbw-stage @(_environment.Dark || _present ? "pbw-stage-dark" : null) @(_environment.Checkerboard ? "pbw-stage-checker" : null)" aria-labelledby="pbw-title">
             @if (!_present)
             {
                 <div class="pbw-stage-top">
+                    @* The page's one h1, top-left of the stage like the home bench's name chip. *@
+                    <h1 id="pbw-title" class="pbw-stage-name" title="@_selected.DisplayName"><span aria-hidden="true">&lt;</span>@_selected.DisplayName<span aria-hidden="true"> /&gt;</span></h1>
                     @if (Variants.Count > 0)
                     {
                         <div class="pbw-chips" role="group" aria-label="Examples">
                             <span class="pbw-chips-label">Examples</span>
+                            @* What the stage shows before any example is picked: the demo's own setup. *@
+                            <button type="button" class="pbw-chip-default @(IsDefault ? "pbw-chip-active" : null)"
+                                    aria-pressed="@(IsDefault ? "true" : "false")" title="The demo's own setup, before any example"
+                                    @onclick="BackToDefault">Default</button>
                             @foreach (var variant in Variants)
                             {
                                 <button type="button" @key="variant.Name"
@@ -130,6 +140,10 @@
                         </select>
                     </div>
                 </div>
+            }
+            else
+            {
+                <h1 id="pbw-title" class="pbw-sr">@_selected.DisplayName</h1>
             }
             @if (!_selected.CanInstantiate)
             {
@@ -188,7 +202,6 @@
                     </p>
                 </div>
             }
-            <div class="pbw-stage-name">&#8249;@_selected.DisplayName /&#8250; &#183; @_selected.Parameters.Count parameters &#183; @(Options.CategoryOf(_selected.Type) ?? ShortCategory(_selected.Category))</div>
         </section>
 
         @* Narrow screens: the panels become tabs right under the stage, one shown at a time. *@
@@ -285,7 +298,9 @@
     }
 
     @* Always in the DOM, so screen readers hear each message the moment it lands. *@
-    <div class="pbw-toast" role="status" aria-live="polite">@_toast</div>
+    <div class="pbw-toast" role="status" aria-live="polite">@_toast@if (_toast is not null && _toastUndo is not null)
+        {<button type="button" class="pbw-toast-undo" @onclick="UndoFromToast">Undo</button>}</div>
+    <div class="pbw-sr" role="status" aria-live="polite">@_announce</div>
 </div>
 
 @code {
@@ -359,7 +374,8 @@
             <Actions>
                 <button type="button" class="pbw-foldall pbw-ph-labeled" title="@(_allFolded ? "Unfold every group" : "Fold every group")"
                         @onclick="ToggleFoldAll">@Icon(_allFolded ? IconUnfold : IconFold) @(_allFolded ? "Unfold all" : "Fold all")</button>
-                <button type="button" class="pbw-preset-node pbw-ph-labeled" title="Reset every parameter to its default" @onclick="ResetNode">@Icon(IconReset) Reset all</button>
+                <button type="button" class="pbw-preset-node pbw-ph-labeled" title="Reset every parameter to its default"
+                        disabled="@IsDefault" @onclick="ResetNode">@Icon(IconReset) Reset all</button>
             </Actions>
             <Body>
                 <div class="pbw-ptoolbar">
@@ -444,7 +460,7 @@
                                     OnClose="() => ClosePanel(RazorId)"
                                     OnRedock="() => _layout.Redock(RazorId)">
             <Actions>
-                <button type="button" class="pbw-ph-copy pbw-ph-labeled" title="Copy the Razor markup to the clipboard" @onclick="CopyRazor">@Icon(IconCopy) Copy</button>
+                <button type="button" class="pbw-ph-copy pbw-ph-labeled" title="Copy the Razor markup to the clipboard" @onclick="CopyRazor">@Icon(_copied == "razor" ? IconCheck : IconCopy) @(_copied == "razor" ? "Copied" : "Copy")</button>
             </Actions>
             <Body>
                 <pre class="pbw-code"><code>@SnippetMarkup</code></pre>
