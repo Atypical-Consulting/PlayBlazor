@@ -22,30 +22,58 @@ public static class DaisyComponentIcons
     private const string Media = """<path fill-rule="evenodd" d="M3 4h18v16H3zm2 2v10.6l4-4 3 3 2-2 5 5V6zm11 1.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/>""";
     private const string Text = """<path d="M4 4h16v4h-2V6h-5v12h2v2H9v-2h2V6H6v2H4z"/>""";
 
-    private static readonly Dictionary<string, string> Families = Build(
-        (Action, ["Button", "ButtonGroup", "IconButton", "Fab", "FabAction", "QuickAccessButton", "Swap", "ThemeController", "Dropdown", "Menu", "MenuItem"]),
-        (Input, ["TextField", "NumericField", "Field", "FieldError", "FloatingLabel", "Autocomplete", "Select", "SelectItem", "DatePicker", "ColorPicker", "FileInput", "Range", "Form", "Validator", "ValidatorHint", "ServerValidation", "FilterPanel"]),
-        (Choice, ["Checkbox", "Radio", "RadioGroup", "Switch", "Rating", "ToggleGroup", "ToggleItem"]),
-        (Data, ["Table", "Td", "Th", "Tr", "SimpleTable", "TablePager", "DataGrid", "DataGridPager", "DataTable", "PropertyColumn", "TemplateColumn", "List", "ListItem", "ListRow", "ItemList", "Item", "Stat", "Stats", "KpiCard", "DetailRow"]),
-        (Feedback, ["Alert", "ErrorAlert", "Badge", "Indicator", "Loading", "ProgressCircular", "ProgressLinear", "RadialProgress", "Skeleton", "Countdown", "Tooltip", "EmptyState", "AccessDenied", "Status", "StatusChip", "Chip"]),
-        (Overlay, ["Dialog", "ConfirmDialog", "MessageBoxDialog", "Modal", "Drawer", "StackOverlay", "ExpansionPanel", "ExpansionPanels"]),
-        (Layout, ["Container", "Grid", "Stack", "Spacer", "Divider", "Card", "CardHeader", "CardContent", "CardActions", "Paper", "Hero", "Footer", "FooterTitle", "SectionCard", "DetailCard", "DetailLayout", "AppCard", "FeatureHero", "FeatureHomePage", "FeatureNavCard", "PageHeader", "Join", "MockupBrowser", "MockupCode", "MockupPhone", "MockupWindow"]),
-        (Navigation, ["Breadcrumbs", "Pagination", "Steps", "Step", "Tabs", "Tab", "TextLink", "Timeline", "TimelineItem", "Navbar", "NavMenuLink", "Dock", "DockItem"]),
-        (Media, ["Image", "Avatar", "Carousel", "CarouselItem", "Mask", "Diff"]),
-        (Text, ["Typography", "Kbd", "ChatBubble", "Icon"]));
+    /// <summary>The families in reading order, each with its glyph and member names.</summary>
+    public static IReadOnlyList<Family> All { get; } =
+    [
+        new("Actions", Action, ["Button", "ButtonGroup", "IconButton", "Fab", "FabAction", "QuickAccessButton", "Swap", "ThemeController", "Dropdown", "Menu", "MenuItem"]),
+        new("Inputs", Input, ["TextField", "NumericField", "Field", "FieldError", "FloatingLabel", "Autocomplete", "Select", "SelectItem", "DatePicker", "ColorPicker", "FileInput", "Range", "Form", "Validator", "ValidatorHint", "ServerValidation", "FilterPanel"]),
+        new("Choices", Choice, ["Checkbox", "Radio", "RadioGroup", "Switch", "Rating", "ToggleGroup", "ToggleItem"]),
+        new("Data", Data, ["Table", "Td", "Th", "Tr", "SimpleTable", "TablePager", "DataGrid", "DataGridPager", "DataTable", "PropertyColumn", "TemplateColumn", "List", "ListItem", "ListRow", "ItemList", "Item", "Stat", "Stats", "KpiCard", "DetailRow"]),
+        new("Feedback", Feedback, ["Alert", "ErrorAlert", "Badge", "Indicator", "Loading", "ProgressCircular", "ProgressLinear", "RadialProgress", "Skeleton", "Countdown", "Tooltip", "EmptyState", "AccessDenied", "Status", "StatusChip", "Chip"]),
+        new("Overlays", Overlay, ["Dialog", "ConfirmDialog", "MessageBoxDialog", "Modal", "Drawer", "StackOverlay", "ExpansionPanel", "ExpansionPanels"]),
+        new("Layout", Layout, ["Container", "Grid", "Stack", "Spacer", "Divider", "Card", "CardHeader", "CardContent", "CardActions", "Paper", "Hero", "Footer", "FooterTitle", "SectionCard", "DetailCard", "DetailLayout", "AppCard", "FeatureHero", "FeatureHomePage", "FeatureNavCard", "PageHeader", "Join", "MockupBrowser", "MockupCode", "MockupPhone", "MockupWindow"]),
+        new("Navigation", Navigation, ["Breadcrumbs", "Pagination", "Steps", "Step", "Tabs", "Tab", "TextLink", "Timeline", "TimelineItem", "Navbar", "NavMenuLink", "Dock", "DockItem"]),
+        new("Media", Media, ["Image", "Avatar", "Carousel", "CarouselItem", "Mask", "Diff"]),
+        new("Text", Text, ["Typography", "Kbd", "ChatBubble", "Icon"]),
+    ];
+
+    // Children that only render inside a parent: the home lists them after the components a
+    // visitor reaches for first, one step quieter.
+    private static readonly HashSet<string> Parts = new(StringComparer.Ordinal)
+    {
+        "Td", "Th", "Tr", "CardHeader", "CardContent", "CardActions", "CarouselItem", "DockItem", "FooterTitle",
+        "ListItem", "ListRow", "MenuItem", "SelectItem", "TimelineItem", "ToggleItem", "Step", "Tab", "FabAction",
+        "DataGridPager", "TablePager", "FieldError", "ValidatorHint", "TemplateColumn", "DetailRow", "Item",
+    };
+
+    private static readonly Dictionary<string, Family> ByName = All
+        .SelectMany(static f => f.Names.Select(n => (n, f)))
+        .ToDictionary(static p => p.n, static p => p.f, StringComparer.Ordinal);
+
+    /// <summary>The family <paramref name="type"/> belongs to, or null when it belongs to none.</summary>
+    /// <param name="type">A discovered component type (open or closed generic).</param>
+    /// <returns>The family, or null.</returns>
+    public static Family? FamilyOf(Type type) => ByName.GetValueOrDefault(BaseName(type));
+
+    /// <summary>Whether <paramref name="type"/> is a part that only renders inside a parent component.</summary>
+    /// <param name="type">A discovered component type.</param>
+    /// <returns>True for a child part such as <c>Td</c> or <c>CardContent</c>.</returns>
+    public static bool IsPart(Type type) => Parts.Contains(BaseName(type));
 
     /// <summary>The family glyph for <paramref name="type"/>, or null when it belongs to none.</summary>
     /// <param name="type">A discovered component type (open or closed generic).</param>
     /// <returns>The inner SVG markup of a 24×24 viewBox, or null.</returns>
-    public static string? Resolve(Type type)
-    {
-        var name = type.Name;
-        var backtick = name.IndexOf('`');
-        return Families.GetValueOrDefault(backtick < 0 ? name : name[..backtick]);
-    }
+    public static string? Resolve(Type type) => FamilyOf(type)?.Glyph;
 
-    private static Dictionary<string, string> Build(params (string Glyph, string[] Names)[] families)
-        => families
-            .SelectMany(static f => f.Names.Select(n => (n, f.Glyph)))
-            .ToDictionary(static p => p.n, static p => p.Glyph, StringComparer.Ordinal);
+    private static string BaseName(Type type)
+    {
+        var backtick = type.Name.IndexOf('`');
+        return backtick < 0 ? type.Name : type.Name[..backtick];
+    }
 }
+
+/// <summary>A component family: its label, its 24×24 glyph markup and its member names.</summary>
+/// <param name="Label">The family's display name.</param>
+/// <param name="Glyph">Inner SVG markup of a 24×24 viewBox.</param>
+/// <param name="Names">Member component names, without generic arity.</param>
+public sealed record Family(string Label, string Glyph, string[] Names);

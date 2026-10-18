@@ -1,7 +1,43 @@
 @page "/explorer"
 @using PlayBlazor.Demo.Shared
 @using PlayBlazor.Shell.Workspace
+@inject Microsoft.AspNetCore.Components.NavigationManager Navigation
+@implements IDisposable
 <div class="demo-explorer-page">
     <DemoNav Current="daisy" Page="explorer" />
-    <PlaygroundWorkspace Assemblies="@(new[] { typeof(Button).Assembly })" />
+    @if (_ready)
+    {
+        <PlaygroundWorkspace Assemblies="@(new[] { typeof(Button).Assembly })" />
+    }
 </div>
+
+@code {
+    private bool _ready;
+
+    // A bare /explorer would open on the first curated component, AccessDenied: a red lock reads as a
+    // permission error. Land on the flagship Button instead; any ?pb- link keeps its own target.
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        _ready = HasTarget();
+        if (!_ready)
+        {
+            Navigation.NavigateTo("explorer?pb-Button", replace: true);
+        }
+    }
+
+    private bool HasTarget() => new Uri(Navigation.Uri).Query.Contains("pb-", StringComparison.Ordinal);
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (!_ready && HasTarget())
+        {
+            _ready = true;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}
