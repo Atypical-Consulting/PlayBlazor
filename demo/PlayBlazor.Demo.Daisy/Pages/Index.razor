@@ -32,7 +32,7 @@
                 <a href="#bench-button">Button</a>
                 <a href="#bench-datagrid">DataGrid</a>
                 <a href="#bench-column">PropertyColumn</a>
-                <a href="#components">All @_count components</a>
+                <a href="#catalog">All @_count components</a>
                 <a class="daisy-docs" href="@DocsUrl">Read the DaisyBlazor docs <span aria-hidden="true">&#8599;</span></a>
             </nav>
         </section>
@@ -55,18 +55,6 @@
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 
-        @* Replaces the shared section heading (hidden in daisy-demo.css) so the filter sits between
-           the heading and the tiles it filters. The count is the shared landing's own query. The
-           filtering itself is the small script in index.html: the tiles belong to DemoLanding. *@
-        <div class="daisy-finder" id="components">
-            <h2 class="demo-covered-title">The documented surface, discovered</h2>
-            <p class="demo-note">@_count DaisyBlazor components were discovered here. Each tile opens its playground; dashed tiles are child parts that live inside another component.</p>
-            <label class="daisy-filter">
-                <span class="daisy-filter-label">Find a component</span>
-                <input id="daisy-filter" type="search" placeholder="Table, Dialog, Rating…" autocomplete="off" spellcheck="false" aria-describedby="daisy-filter-status" />
-            </label>
-            <p id="daisy-filter-status" class="daisy-filter-status" aria-live="polite"></p>
-        </div>
     </Flagships>
 </DemoLanding>
 
