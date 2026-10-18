@@ -79,7 +79,7 @@
             {
                 <span class="pb-warning" title="@_descriptor.Warning">&#9888;</span>
             }
-            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">Share</button>
+            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">@(_copied == "share" ? "Copied ✓" : "Share")</button>
             @* Always present, so copy that points at it is never wrong; disabled until there is something to undo. *@
             <button type="button" class="pb-reset" title="Reset every parameter to its default"
                     disabled="@(_state.ModifiedValues.Count == 0)" @onclick="ResetAll">Reset all</button>
@@ -154,8 +154,13 @@
     </div>
     <div class="pb-code">
         <pre><code>@SnippetMarkup</code></pre>
-        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">Copy</button>
+        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">@(_copied == "snippet" ? "Copied ✓" : "Copy")</button>
     </div>
+    @if (_copyFailed is not null)
+    {
+        <p class="pb-copy-failed" role="alert">@_copyFailed</p>
+    }
+    <span class="pb-sr" role="status" aria-live="polite">@(_copied is null ? null : "Copied to the clipboard")</span>
     @if (Events.Any())
     {
         <div class="pb-events">

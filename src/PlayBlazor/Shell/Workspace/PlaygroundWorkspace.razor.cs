@@ -63,6 +63,14 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private int _autoIndex;
     private CancellationTokenSource? _autoCts;
     private string? _railPrefix;
+
+    // The Play bench saved on entering Present: autoplay rewrites the state, leaving restores it.
+    private (Type Type, KeyValuePair<string, object?>[] Values, string[] Overrides, string? Variant)? _playSnapshot;
+
+    // Which copy button is flashing its confirmation ("share" or "razor"), and what screen readers hear.
+    private string? _copied;
+    private string? _announce;
+    private CancellationTokenSource? _copiedCts;
     private IJSObjectReference? _module;
     private DotNetObjectReference<PlaygroundWorkspace>? _selfRef;
 
@@ -502,7 +510,11 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         {
             if (key == PermalinkParameterName && value.Length > 0)
             {
-                PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment, Options);
+                if (!PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment, Options))
+                {
+                    ShowToast("This link couldn't be restored, so the bench shows its defaults", 5000);
+                }
+
                 return;
             }
         }
@@ -536,11 +548,18 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
                or ControlKind.Date or ControlKind.Time or ControlKind.Color or ControlKind.Icon
            || IsTextSlot(parameter);
 
+    private const string EventsGroup = "Events";
+
+    /// <summary>
+    /// The library's own groups first, then every EventCallback in one trailing "Events" group, so
+    /// callbacks never sit between real controls whatever the library's categories say.
+    /// </summary>
     private IEnumerable<IGrouping<string, ParameterDescriptor>> ParameterGroups
         => _selected!.Parameters
-            .OrderBy(static p => p.GroupOrder)
+            .OrderBy(static p => p.Kind is ControlKind.Event ? 1 : 0)
+            .ThenBy(static p => p.GroupOrder)
             .ThenBy(static p => p.Group, StringComparer.Ordinal)
-            .GroupBy(static p => p.Group);
+            .GroupBy(static p => p.Kind is ControlKind.Event ? EventsGroup : p.Group);
 
     private IReadOnlyList<ParameterDescriptor> VisibleRows(IEnumerable<ParameterDescriptor> group)
         => group
@@ -617,35 +636,69 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private MarkupString SnippetMarkup => RazorSnippetGenerator.GenerateMarkup(_selected!, _state, Options);
 
-    private async Task CopyRazor()
-    {
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", RazorSnippetGenerator.Generate(_selected!, _state, Options));
-        ShowToast("Razor copied ✓");
-    }
+    private Task CopyRazor()
+        => CopyToClipboard(
+            RazorSnippetGenerator.Generate(_selected!, _state, Options), "razor", "Razor copied",
+            "Couldn't copy: select the markup in the Razor panel and copy it by hand");
 
-    private async Task CopyShareLink()
+    private Task CopyShareLink()
     {
         // The address bar is already the permalink — copy exactly what the user sees,
         // through the same SyncUrl path, so the two can never drift apart.
         SyncUrl();
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", Navigation.Uri);
-        ShowToast("Link copied ✓");
+        return CopyToClipboard(
+            Navigation.Uri, "share", "Link copied",
+            "Couldn't copy: the link to this bench is in the address bar");
     }
 
-    private void ShowToast(string message)
+    /// <summary>
+    /// Success confirms on the button itself (one place, never over other controls); a blocked
+    /// clipboard (permission denied, insecure origin) says where to copy from instead of failing silently.
+    /// </summary>
+    private async Task CopyToClipboard(string text, string button, string done, string failed)
+    {
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+        catch (JSException)
+        {
+            ShowToast(failed, 5000);
+            return;
+        }
+
+        _copiedCts?.Cancel();
+        var cts = _copiedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token);
+        _copied = button;
+        _announce = done;
+        StateHasChanged();
+        try
+        {
+            await Task.Delay(1600, cts.Token);
+            _copied = null;
+            _announce = null;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer copy, or the workspace is going away.
+        }
+    }
+
+    private void ShowToast(string message, int milliseconds = 1600)
     {
         _toastCts?.Cancel();
         var cts = _toastCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token);
         _toast = message;
         StateHasChanged();
-        _ = HideToastLater(cts.Token);
+        _ = HideToastLater(milliseconds, cts.Token);
     }
 
-    private async Task HideToastLater(CancellationToken token)
+    private async Task HideToastLater(int milliseconds, CancellationToken token)
     {
         try
         {
-            await Task.Delay(1600, token);
+            await Task.Delay(milliseconds, token);
             await InvokeAsync(() =>
             {
                 _toast = null;
@@ -826,15 +879,40 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private void SetPresent(bool present)
     {
+        if (present == _present)
+        {
+            return;
+        }
+
         _present = present;
-        if (present && Variants.Count > 0)
+        if (present)
         {
-            StartAutoplay();
+            // Present is a slideshow, not an editor: what it plays must not overwrite the Play bench.
+            _playSnapshot = (_selected!.Type, _state.ModifiedValues.ToArray(), _overrides.ToArray(), _activeVariant);
+            if (Variants.Count > 0)
+            {
+                StartAutoplay();
+            }
+
+            return;
         }
-        else
+
+        StopAutoplay();
+        if (_playSnapshot is { } saved && saved.Type == _selected!.Type)
         {
-            StopAutoplay();
+            _state.ResetAll();
+            foreach (var (name, value) in saved.Values)
+            {
+                _state.Set(name, value);
+            }
+
+            _overrides.Clear();
+            _overrides.UnionWith(saved.Overrides);
+            _activeVariant = saved.Variant;
+            _errorBoundary?.Recover();
         }
+
+        _playSnapshot = null;
     }
 
     private void StartAutoplay()
@@ -953,6 +1031,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     internal const string IconChevronRight = "M6 4l4 4-4 4";
     internal const string IconClose = "M4.5 4.5l7 7 M11.5 4.5l-7 7";
     internal const string IconShare = "M8 10V2.5 M5 5.5l3-3 3 3 M3.5 9v4.5h9V9";
+    internal const string IconCheck = "M3.5 8.5l3 3 6-7";
 
     /// <summary>
     /// Inline SVG with presentation attributes, not classes: markup strings never receive the

@@ -19,6 +19,11 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private ErrorBoundary? _errorBoundary;
     private string? _activeVariant;
 
+    // Which copy button is flashing its confirmation ("share" or "snippet"), or why copying failed.
+    private string? _copied;
+    private string? _copyFailed;
+    private CancellationTokenSource? _copiedCts;
+
     // Demo-filled slots the visitor chose to replace: their text box shows even while still empty.
     private readonly HashSet<string> _overrides = new(StringComparer.Ordinal);
 
@@ -158,16 +163,51 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         }
     }
 
-    private async Task CopyShareLink()
+    private Task CopyShareLink()
     {
         var encoded = PlaygroundStateSerializer.Encode(_descriptor, _state, _environment, Options);
         var uri = Navigation.GetUriWithQueryParameter(PermalinkParameterName, encoded);
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", uri);
+        return CopyToClipboard(uri, "share", $"Couldn't copy the link. Copy it from here: {uri}");
+    }
+
+    /// <summary>
+    /// Confirms on the button itself for a moment; a blocked clipboard (permission denied, insecure
+    /// origin) leaves a visible line with what to copy by hand instead of failing silently.
+    /// </summary>
+    private async Task CopyToClipboard(string text, string button, string failed)
+    {
+        _copyFailed = null;
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+        catch (JSException)
+        {
+            _copied = null;
+            _copyFailed = failed;
+            return;
+        }
+
+        _copiedCts?.Cancel();
+        var cts = _copiedCts = new CancellationTokenSource();
+        _copied = button;
+        StateHasChanged();
+        try
+        {
+            await Task.Delay(1600, cts.Token);
+            _copied = null;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer copy, or the bench is going away.
+        }
     }
 
     /// <summary>Unsubscribes from the playground state and event log.</summary>
     public void Dispose()
     {
+        _copiedCts?.Cancel();
         _state.Changed -= OnStateChanged;
         _eventLog.Changed -= OnStateChanged;
         _eventLog.Recorded -= OnSpecimenEvent;
@@ -247,8 +287,8 @@ public partial class PlaygroundView : ComponentBase, IDisposable
 
     private MarkupString SnippetMarkup => RazorSnippetGenerator.GenerateMarkup(_descriptor, _state, Options);
 
-    private async Task CopySnippet()
-        => await Js.InvokeVoidAsync("navigator.clipboard.writeText", Snippet);
+    private Task CopySnippet()
+        => CopyToClipboard(Snippet, "snippet", "Couldn't copy the snippet: select it above and copy it by hand.");
 
     private void RecoverFromError()
     {

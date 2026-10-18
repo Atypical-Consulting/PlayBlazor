@@ -105,16 +105,20 @@
 .pbw-rail-title { font-size: 0.8125rem; font-weight: 650; }
 .pbw-rail-count { font-family: var(--pbw-mono); font-size: 0.6875rem; color: var(--pbw-muted); font-variant-numeric: tabular-nums; }
 .pbw-rail-filter {
-    margin: 0 0.6rem 0.4rem; font-family: var(--pbw-ui); font-size: 0.75rem; color: var(--pbw-ink);
+    margin: 0 0.6rem 0.4rem; font-family: var(--pbw-ui); font-size: 0.75rem; line-height: 1.3; color: var(--pbw-ink);
     background: var(--pbw-bg); border: 1px solid var(--pbw-line); border-radius: 8px; padding: 0.4rem 0.55rem;
+    /* Host stylesheets size search inputs differently (Fluent UI runs short): own the box. */
+    box-sizing: border-box; height: 32px; min-height: 32px;
 }
 .pbw-rail-filter:focus { border-color: var(--pbw-accent); outline: none; }
 .pbw-rail-list { flex: 1; min-height: 0; overflow: auto; padding: 0 0.4rem 0.5rem; scrollbar-width: thin; scrollbar-color: var(--pbw-line) transparent; }
 .pbw-rail-group {
     position: sticky; top: 0; z-index: 1; margin: 0; background: var(--pbw-card);
     font-family: var(--pbw-ui); font-size: 0.6875rem; font-weight: 600; color: var(--pbw-muted);
-    padding: 0.55rem 0.45rem 0.25rem;
+    padding: 0.55rem 0.45rem 0.3rem;
     line-height: 1.3; /* Fluent UI gives bare h2 a 40px line box */
+    /* A hairline under the pinned label, so the item scrolling beneath reads as passing under a header. */
+    box-shadow: 0 1px 0 var(--pbw-hair);
 }
 .pbw-rail-item {
     display: block; width: 100%; text-align: left;
@@ -129,6 +133,11 @@
 .pbw-rail-prefix { color: #85859a; font-weight: 400; }
 .pbw-rail-item-on .pbw-rail-prefix { color: #7d67e0; }
 .pbw-rail-empty { font-family: var(--pbw-ui); font-size: 0.75rem; color: var(--pbw-muted); padding: 0.5rem; margin: 0; line-height: 1.6; }
+.pbw-rail-clear {
+    display: block; margin-top: 0.5rem; font: 600 0.75rem var(--pbw-ui); color: var(--pbw-ink);
+    background: transparent; border: 1px solid var(--pbw-line); border-radius: 8px; padding: 0 0.75rem; min-height: 32px; cursor: pointer;
+}
+.pbw-rail-clear:hover { border-color: var(--pbw-accent); color: var(--pbw-accent); }
 .pbw-rail-hint {
     margin: 0; padding: 0.5rem 0.8rem; border-top: 1px solid var(--pbw-hair);
     font-family: var(--pbw-ui); font-size: 0.6875rem; color: var(--pbw-muted);
@@ -449,7 +458,9 @@
 .pbw-hud-exit { font-family: var(--pbw-ui); font-size: 0.6875rem; color: #8f8fa6; border-left: 1px solid #2b2b3a; padding-left: 0.75rem; }
 .pbw-toast:empty { clip-path: inset(50%); padding: 0; border: 0; }
 .pbw-toast {
-    position: fixed; top: 58px; left: 50%; transform: translateX(-50%); z-index: 70;
+    /* Bottom centre, clear of the header's mode switch and of every panel control. */
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 70;
+    max-width: calc(100vw - 2rem); text-align: center;
     font-family: var(--pbw-ui); font-size: 0.71875rem; font-weight: 600;
     color: #fff; background: rgba(24, 24, 34, 0.94); border: 1px solid var(--pbw-accent);
     border-radius: 999px; padding: 0.4rem 0.9rem;
@@ -484,6 +495,14 @@
 }
 .pbw-help-reset:hover { border-color: var(--pbw-accent); color: var(--pbw-accent); }
 .pbw-help-note { margin: 1rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--pbw-hair); font-size: 0.8125rem; color: var(--pbw-muted); line-height: 1.55; }
+
+.pbw-present .pbw-toast { bottom: 5.5rem; }
+/* Present hides every panel, so the panel toggles have nothing to toggle there. */
+.pbw-present .pbw-pills { visibility: hidden; }
+.pbw-sr {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
 
 ::selection { background: rgba(109, 74, 255, 0.22); }
 *:focus-visible { outline: 2px solid var(--pbw-accent); outline-offset: 2px; }
@@ -546,16 +565,12 @@
     /* The tabs own visibility here: closing or folding the one shown panel would leave a blank tab. */
     .pbw ::deep .pbw-ph-close, .pbw ::deep .pbw-ph-collapse { display: none; }
     .pbw ::deep .pbw-panel-collapsed .pbw-panel-body { display: block; }
-    .pbw-mode { min-height: 36px; }
+    .pbw-mode { min-height: 44px; }
     .pbw-bar-right { margin-left: auto; }
     .pbw-help-btn, .pbw-share { min-height: 44px; min-width: 44px; justify-content: center; padding: 0 0.6rem; }
     .pbw-stage-top { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-    /* Examples stay on one row that scrolls sideways instead of stacking above the specimen. */
-    .pbw-chips {
-        margin: 0 -0.7rem; padding: 0 2.5rem 2px 0.7rem; scrollbar-width: none;
-        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
-        mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
-    }
+    /* Examples wrap: every one stays readable and reachable, none cut at the edge. */
+    .pbw-chips { flex-wrap: wrap; overflow: visible; }
     .pbw-stage-top { border-bottom: 0; background: transparent; padding: 0; }
     .pbw-stage-toolbar { align-self: flex-start; }
     .pbw-env-btn, .pbw-env-width { min-height: 40px; }
