@@ -1,15 +1,23 @@
 @page "/"
 @using DaisyBlazor.Data
+@using PlayBlazor.Discovery
+@inject IComponentCatalogProvider Catalog
+@inject PlayBlazorOptions Options
 <DemoLanding Assembly="typeof(Button).Assembly"
              LibraryName="DaisyBlazor"
-             DocsUrl="https://phmatray.github.io/daisyblazor/"
+             DocsUrl="@DocsUrl"
              Current="daisy">
     <Flagships>
-        @* Literal daisyUI badge classes, so Tailwind emits them: the theme's palette, rendered by the
+        @* The library's own lead: the shared hero names PlayBlazor, this names what it is pointed at.
+           Literal daisyUI badge classes, so Tailwind emits them: the theme's palette, rendered by the
            same compiled sheet the specimens use. *@
-        <div class="daisy-theme">
-            <p class="daisy-theme-label">Every specimen renders in daisyUI's <code>daisyblazor</code> theme</p>
-            <div class="daisy-theme-swatches">
+        <section class="daisy-lead" aria-labelledby="daisy-lead-title">
+            <h2 id="daisy-lead-title" class="daisy-lead-title">DaisyBlazor, played live</h2>
+            <p class="daisy-lead-text">
+                Three benches to try first, then every component in the library. Each specimen renders
+                in daisyUI's <code>daisyblazor</code> theme, compiled by Tailwind at build time.
+            </p>
+            <div class="daisy-theme-swatches" aria-label="The daisyblazor theme palette">
                 <span class="badge badge-primary">primary</span>
                 <span class="badge badge-secondary">secondary</span>
                 <span class="badge badge-accent">accent</span>
@@ -19,24 +27,55 @@
                 <span class="badge badge-warning">warning</span>
                 <span class="badge badge-error">error</span>
             </div>
-        </div>
+            @* Fragment links stay base-relative: under <base href> "#x" resolves to this page. *@
+            <nav class="daisy-jump" aria-label="On this page">
+                <a href="#bench-button">Button</a>
+                <a href="#bench-datagrid">DataGrid</a>
+                <a href="#bench-column">PropertyColumn</a>
+                <a href="#components">All @_count components</a>
+                <a class="daisy-docs" href="@DocsUrl">Read the DaisyBlazor docs <span aria-hidden="true">&#8599;</span></a>
+            </nav>
+        </section>
 
-        <section class="demo-section daisy-bench-compact">
+        <section class="demo-section daisy-bench-compact" id="bench-button">
             <h2 class="demo-tag">Button</h2>
-            <p class="demo-note">The flagship demo — flip Color, Variant and Size, watch the snippet follow. Every class is daisyUI's, compiled by Tailwind at build time.</p>
+            <p class="demo-note">Pick a Color, Variant and Size: the button and its Razor snippet change together. Every class is daisyUI's.</p>
             <PlaygroundView Component="typeof(Button)" />
         </section>
 
-        <section class="demo-section">
+        <section class="demo-section" id="bench-datagrid">
             <h2 class="demo-tag">DataGrid&lt;Person&gt;</h2>
-            <p class="demo-note">Sample rows, columns and the pager come from host presets — two rows per page, so the pager is live; click a header to sort; Striped, Dense, Bordered… stay yours to play with.</p>
+            <p class="demo-note">Click a header to sort, page through two rows at a time, then try Striped, Dense or Bordered. The sample people and columns are already filled in.</p>
             <PlaygroundView Component="typeof(DataGrid<Person>)" />
         </section>
 
-        <section class="demo-section">
+        <section class="demo-section" id="bench-column">
             <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
-            <p class="demo-note">A column cannot live outside its grid: the host scaffold renders the played column inside a real DataGrid.</p>
+            <p class="demo-note">A column only renders inside a grid, so this one is shown in a real DataGrid. Rename its Title or turn off Sortable and only that column changes.</p>
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
+
+        @* Replaces the shared section heading (hidden in daisy-demo.css) so the filter sits between
+           the heading and the tiles it filters. The count is the shared landing's own query. The
+           filtering itself is the small script in index.html: the tiles belong to DemoLanding. *@
+        <div class="daisy-finder" id="components">
+            <h2 class="demo-covered-title">The documented surface, discovered</h2>
+            <p class="demo-note">@_count DaisyBlazor components were discovered here. Each tile opens its playground; dashed tiles are child parts that live inside another component.</p>
+            <label class="daisy-filter">
+                <span class="daisy-filter-label">Find a component</span>
+                <input id="daisy-filter" type="search" placeholder="Table, Dialog, Rating…" autocomplete="off" spellcheck="false" aria-describedby="daisy-filter-status" />
+            </label>
+            <p id="daisy-filter-status" class="daisy-filter-status" aria-live="polite"></p>
+        </div>
     </Flagships>
 </DemoLanding>
+
+@code {
+    private const string DocsUrl = "https://phmatray.github.io/daisyblazor/";
+    private int _count;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+        => _count = Catalog.Discover(typeof(Button).Assembly)
+            .Count(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true));
+}

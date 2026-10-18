@@ -26,13 +26,13 @@ public static class DaisyComponentIcons
         (Action, ["Button", "ButtonGroup", "IconButton", "Fab", "FabAction", "QuickAccessButton", "Swap", "ThemeController", "Dropdown", "Menu", "MenuItem"]),
         (Input, ["TextField", "NumericField", "Field", "FieldError", "FloatingLabel", "Autocomplete", "Select", "SelectItem", "DatePicker", "ColorPicker", "FileInput", "Range", "Form", "Validator", "ValidatorHint", "ServerValidation", "FilterPanel"]),
         (Choice, ["Checkbox", "Radio", "RadioGroup", "Switch", "Rating", "ToggleGroup", "ToggleItem"]),
-        (Data, ["Table", "Td", "Th", "Tr", "SimpleTable", "TablePager", "DataGrid", "DataGridPager", "DataTable", "PropertyColumn", "TemplateColumn", "List", "ListItem", "ListRow", "ItemList", "Item", "Stat", "Stats", "KpiCard", "Status", "StatusChip", "DetailRow"]),
-        (Feedback, ["Alert", "ErrorAlert", "Badge", "Indicator", "Loading", "ProgressCircular", "ProgressLinear", "RadialProgress", "Skeleton", "Countdown", "Tooltip", "EmptyState", "AccessDenied"]),
+        (Data, ["Table", "Td", "Th", "Tr", "SimpleTable", "TablePager", "DataGrid", "DataGridPager", "DataTable", "PropertyColumn", "TemplateColumn", "List", "ListItem", "ListRow", "ItemList", "Item", "Stat", "Stats", "KpiCard", "DetailRow"]),
+        (Feedback, ["Alert", "ErrorAlert", "Badge", "Indicator", "Loading", "ProgressCircular", "ProgressLinear", "RadialProgress", "Skeleton", "Countdown", "Tooltip", "EmptyState", "AccessDenied", "Status", "StatusChip", "Chip"]),
         (Overlay, ["Dialog", "ConfirmDialog", "MessageBoxDialog", "Modal", "Drawer", "StackOverlay", "ExpansionPanel", "ExpansionPanels"]),
         (Layout, ["Container", "Grid", "Stack", "Spacer", "Divider", "Card", "CardHeader", "CardContent", "CardActions", "Paper", "Hero", "Footer", "FooterTitle", "SectionCard", "DetailCard", "DetailLayout", "AppCard", "FeatureHero", "FeatureHomePage", "FeatureNavCard", "PageHeader", "Join", "MockupBrowser", "MockupCode", "MockupPhone", "MockupWindow"]),
         (Navigation, ["Breadcrumbs", "Pagination", "Steps", "Step", "Tabs", "Tab", "TextLink", "Timeline", "TimelineItem", "Navbar", "NavMenuLink", "Dock", "DockItem"]),
-        (Media, ["Image", "Avatar", "Carousel", "CarouselItem", "Mask", "Diff", "Icon"]),
-        (Text, ["Typography", "Kbd", "ChatBubble", "Chip"]));
+        (Media, ["Image", "Avatar", "Carousel", "CarouselItem", "Mask", "Diff"]),
+        (Text, ["Typography", "Kbd", "ChatBubble", "Icon"]));
 
     /// <summary>The family glyph for <paramref name="type"/>, or null when it belongs to none.</summary>
     /// <param name="type">A discovered component type (open or closed generic).</param>
