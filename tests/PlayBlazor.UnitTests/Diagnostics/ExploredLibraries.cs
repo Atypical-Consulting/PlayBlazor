@@ -30,22 +30,6 @@ public static class ExploredLibraries
     {
         get
         {
-            foreach (var library in Curated)
-            {
-                yield return library;
-            }
-        }
-    }
-
-    /// <summary>
-    /// The libraries whose showcase is curated to depth — every listed component carries curation
-    /// and every variant is live. Today that is every explored library; the split stays so a new
-    /// library can be swept and inventoried before it is curated.
-    /// </summary>
-    public static IEnumerable<TestCaseData> Curated
-    {
-        get
-        {
             yield return Mud;
             yield return Fluent;
             yield return Daisy;

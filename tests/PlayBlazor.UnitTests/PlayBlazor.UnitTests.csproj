@@ -6,18 +6,19 @@
     <IsPackable>false</IsPackable>
     <!-- This project references the Blazor WebAssembly demo apps purely for reflection (their
          compiled assembly and Configure method) — never their wwwroot. Left enabled, the static
-         web assets pipeline tries to bundle both apps' _framework runtime files into one output
+         web assets pipeline tries to bundle every app's _framework runtime files into one output
          and fails with "Conflicting assets with the same target path" the moment a second
          WebAssembly app is referenced alongside the first. -->
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     <!-- CodeGen/Corpus/*.razor compiles every snippet the showcases can generate, so that markup
-         which does not build breaks the build (see SnippetCorpusTests). Two of those snippets
-         leave an [EditorRequired] parameter unset, and RZ2012 would be an error here under
-         TreatWarningsAsErrors: FluentSortableList.ItemTemplate and TemplateColumn.ChildContent are
-         RenderFragment<T>, which ParameterDictionaryBuilder.BuildSlot cannot fill, and
+         which does not build breaks the build (see SnippetCorpusTests). Some snippets leave an
+         [EditorRequired] parameter unset, and RZ2012 would be an error here under
+         TreatWarningsAsErrors. In the Fluent corpus: FluentSortableList.ItemTemplate and
+         TemplateColumn.ChildContent are RenderFragment<T>, which BuildSlot fills only from a
+         .Slot<TContext> template preset that the Fluent bench has not adopted yet, and
          FluentAppBarItem.IconRest is an Icon, which FormatValue deliberately omits rather than
-         print a type name that does not compile. Both gaps are recorded beside the components in
-         FluentPlaygroundConfig; neither is a syntax error, so suppressing RZ2012 costs this corpus
+         print a type name that does not compile. The gaps are recorded beside the components in
+         their PlaygroundConfig; none is a syntax error, so suppressing RZ2012 costs this corpus
          nothing it was built to catch. -->
     <NoWarn>$(NoWarn);RZ2012</NoWarn>
   </PropertyGroup>

@@ -1,8 +1,8 @@
 @inherits LayoutComponentBase
-<ThemeProvider>
-    <div class="demo-host">
-        @Body
-    </div>
-    <DialogProvider />
-    <SnackbarProvider />
-</ThemeProvider>
+@* No <ThemeProvider>: it would overwrite the data-theme="daisyblazor" pin in index.html with
+   "light"/"dark" from the OS on first render. Nothing here reads a cascaded provider. *@
+<div class="demo-host">
+    @Body
+</div>
+<DialogProvider />
+<SnackbarProvider />

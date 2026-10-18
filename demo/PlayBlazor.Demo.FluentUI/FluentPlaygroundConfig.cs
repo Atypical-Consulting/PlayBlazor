@@ -483,9 +483,9 @@ public static class FluentPlaygroundConfig
         // same closed-generic-RenderFragment gap noted above for TemplateColumn.ChildContent, but
         // starker: BuildRenderTree returns immediately when ItemTemplate is null, so the specimen
         // renders NOTHING at all, not even a wrapper element — no error, no content, invisible.
-        // No preset in src/PlayBlazor's current Slot/Parameter/Variant surface can reach it. Every
-        // other real, reachable parameter is curated below so the type is not left bare, but the
-        // bench itself will show an empty area regardless.
+        // The templated .Slot<TContext> overload can now fill it, but this bench has not adopted it
+        // yet (a follow-up). Every other real, reachable parameter is curated below so the type is
+        // not left bare, but until then the bench shows an empty area.
         options.For<FluentSortableList<string>>()
             .Parameter(nameof(FluentSortableList<string>.Items), new[] { "Design", "Build", "Test", "Ship" }, "@_tasks")
             .Parameter(nameof(FluentSortableList<string>.AriaLabel), "Project tasks")

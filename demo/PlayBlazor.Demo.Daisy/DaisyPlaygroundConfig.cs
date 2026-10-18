@@ -24,7 +24,8 @@ namespace PlayBlazor.Demo.Daisy;
 /// <list type="bullet">
 /// <item>Theme: the preset marks <c>daisyblazor-dark</c> <c>--prefersdark</c>, so on a dark OS the
 /// specimens would turn dark inside the light shell. wwwroot/index.html pins
-/// <c>data-theme="daisyblazor"</c> on <c>&lt;html&gt;</c> to stop that.</item>
+/// <c>data-theme="daisyblazor"</c> on <c>&lt;html&gt;</c> to stop that, and MainLayout mounts no
+/// ThemeProvider, whose first render would overwrite the pin with the OS's "light"/"dark".</item>
 /// <item>Tailwind emits only classes it has seen. A class a preset passes through Class/Style must
 /// appear literally in a .cs or .razor file of this project (the CLI scans them). Classes
 /// DaisyBlazor composes at runtime come only from its safelist.css, and a hole there is reported
@@ -218,12 +219,14 @@ public static class DaisyPlaygroundConfig
             .Variant("Disabled", v => v.Set(nameof(SelectItem<string>.Disabled), true));
 
         // TablePager renders only under a cascading ITablePagerHost, which Table cascades as itself.
-        // RowsPerPage=2 over three rows gives the pager a second page to move to.
+        // RowsPerPage=2 over three rows gives the pager a second page to move to. The pager sits in
+        // Table's own "flex justify-end" wrapper at content width, so alignment (justify-content on
+        // its root) moves nothing; the variant widens its gap instead (gap-6 outranks gap-3 in app.css).
         options.For<TablePager>()
             .Scaffold(DaisyDemoFragments.InTable, DaisyDemoFragmentSources.InTable)
             .Related<Table<Person>>()
             .Parameter(nameof(TablePager.PageSizeOptions), new[] { 2, 5, 10 }, "@(new[] { 2, 5, 10 })")
-            .Variant("Start-aligned", v => v.Set(nameof(TablePager.Style), "justify-content: flex-start"));
+            .Variant("Wider spacing", v => v.Set(nameof(TablePager.Class), "gap-6"));
 
         // DataGridPager renders only when a DataGrid cascades; it belongs in DataGrid.PagerContent.
         // PageSizeOptions is read once, in OnInitialized: a variant would not re-run it, so the grid

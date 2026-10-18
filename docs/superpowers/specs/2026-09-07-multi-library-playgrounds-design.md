@@ -21,7 +21,7 @@ Tout le savoir-librairie vit déjà côté hôte dans `PlayBlazorOptions` (`Comp
 |---|---|
 | Forme de la démo | **Trois apps WASM, un site Pages, un sélecteur qui est un lien.** Isolation CSS/JS totale, payload par librairie |
 | Version Fluent UI | **v5 RC** (`5.0.0-rc.5-26219.1`) — pur Blazor, plus de Fluent UI Web Components |
-| Source DaisyBlazor | **1.0.0**, après merge de la PR release-please `phmatray/blazor-tailwind-ui#20` |
+| Source DaisyBlazor | ~~**1.0.0**, après merge de la PR release-please `phmatray/blazor-tailwind-ui#20`~~ — *révisé (jalon 4) :* **DaisyBlazor.Components 0.6.0** depuis NuGet, qui compile lui-même le CSS (voir §8) |
 | Ampleur des presets | **Parité complète avec MudBlazor** — ~60 composants curés par librairie |
 | Extension du package | **Le sac d'options grandit** : un catalogue de valeurs par type. Pas de paquets satellites (pour l'instant) |
 | Paquets publiés | **1, inchangé.** `src/PlayBlazor` garde zéro dépendance UI |
@@ -186,7 +186,7 @@ livrer un site dont tous les assets renvoient 404 sans que le build ne bronche),
 Un job final assemble `publish/`, y dépose la landing statique et `.nojekyll`, puis fait un seul
 `upload-pages-artifact`.
 
-Le job `daisy` ajoute, avant `dotnet publish` : `setup-node`, `npm ci`, build Tailwind
+*(Caduc, voir la note plus bas : le job `daisy` est un `dotnet publish` comme les autres.)* Le job `daisy` ajoute, avant `dotnet publish` : `setup-node`, `npm ci`, build Tailwind
 (`tailwindcss -i Styles/main.css -o wwwroot/css/app.css --minify`). `PlayBlazor.Demo.Daisy`
 porte donc ses propres `package.json` / `package-lock.json` — c'est la seule app du repo à
 avoir une dépendance Node, et elle est confinée à ce projet.
@@ -228,7 +228,7 @@ propre, pas les tests.
 | **La safelist DaisyBlazor sera prise en défaut** — le playground compose des classes à l'exécution (`btn-accent`, `badge-xl`) que Tailwind n'a jamais vues | attendu : c'est le test de complétude le plus dur jamais fait sur ce kit, et la valeur revient à DaisyBlazor |
 | **Poids du site ×3** | chaque app se télécharge seule ; la landing est statique |
 | **`Demo.Shared` pourrait dériver vers une dépendance UI** | discipline de revue ; la contrainte est déjà écrite dans `CLAUDE.md` |
-| **Daisy bloquée sur le merge de #20** | les jalons 1 à 3 n'en dépendent pas |
+| ~~**Daisy bloquée sur le merge de #20**~~ | *levé (jalon 4) :* livré sur DaisyBlazor.Components 0.6.0 depuis NuGet, sans attendre #20 |
 
 ## 8. Jalons
 
@@ -389,4 +389,13 @@ c'est le filet de sécurité de la restructuration.
     interne reçoit toujours un `OnClick`, donc `role="button" tabindex="0"` même sans `Href`.
   - *Table* : `Hover` est sans effet dès qu'`OnRowClick` a un délégué (la ligne prend alors
     `row-hover` d'office) — documenté côté vitrine, où le banc branche toujours les événements.
+  - *Material Symbols sans axe FILL* : `docs/getting-started.md`, `docs/css-preset.md`,
+    `styles/README.md` et les pages guide du site chargent `family=Material+Symbols+Outlined`
+    nu, l'instance statique. Or `Icon` ne bascule plein/contour que par
+    `font-variation-settings:'FILL'`, ignoré par une police non variable : toute icône `Filled`
+    s'affiche en contour et `Outlined` ne change rien. Le site et le template, eux, chargent
+    `:opsz,wght,FILL,GRAD@24,400,0..1,0` — c'est l'URL que la vitrine utilise.
+  - *ThemeProvider nu* : défauts `SystemLightTheme="light"` / `SystemDarkTheme="dark"`, si bien
+    qu'un `<ThemeProvider>` sans paramètre écrase au premier rendu tout `data-theme` posé dans
+    `index.html` (dont `daisyblazor`, le thème du preset) — la vitrine n'en monte donc aucun.
 
