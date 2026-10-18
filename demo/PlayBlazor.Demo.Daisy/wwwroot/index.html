@@ -221,32 +221,6 @@
             var boot = document.querySelector(".boot");
             if (boot) boot.classList.add("boot-failed");
         }
-
-        // The tile filter on the home page. The tiles belong to the shared DemoLanding, so this
-        // only toggles their hidden attribute; Enter opens the first match.
-        function pbVisibleTiles() {
-            return Array.prototype.filter.call(document.querySelectorAll(".demo-tile"), function (t) { return !t.hidden; });
-        }
-
-        document.addEventListener("input", function (e) {
-            if (e.target.id !== "daisy-filter") return;
-            var query = e.target.value.trim().toLowerCase();
-            var shown = 0;
-            document.querySelectorAll(".demo-tile").forEach(function (tile) {
-                var hit = tile.textContent.toLowerCase().indexOf(query) !== -1;
-                tile.hidden = !hit;
-                if (hit) shown++;
-            });
-            document.getElementById("daisy-filter-status").textContent = !query ? ""
-                : shown === 0 ? "No component matches \u201c" + e.target.value.trim() + "\u201d. Try a shorter name."
-                : shown + (shown === 1 ? " match. Press Enter to open it." : " matches. Press Enter to open the first.");
-        });
-
-        document.addEventListener("keydown", function (e) {
-            if (e.target.id !== "daisy-filter" || e.key !== "Enter") return;
-            var first = pbVisibleTiles()[0];
-            if (first && e.target.value.trim()) { e.preventDefault(); first.click(); }
-        });
     </script>
     <script src="_framework/blazor.webassembly.js" autostart="false" onerror="pbBootFailed()"></script>
     <script>

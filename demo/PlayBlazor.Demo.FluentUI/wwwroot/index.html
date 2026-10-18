@@ -109,12 +109,6 @@
             background: #f6f3ff;
         }
 
-        /* The page restates the wall's heading and note above its find field (Pages/Index.razor),
-           so the shared copies would read twice. */
-        .demo-section:has(> .demo-tiles) > :is(.demo-covered-title, .demo-note) {
-            display: none;
-        }
-
         /* Hero lines start on the same left edge as the content column below (880px minus its
            1.5rem gutters), not 24px left of it. */
         .demo-hero > * {
@@ -212,16 +206,5 @@
         </div>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script>
-        // "/" jumps to the component finder, unless the visitor is already typing somewhere.
-        document.addEventListener("keydown", e => {
-            if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
-            if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
-            const find = document.getElementById("fx-find-input");
-            if (!find) return;
-            e.preventDefault();
-            find.focus();
-        });
-    </script>
 </body>
 </html>
