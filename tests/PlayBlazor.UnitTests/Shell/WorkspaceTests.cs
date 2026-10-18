@@ -208,7 +208,9 @@ public class WorkspaceTests
         var cut = RenderWorkspace();
         cut.Find("[data-panel=signals] .pbw-ph-close").Click();
 
-        cut.Find(".pbw-reset-layout").Click();
+        // Reset layout lives in the help sheet, not the bar.
+        cut.Find(".pbw-help-btn").Click();
+        cut.Find(".pbw-help-reset").Click();
 
         cut.FindAll("[data-panel=signals]").Should().HaveCount(1);
     }

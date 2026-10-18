@@ -19,6 +19,12 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private ErrorBoundary? _errorBoundary;
     private string? _activeVariant;
 
+    // Demo-filled slots the visitor chose to replace: their text box shows even while still empty.
+    private readonly HashSet<string> _overrides = new(StringComparer.Ordinal);
+
+    // Ids for aria references must stay unique when several benches share a page.
+    private readonly string _idPrefix = $"pb-{Guid.NewGuid():N}";
+
     [Inject]
     private IComponentCatalogProvider Catalog { get; set; } = default!;
 
@@ -55,6 +61,30 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private IEnumerable<ParameterDescriptor> Events
         => _descriptor.Parameters.Where(static p => p.Kind is ControlKind.Event);
 
+    /// <summary>A short line instead of a wall: three names, then the count of the rest.</summary>
+    private string EventsSummary
+    {
+        get
+        {
+            var names = Events.Select(static e => e.Name).ToList();
+            return names.Count <= 3
+                ? $"Listening to {string.Join(", ", names)}"
+                : $"Listening to {names.Count} events: {string.Join(", ", names.Take(3))} and {names.Count - 3} more";
+        }
+    }
+
+    /// <summary>True when the host fills this slot, so an empty text box would misstate the stage.</summary>
+    private bool IsDemoFilled(ParameterDescriptor parameter)
+        => IsTextSlot(parameter)
+           && (Options.TryGetSlotPreset(_descriptor.Type, parameter.Name, out _)
+               || Options.TryGetParameterPreset(_descriptor.Type, parameter.Name, out _));
+
+    private void RestoreParameter(string name)
+    {
+        _overrides.Remove(name);
+        _state.Reset(name);
+    }
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -89,6 +119,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         {
             _descriptor = Catalog.Describe(Component);
             _state.ResetAll();
+            _overrides.Clear();
             _activeVariant = null;
             // A previous specimen's failure must not poison the next one.
             _errorBoundary?.Recover();
@@ -166,6 +197,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private void ResetAll()
     {
         _state.ResetAll();
+        _overrides.Clear();
         _activeVariant = null;
         _errorBoundary?.Recover();
     }
@@ -176,6 +208,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private void ApplyVariant(PlaygroundVariantDefinition variant)
     {
         _state.ResetAll();
+        _overrides.Clear();
         foreach (var (name, value) in variant.Values)
         {
             if (value is not null)
@@ -214,6 +247,7 @@ public partial class PlaygroundView : ComponentBase, IDisposable
     private void RecoverFromError()
     {
         _state.ResetAll();
+        _overrides.Clear();
         _errorBoundary?.Recover();
     }
 }

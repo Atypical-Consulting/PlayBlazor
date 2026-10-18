@@ -51,7 +51,6 @@
         </div>
         <div class="pbw-bar-right">
             <button type="button" class="pbw-help-btn" aria-keyshortcuts="?" aria-label="Help and keyboard shortcuts" title="Help and keyboard shortcuts (?)" @onclick="() => _help = !_help"><span class="pbw-btn-label">Help</span> <kbd class="pbw-kbd">?</kbd></button>
-            <button type="button" class="pbw-reset-layout" title="Restore the default panel arrangement" @onclick="ResetLayout">Reset layout</button>
             <button type="button" class="pbw-share" title="Copy a link to this exact configuration" aria-label="Share this configuration" @onclick="CopyShareLink">@Icon(IconShare) <span class="pbw-btn-label">Share</span></button>
         </div>
     </header>
@@ -63,6 +62,7 @@
                 <span class="pbw-rail-count">@PickerGroups.Sum(static g => g.Count())</span>
             </div>
             <input class="pbw-rail-filter" type="search" placeholder="Filter components" aria-label="Filter components"
+                   aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K or ⌘K to focus"
                    value="@_railFilter" @oninput="e => _railFilter = (string?)e.Value ?? string.Empty" />
             <div class="pbw-rail-list">
                 @{ var railShown = 0; }
@@ -84,7 +84,10 @@
                         <button type="button" @key="component.Type"
                                 class="pbw-rail-item @(current ? "pbw-rail-item-on" : null)"
                                 aria-current="@(current ? "true" : null)"
-                                @onclick="() => SelectComponent(component)">@component.DisplayName</button>
+                                @onclick="() => SelectComponent(component)">@if (RailPrefix.Length > 0 && component.DisplayName.StartsWith(RailPrefix, StringComparison.Ordinal))
+                                {<span class="pbw-rail-prefix">@RailPrefix</span>@component.DisplayName[RailPrefix.Length..]}
+                                else
+                                {@component.DisplayName}</button>
                     }
                 }
                 @if (railShown == 0)
@@ -251,6 +254,7 @@
                 <dt><kbd class="pbw-kbd">1</kbd>–<kbd class="pbw-kbd">4</kbd></dt><dd>Show or hide Tree, Parameters, Razor, Events</dd>
                 <dt><kbd class="pbw-kbd">[</kbd> <kbd class="pbw-kbd">]</kbd></dt><dd>Previous / next component</dd>
                 <dt><kbd class="pbw-kbd">↑</kbd> <kbd class="pbw-kbd">↓</kbd></dt><dd>Move through the component list or the tree</dd>
+                <dt><kbd class="pbw-kbd">Ctrl</kbd> <kbd class="pbw-kbd">K</kbd></dt><dd>Find a component (<kbd class="pbw-kbd">⌘</kbd> <kbd class="pbw-kbd">K</kbd> on a Mac)</dd>
                 <dt><kbd class="pbw-kbd">/</kbd></dt><dd>Filter parameters</dd>
                 <dt><kbd class="pbw-kbd">←</kbd> <kbd class="pbw-kbd">→</kbd></dt><dd>Step through examples while presenting</dd>
                 <dt><kbd class="pbw-kbd">Esc</kbd></dt><dd>Leave Present, close this sheet</dd>
@@ -375,16 +379,27 @@
                         {
                             <div class="pbw-prow @(_state.IsModified(parameter.Name) ? "pbw-prow-modified" : null)"
                                  @key="parameter.Name" title="@ParameterSignature.Format(parameter)">
-                                @if (IsDrivable(parameter))
+                                @if (IsDrivable(parameter) && IsDemoFilled(parameter) && !_overrides.Contains(parameter.Name) && !_state.IsModified(parameter.Name))
+                                {
+                                    @* An empty box would misstate what the stage shows: the demo fills this slot. *@
+                                    <span class="pbw-prow-name">@parameter.Name</span>
+                                    <span class="pbw-demo-filled">
+                                        <span class="pbw-slot-badge" title="The demo fills this in for you; it shows in the Tree and Razor panels">set by the demo</span>
+                                        <button type="button" class="pbw-override" aria-label="@($"Override {parameter.Name} with your own text")"
+                                                @onclick="() => _overrides.Add(parameter.Name)">Override</button>
+                                    </span>
+                                }
+                                else if (IsDrivable(parameter))
                                 {
                                     <ControlHost Parameter="parameter"
                                                  Value="EffectiveValue(parameter)"
                                                  ValueChanged="value => OnControlChanged(parameter, value)" />
-                                    @if (_state.IsModified(parameter.Name))
+                                    @if (_state.IsModified(parameter.Name) || _overrides.Contains(parameter.Name))
                                     {
-                                        <button type="button" class="pbw-prow-reset" title="Restore default"
+                                        <button type="button" class="pbw-prow-reset"
+                                                title="@(IsDemoFilled(parameter) ? "Back to the demo's content" : "Restore default")"
                                                 aria-label="@($"Restore the default {parameter.Name}")"
-                                                @onclick="() => _state.Reset(parameter.Name)">@Icon(IconReset)</button>
+                                                @onclick="() => RestoreParameter(parameter.Name)">@Icon(IconReset)</button>
                                     }
                                 }
                                 else if (parameter.Kind is ControlKind.Event)
@@ -441,7 +456,7 @@
                     {
                         <p class="pbw-signals-empty">
                             Interact with the component: every EventCallback it raises is logged here.
-                            Listening to @string.Join(", ", EventParameters.Select(e => e.Name)).
+                            @EventsSummary.
                         </p>
                     }
                     else

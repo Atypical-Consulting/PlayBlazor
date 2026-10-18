@@ -40,6 +40,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private readonly HashSet<string> _collapsed = new(StringComparer.Ordinal);
     private readonly Dictionary<string, bool> _groupOpen = new(StringComparer.Ordinal);
     private readonly HashSet<PlaygroundEventLog.Entry> _unfolded = [];
+
+    // Demo-filled slots the visitor chose to replace: their text box shows even while still empty.
+    private readonly HashSet<string> _overrides = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _disposeCts = new();
 
     private IReadOnlyList<ComponentDescriptor> _components = [];
@@ -58,6 +61,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private bool _autoPlaying;
     private int _autoIndex;
     private CancellationTokenSource? _autoCts;
+    private string? _railPrefix;
     private IJSObjectReference? _module;
     private DotNetObjectReference<PlaygroundWorkspace>? _selfRef;
 
@@ -98,6 +102,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _railPrefix = null;
         _components = Assemblies
             .SelectMany(assembly => Catalog.Discover(assembly))
             .Select(c => Options.ResolvePreferredClosing(c.Type) is var preferred && preferred != c.Type
@@ -295,7 +300,44 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             // type, say) — it still needs an entry while it is the one being played.
             .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
             .GroupBy(static c => c.Category)
-            .OrderBy(static g => g.Key, StringComparer.Ordinal);
+            // Named categories first; the library's root namespace is the catch-all and goes last.
+            .OrderBy(g => IsRootCategory(g.Key) ? 1 : 0)
+            .ThenBy(static g => g.Key, StringComparer.Ordinal);
+
+    /// <summary>
+    /// The library's root namespace: the one every other category extends ("DaisyBlazor" under
+    /// "DaisyBlazor.Data"), or the "….Components" namespace. It holds whatever has no category of its own.
+    /// </summary>
+    private bool IsRootCategory(string category)
+        => category.EndsWith(".Components", StringComparison.Ordinal)
+           || _components.Any(c => c.Category.StartsWith(category + ".", StringComparison.Ordinal));
+
+    /// <summary>
+    /// The leading word most listed components share ("Mud", "Fluent"), when at least three in four
+    /// carry it. The rail dims it so the distinguishing part of each name leads.
+    /// </summary>
+    private string RailPrefix
+        => _railPrefix ??= _components
+               .Select(static c => LeadingWord(c.DisplayName))
+               .Where(static w => w.Length > 0)
+               .GroupBy(static w => w, StringComparer.Ordinal)
+               .OrderByDescending(static g => g.Count())
+               .FirstOrDefault(g => g.Count() * 4 >= _components.Count * 3 && _components.Count > 1)?.Key
+           ?? string.Empty;
+
+    /// <summary>"Mud" from "MudButton": the capitalised word before the next capital, if one follows.</summary>
+    private static string LeadingWord(string name)
+    {
+        for (var i = 1; i < name.Length; i++)
+        {
+            if (char.IsUpper(name[i]))
+            {
+                return name[..i];
+            }
+        }
+
+        return string.Empty;
+    }
 
     /// <summary>
     /// The first bench a visitor sees: the first component the host curated with examples, since
@@ -337,6 +379,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     {
         _selected = descriptor;
         _state.ResetAll();
+        _overrides.Clear();
         _eventLog.Clear();
         _unfolded.Clear();
         _activeVariant = null;
@@ -460,6 +503,18 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             .Where(p => !_modifiedOnly || _state.IsModified(p.Name))
             .ToArray();
 
+    /// <summary>True when the host fills this slot, so an empty text box would misstate the stage.</summary>
+    private bool IsDemoFilled(ParameterDescriptor parameter)
+        => IsTextSlot(parameter)
+           && (Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _)
+               || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _));
+
+    private void RestoreParameter(string name)
+    {
+        _overrides.Remove(name);
+        _state.Reset(name);
+    }
+
     private int ModifiedCount => _selected!.Parameters.Count(p => _state.IsModified(p.Name));
 
     private bool IsGroupOpen(string group)
@@ -506,6 +561,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private void ResetNode()
     {
         _state.ResetAll();
+        _overrides.Clear();
         _activeVariant = null;
         _errorBoundary?.Recover();
         ShowToast("Parameters reset ✓");
@@ -568,6 +624,18 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private IEnumerable<ParameterDescriptor> EventParameters
         => _selected!.Parameters.Where(static p => p.Kind is ControlKind.Event);
+
+    /// <summary>A short line instead of a wall: three names, then the count of the rest.</summary>
+    private string EventsSummary
+    {
+        get
+        {
+            var names = EventParameters.Select(static e => e.Name).ToList();
+            return names.Count <= 3
+                ? $"Listening to {string.Join(", ", names)}"
+                : $"Listening to {names.Count} events: {string.Join(", ", names.Take(3))} and {names.Count - 3} more";
+        }
+    }
 
     /* ── Graph panel ─────────────────────────────────── */
 
@@ -678,6 +746,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private void ApplyVariant(PlaygroundVariantDefinition variant)
     {
         _state.ResetAll();
+        _overrides.Clear();
         foreach (var (name, value) in variant.Values)
         {
             if (value is not null)
@@ -778,6 +847,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private void RecoverFromError()
     {
         _state.ResetAll();
+        _overrides.Clear();
         _errorBoundary?.Recover();
     }
 

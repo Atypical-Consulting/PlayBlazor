@@ -68,36 +68,46 @@
     color: #9d9dad;
 }
 
+/* One segmented group, the same shape as the explorer's stage toolbar. */
 .pb-stage-toolbar {
     position: absolute;
     top: 0.6rem;
     right: 0.6rem;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--pb-line);
+    border-radius: 8px;
+    background: var(--pb-panel);
 }
 
 .pb-env-btn {
-    width: 1.6rem;
-    height: 1.5rem;
-    padding: 0;
-    border: 1px solid var(--pb-line);
+    min-width: 2rem;
+    height: 1.75rem;
+    padding: 0 0.55rem;
+    border: 0;
     border-radius: 6px;
-    background: var(--pb-panel);
+    background: transparent;
     color: var(--pb-ink-2);
-    font-size: 0.75rem;
+    font-family: var(--pb-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
     line-height: 1;
+    /* Host stylesheets (MudBlazor) restyle bare buttons — own the alignment. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: border-color 120ms ease, color 120ms ease;
 }
 
 .pb-env-btn:hover {
-    border-color: var(--pb-accent);
-    color: var(--pb-accent);
+    background: rgba(27, 27, 34, 0.05);
+    color: var(--pb-ink);
 }
 
 .pb-env-btn.pb-env-on {
-    border-color: var(--pb-accent);
     background: var(--pb-accent-soft);
     color: var(--pb-accent);
 }
@@ -110,14 +120,19 @@
 
 .pb-env-width {
     appearance: none;
-    height: 1.5rem;
-    padding: 0 0.4rem;
-    border: 1px solid var(--pb-line);
-    border-radius: 6px;
-    background: var(--pb-panel);
+    height: 1.75rem;
+    padding: 0 1.4rem 0 0.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='%236e6e7a' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    border: 0;
+    border-left: 1px solid var(--pb-line);
+    border-radius: 0 6px 6px 0;
+    background-color: transparent;
     color: var(--pb-ink-2);
-    font-family: var(--pb-mono);
+    font-family: var(--pb-sans);
     font-size: 0.6875rem;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -234,13 +249,19 @@
     margin-left: auto;
 }
 
+.pb-reset:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
 .pb-share:hover,
-.pb-reset:hover {
+.pb-reset:hover:not(:disabled) {
     border-color: var(--pb-accent);
     color: var(--pb-accent);
 }
 
 .pb-variants {
+    flex: none;
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -315,10 +336,10 @@
 }
 
 .pb-row ::deep .pb-control {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(5.5rem, 1fr) minmax(0, 1.35fr);
     flex: 1;
     align-items: center;
-    justify-content: space-between;
     gap: 0.625rem;
     min-width: 0;
     padding: 0.3rem 0;
@@ -338,7 +359,9 @@
 
 .pb-row ::deep input[type="text"],
 .pb-row ::deep input[type="number"] {
-    width: 132px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--pb-line);
     border-radius: 6px;
@@ -367,7 +390,9 @@
 
 .pb-row ::deep select {
     appearance: none;
-    width: 132px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding: 0.25rem 1.4rem 0.25rem 0.5rem;
     border: 1px solid var(--pb-line);
     border-radius: 6px;
@@ -425,10 +450,89 @@
     box-shadow: 0 0 0 3px var(--pb-accent-soft);
 }
 
+.pb-row ::deep input::placeholder {
+    color: var(--pb-ink-2);
+    opacity: 0.8;
+}
+
+.pb-row ::deep .pb-icon-pair,
+.pb-row ::deep .pb-color-pair {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+/* The preview carries its own width and height too, so a host without this stylesheet
+   never draws a page-wide icon. */
+.pb-row ::deep .pb-icon-preview {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.pb-row ::deep input[type="color"] {
+    width: 34px;
+    height: 22px;
+    padding: 1px;
+    border: 1px solid var(--pb-line);
+    border-radius: 5px;
+    background: var(--pb-stage);
+}
+
+.pb-row ::deep .pb-color-hex {
+    color: var(--pb-ink-2);
+    font-family: var(--pb-mono);
+    font-size: 0.6875rem;
+}
+
+.pb-demo-filled {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.pb-demo-badge {
+    color: var(--pb-ink-2);
+    font-size: 0.6875rem;
+    white-space: nowrap;
+    cursor: help;
+}
+
+.pb-override {
+    flex: none;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--pb-line);
+    border-radius: 6px;
+    background: var(--pb-stage);
+    color: var(--pb-ink-2);
+    font: inherit;
+    font-size: 0.6875rem;
+    cursor: pointer;
+}
+
+.pb-override:hover {
+    border-color: var(--pb-accent);
+    color: var(--pb-accent);
+}
+
+.pb-override:focus-visible,
+.pb-row-reset:focus-visible,
+.pb-share:focus-visible,
+.pb-reset:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--pb-accent-soft);
+}
+
 .pb-row-reset {
     flex: none;
-    width: 1.1rem;
-    height: 1.1rem;
+    display: inline-grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
     padding: 0;
     border: none;
     border-radius: 4px;
@@ -464,7 +568,7 @@
 }
 
 .pb-events-empty {
-    color: var(--pb-ink-3);
+    color: var(--pb-ink-2);
     line-height: 1.5;
 }
 
@@ -635,6 +739,47 @@
         border-left: none;
         border-top: 1px solid var(--pb-line);
         max-height: none;
+    }
+
+    /* Below the toolbar, not over the specimen, once the stage is phone-narrow. */
+    .pb-preview {
+        flex-direction: column;
+        padding-top: 5.25rem;
+    }
+
+    .pb-stage-toolbar {
+        left: 0.6rem;
+        top: 2.6rem;
+        flex-wrap: wrap;
+    }
+
+    .pb-env-btn,
+    .pb-env-width {
+        height: 2.25rem;
+    }
+
+    .pb-variants {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .pb-variant {
+        flex: none;
+        min-height: 2.25rem;
+    }
+}
+
+/* Phone width: the name sits above a full-width control, so values are never cut short. */
+@media (max-width: 480px) {
+    .pb-row ::deep .pb-control {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.25rem;
+        padding: 0.4rem 0;
+    }
+
+    .pb-row ::deep .pb-control-bool {
+        grid-template-columns: minmax(0, 1fr) auto;
     }
 }
 

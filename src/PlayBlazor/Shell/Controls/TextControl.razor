@@ -4,6 +4,7 @@
     <span class="pb-control-label" title="@Parameter.Summary">@Parameter.Name</span>
     <input type="text" value="@ParameterValueConverter.Format(Parameter, Value)"
            title="@ParameterValueConverter.Format(Parameter, Value)"
+           placeholder="@(Parameter.Kind == ControlKind.Slot ? "Type the content" : "not set")"
            maxlength="@(UnderlyingType == typeof(char) ? "1" : null)" @onchange="OnChanged" />
 </label>
 @code {
