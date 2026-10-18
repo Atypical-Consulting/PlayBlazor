@@ -441,22 +441,25 @@ public static class PlaygroundConfig
 
         options.For<PropertyColumn<Person, string>>()
             .Parameter(nameof(PropertyColumn<Person, string>.Property),
-                (Expression<Func<Person, string>>)(p => p.Name))
+                (Expression<Func<Person, string>>)(p => p.Name), "x => x.Name")
+            // The played column goes LAST in both the stage and the snippet: MudDataGrid
+            // registers columns as they initialise, and the specimen is re-created on every
+            // parameter change, so anywhere but last it would render out of the order shown.
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<MudDataGrid<Person>>(0);
                 builder.AddComponentParameter(1, nameof(MudDataGrid<Person>.Items), Person.Samples);
                 builder.AddComponentParameter(2, nameof(MudDataGrid<Person>.Columns), (RenderFragment)(columns =>
                 {
-                    columns.AddContent(0, specimen);
-                    AddColumn<int>(columns, 1, p => p.Age);
+                    AddColumn<int>(columns, 0, p => p.Age);
+                    columns.AddContent(2, specimen);
                 }));
                 builder.CloseComponent();
             }, source: """
                 <MudDataGrid T="Person" Items="@_people">
                     <Columns>
-                        {specimen}
                         <PropertyColumn Property="x => x.Age" />
+                        {specimen}
                     </Columns>
                 </MudDataGrid>
                 """)
@@ -471,16 +474,16 @@ public static class PlaygroundConfig
             .Exclude<MudSnackbarProvider>();
 
         // Demonstrates the theme hook: the host wraps every specimen and can react to the environment.
-        // The dark toggle must theme the SPECIMEN, not just tint the stage: a real
-        // MudThemeProvider flips MudBlazor's palette with the environment.
+        // The dark toggle must theme the SPECIMEN, not just tint the stage. A nested MudThemeProvider
+        // per specimen does not work: each one writes MudBlazor's palette to :root, so with three
+        // benches the last provider rendered wins and one bench's Dark is undone by the others.
+        // Instead .demo-specimen-dark re-declares the dark palette variables on the wrapper
+        // (index.html), which scopes them to that one specimen.
         options.ThemeWrapper = context => builder =>
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", context.Environment.Dark ? "demo-specimen demo-specimen-dark" : "demo-specimen");
-            builder.OpenComponent<MudThemeProvider>(2);
-            builder.AddComponentParameter(3, nameof(MudThemeProvider.IsDarkMode), context.Environment.Dark);
-            builder.CloseComponent();
-            builder.AddContent(4, context.Content);
+            builder.AddContent(2, context.Content);
             builder.CloseElement();
         };
     }

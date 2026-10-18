@@ -7,25 +7,25 @@
     <Flagships>
         @* Base-relative hash: resolves against <base href>, which is this page, under any subpath. *@
         <nav class="demo-jump" aria-label="On this page">
-            <span>Three hand-picked benches first, then every discovered component.</span>
+            <span>Three components to try first, then every one PlayBlazor discovered.</span>
             <a href="#all-components">Skip to all components &darr;</a>
         </nav>
 
-        <section class="demo-section">
+        <section class="demo-section demo-bench-compact">
             <h2 class="demo-tag">MudButton</h2>
-            <p class="demo-note">The flagship demo — try the example chips, flip parameters, watch the snippet follow.<a class="demo-docs" href="https://mudblazor.com/components/button">MudButton docs &#8599;</a></p>
+            <p class="demo-note">Start here: pick an example, flip a parameter, and watch the Razor snippet follow.<a class="demo-docs" href="https://mudblazor.com/components/button">MudButton docs &#8599;</a></p>
             <PlaygroundView Component="typeof(MudButton)" />
         </section>
 
-        <section class="demo-section">
+        <section class="demo-section demo-bench-long demo-bench-grid">
             <h2 class="demo-tag">MudDataGrid&lt;Person&gt;</h2>
-            <p class="demo-note">Sample rows and columns come from host presets — Dense, Striped, Hover… stay yours to play with.<a class="demo-docs" href="https://mudblazor.com/components/datagrid">MudDataGrid docs &#8599;</a></p>
+            <p class="demo-note">Four sample rows and three columns are filled in for you; Dense, Striped, Hover and every other parameter are yours to change.<a class="demo-docs" href="https://mudblazor.com/components/datagrid">MudDataGrid docs &#8599;</a></p>
             <PlaygroundView Component="typeof(MudDataGrid<Person>)" />
         </section>
 
-        <section class="demo-section">
+        <section class="demo-section demo-bench-grid">
             <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
-            <p class="demo-note">A column cannot live outside its grid: the host scaffold renders the played column inside a real MudDataGrid.<a class="demo-docs" href="https://mudblazor.com/components/datagrid#columns">Column docs &#8599;</a></p>
+            <p class="demo-note">A column cannot live outside its grid, so the Name column you are playing with renders inside a real MudDataGrid, after a fixed Age column.<a class="demo-docs" href="https://mudblazor.com/components/datagrid#columns">Column docs &#8599;</a></p>
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 
