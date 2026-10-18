@@ -10,7 +10,7 @@ namespace PlayBlazor.Demo.Daisy;
 /// <summary>
 /// Curation for the DaisyBlazor showcase, in progress (milestone 4): the listed surface, the icon
 /// catalogue, the flagship <see cref="Button" />, the scaffolds of the child components
-/// (<see cref="Scaffolds" />) and the cascading, validation and overlay components (<see cref="ContextAndOverlays" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
+/// (<see cref="Scaffolds" />), the cascading, validation and overlay components (<see cref="ContextAndOverlays" />) and the actions and form inputs (<see cref="FormsAndActions" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
 /// package's own markup (its <c>.razor</c> source at tag v0.6.0 and shipped <c>safelist.css</c>).
 /// </summary>
 /// <remarks>
@@ -75,6 +75,10 @@ public static class DaisyPlaygroundConfig
         return state;
     }
 
+    /// <summary>The options the Autocomplete preset searches, so typing "an" finds three.</summary>
+    public static IReadOnlyList<string> ListOptions { get; } =
+        ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Mango", "Orange", "Pineapple"];
+
     /// <summary>Applies the DaisyBlazor curation to the playground options.</summary>
     /// <param name="options">The options to configure.</param>
     public static void Configure(PlayBlazorOptions options)
@@ -128,6 +132,7 @@ public static class DaisyPlaygroundConfig
 
         Scaffolds(options);
         ContextAndOverlays(options);
+        FormsAndActions(options);
     }
 
     /// <summary>
@@ -538,6 +543,257 @@ public static class DaisyPlaygroundConfig
             .Variant("Synthwave", v => v.Set(nameof(ThemeController.Value), "synthwave"))
             .Variant("Hidden input", v => v.Set(nameof(ThemeController.HideInput), true));
     }
+
+    /// <summary>
+    /// The actions and form inputs. Verified against each component's .razor at tag v0.6.0 and the
+    /// compiled app.css: the colour and size classes they compose (btn-*, checkbox-*, toggle-*,
+    /// range-*, file-input-*, bg-* on the rating mask) come from the safelist's brace patterns, and
+    /// the few classes a variant passes itself (join-vertical, mask-heart) are literal below, which
+    /// is what makes Tailwind emit them. DaisyPresetTests pins the control each preset renders.
+    /// Upstream at 0.6.0, not safelist holes: TextField, NumericField, Select and DatePicker add
+    /// <c>input-bordered</c>/<c>select-bordered</c> and Autocomplete <c>input-disabled</c>, daisyUI 4
+    /// classes daisyUI 5 no longer defines. They style nothing, and nothing is lost: daisyUI 5 draws
+    /// the border by default and Autocomplete's disabled input greys itself out.
+    /// </summary>
+    private static void FormsAndActions(PlayBlazorOptions options)
+    {
+        // --- Actions ---
+
+        // A .join: daisyUI joins the child .btn borders. A non-default group Variant/Color/Size
+        // overrides the children's (OverrideStyles, on by default); the children are bare Buttons
+        // (ghost by default), so the group's Filled is what makes them solid. There is no Vertical
+        // parameter: daisyUI's join-vertical through Class stacks them.
+        options.For<ButtonGroup>()
+            .Slot(nameof(ButtonGroup.ChildContent), DaisyDemoFragments.GroupButtons, DaisyDemoFragmentSources.GroupButtons)
+            .Parameter(nameof(ButtonGroup.Variant), Variant.Filled)
+            .Related<Button>()
+            .Variant("Primary", v => v.Set(nameof(ButtonGroup.Color), Color.Primary))
+            .Variant("Outlined", v => v.Set(nameof(ButtonGroup.Variant), Variant.Outlined))
+            .Variant("Small", v => v.Set(nameof(ButtonGroup.Size), Size.Small))
+            .Variant("Vertical", v => v.Set(nameof(ButtonGroup.Class), "join-vertical"));
+
+        // Always btn-ghost btn-circle: Color tints the icon, not the button. Title is the native
+        // tooltip and, for an icon-only button, its accessible name.
+        options.For<IconButton>()
+            .Parameter(nameof(IconButton.Icon), Icons.Material.Filled.Favorite)
+            .Parameter(nameof(IconButton.Title), "Add to favourites")
+            .Related<Button>()
+            .Variant("Primary", v => v.Set(nameof(IconButton.Color), Color.Primary))
+            .Variant("Error", v => v.Set(nameof(IconButton.Color), Color.Error))
+            .Variant("Large", v => v.Set(nameof(IconButton.Size), Size.Large))
+            .Variant("Disabled", v => v.Set(nameof(IconButton.Disabled), true))
+            .Variant("As a link", v => v.Set(nameof(IconButton.Href), "https://daisyui.com"));
+
+        // daisyUI's .fab is position:fixed at the viewport corner. Fixed=false (the same answer as
+        // FabAction's scaffold) makes it absolute in the frame's relative box. The actions unfold on
+        // :focus-within, so click the trigger to see them. ShowClose's overlay is the close button
+        // laid over the trigger while open.
+        options.For<Fab>()
+            .Scaffold(DaisyDemoFragments.InFabFrame, DaisyDemoFragmentSources.InFabFrame)
+            .Parameter(nameof(Fab.Fixed), false)
+            .Parameter(nameof(Fab.AriaLabel), "Actions")
+            .Slot(nameof(Fab.ChildContent), DaisyDemoFragments.FabActions, DaisyDemoFragmentSources.FabActions)
+            .Related<FabAction>()
+            .Variant("Secondary", v => v.Set(nameof(Fab.Color), Color.Secondary))
+            .Variant("Flower", v => v.Set(nameof(Fab.Flower), true))
+            .Variant("Custom icon", v => v.Set(nameof(Fab.Icon), Icons.Material.Filled.MoreVert))
+            .Variant("No close overlay", v => v.Set(nameof(Fab.ShowClose), false));
+
+        // A label around a hidden checkbox: clicking swaps .swap-on and .swap-off. The animations are
+        // DaisyBlazor's own SwapRotateExample and SwapFlipExample at v0.6.0.
+        options.For<Swap>()
+            .Slot(nameof(Swap.On), DaisyDemoFragments.SwapOn, DaisyDemoFragmentSources.SwapOn)
+            .Slot(nameof(Swap.Off), DaisyDemoFragments.SwapOff, DaisyDemoFragmentSources.SwapOff)
+            .Parameter(nameof(Swap.AriaLabel), "Dark mode")
+            .Variant("Rotate", v => v.Set(nameof(Swap.Animation), SwapAnimation.Rotate))
+            .Variant("Flip", v => v.Set(nameof(Swap.Animation), SwapAnimation.Flip))
+            .Variant("Active", v => v.Set(nameof(Swap.Active), true))
+            .Variant("Text labels", v => v.Set(nameof(Swap.On), "ON").Set(nameof(Swap.Off), "OFF"));
+
+        // --- Text and number fields ---
+
+        // Variant.Outlined (the default) is the plain daisyUI 5 .input; Filled adds bg-base-200 and
+        // Text is input-ghost. Dense (or Margin.Dense) is the only size axis: input-sm.
+        options.For<TextField>()
+            .Parameter(nameof(TextField.Label), "Email")
+            .Parameter(nameof(TextField.InputType), InputType.Email)
+            .Parameter(nameof(TextField.Placeholder), "ada@example.com")
+            .Parameter(nameof(TextField.HelperText), "We never share your email.")
+            .Related<Form>()
+            .Variant("Filled", v => v.Set(nameof(TextField.Variant), Variant.Filled))
+            .Variant("Ghost", v => v.Set(nameof(TextField.Variant), Variant.Text))
+            .Variant("Dense", v => v.Set(nameof(TextField.Dense), true))
+            .Variant("Disabled", v => v.Set(nameof(TextField.Disabled), true))
+            .Variant("With error", v => v.Set(nameof(TextField.Error), true).Set(nameof(TextField.ErrorText), "This email is already registered."))
+            .Variant("Multi-line", v => v.Set(nameof(TextField.Lines), 3).Set(nameof(TextField.Placeholder), "Tell us about yourself"));
+
+        // Min, Max and Step render only when passed (NumericField tracks which were set), so the
+        // preset passes all three, and 42 sits on the step grid from 0.
+        options.For<NumericField<int>>()
+            .Parameter(nameof(NumericField<int>.Label), "Quantity")
+            .Parameter(nameof(NumericField<int>.Value), 42)
+            .Parameter(nameof(NumericField<int>.Min), 0)
+            .Parameter(nameof(NumericField<int>.Max), 100)
+            .Parameter(nameof(NumericField<int>.Step), 2)
+            .Parameter(nameof(NumericField<int>.HelperText), "Even numbers from 0 to 100.")
+            .Related<TextField>()
+            .Variant("Filled", v => v.Set(nameof(NumericField<int>.Variant), Variant.Filled))
+            .Variant("Dense", v => v.Set(nameof(NumericField<int>.Dense), true))
+            .Variant("Disabled", v => v.Set(nameof(NumericField<int>.Disabled), true))
+            .Variant("With unit", v => v.Set(nameof(NumericField<int>.Adornment), Adornment.End).Set(nameof(NumericField<int>.AdornmentText), "kg"));
+
+        // SearchFunc is the whole component: without it a search never runs and the list never
+        // opens. A delegate has no control, so the preset is fixed (type two letters: "an"). Variant
+        // is accepted for MudBlazor compatibility and does nothing, so no variant uses it.
+        // ToStringFunc stays null: for strings, ToString() is already the display text.
+        options.For<Autocomplete<string>>()
+            .Parameter(nameof(Autocomplete<string>.Label), "Fruit")
+            .Parameter(nameof(Autocomplete<string>.Placeholder), "Type two letters, e.g. an")
+            .Parameter(
+                nameof(Autocomplete<string>.SearchFunc),
+                (Func<string, CancellationToken, Task<IEnumerable<string>>>)SearchFruits,
+                "@((text, _) => Task.FromResult(_fruits.Where(f => f.Contains(text, StringComparison.OrdinalIgnoreCase))))")
+            .Related<Select<string>>()
+            .Variant("Dense", v => v.Set(nameof(Autocomplete<string>.Dense), true))
+            .Variant("Disabled", v => v.Set(nameof(Autocomplete<string>.Disabled), true))
+            .Variant("Search icon", v => v.Set(nameof(Autocomplete<string>.Adornment), Adornment.Start).Set(nameof(Autocomplete<string>.AdornmentIcon), Icons.Material.Filled.Search))
+            .Variant("Clearable", v => v.Set(nameof(Autocomplete<string>.Clearable), true).Set(nameof(Autocomplete<string>.Value), "Banana"))
+            .Variant("Required", v => v.Set(nameof(Autocomplete<string>.Required), true));
+
+        // --- Choices ---
+
+        // A native <select>: each SelectItem registers and becomes an <option>. SelectedValues is an
+        // IEnumerable without a control, so it is a fixed preset, and a variant could not set it; it
+        // only counts once MultiSelection is on (single mode reads Value), hence the Multiple variant.
+        options.For<Select<string>>()
+            .Parameter(nameof(Select<string>.Label), "Fruit")
+            .Parameter(nameof(Select<string>.Value), "banana")
+            .Parameter(nameof(Select<string>.SelectedValues), new[] { "apple", "cherry" }, "@(new[] { \"apple\", \"cherry\" })")
+            .Slot(nameof(Select<string>.ChildContent), DaisyDemoFragments.SelectOptions, DaisyDemoFragmentSources.SelectOptions)
+            .Related<SelectItem<string>>()
+            .Variant("Filled", v => v.Set(nameof(Select<string>.Variant), Variant.Filled))
+            .Variant("Dense", v => v.Set(nameof(Select<string>.Dense), true))
+            .Variant("Disabled", v => v.Set(nameof(Select<string>.Disabled), true))
+            .Variant("Clearable", v => v.Set(nameof(Select<string>.Clearable), true).Set(nameof(Select<string>.ClearText), "No fruit"))
+            .Variant("Multiple", v => v.Set(nameof(Select<string>.MultiSelection), true));
+
+        // The group owns the shared radio name and the selection; colour and size are per Radio.
+        // Upstream at 0.6.0: the group cascades itself IsFixed and a Radio's own parameters do not
+        // change when the group's Value does, so a Value set from OUTSIDE (a variant here, a parent
+        // assigning a bound field in an app) does not move the check until something re-renders the
+        // radios. A click works: it is the browser that checks the radio. So no variant changes Value
+        // (DaisyPresetTests pins the lag).
+        options.For<RadioGroup<string>>()
+            .Parameter(nameof(RadioGroup<string>.Label), "Fruit")
+            .Parameter(nameof(RadioGroup<string>.Value), "banana")
+            .Slot(nameof(RadioGroup<string>.ChildContent), DaisyDemoFragments.RadioOptions, DaisyDemoFragmentSources.RadioOptions)
+            .Related<Radio<string>>()
+            .Variant("Horizontal", v => v.Set(nameof(RadioGroup<string>.Horizontal), true))
+            .Variant("Roomy", v => v.Set(nameof(RadioGroup<string>.Class), "gap-3"))
+            .Variant("No caption", v => v.Set(nameof(RadioGroup<string>.Label), string.Empty));
+
+        // A .join of buttons; the selected one takes btn-{Color}. Values, like Select's
+        // SelectedValues, is a fixed preset that only counts in MultiSelection mode.
+        options.For<ToggleGroup<string>>()
+            .Parameter(nameof(ToggleGroup<string>.Value), "grid")
+            .Parameter(nameof(ToggleGroup<string>.Values), new[] { "list", "table" }, "@(new[] { \"list\", \"table\" })")
+            .Slot(nameof(ToggleGroup<string>.ChildContent), DaisyDemoFragments.ToggleItems, DaisyDemoFragmentSources.ToggleItems)
+            .Related<ToggleItem<string>>()
+            .Variant("Secondary", v => v.Set(nameof(ToggleGroup<string>.Color), Color.Secondary))
+            .Variant("Small", v => v.Set(nameof(ToggleGroup<string>.Size), Size.Small))
+            .Variant("Check mark", v => v.Set(nameof(ToggleGroup<string>.CheckMark), true))
+            .Variant("Disabled", v => v.Set(nameof(ToggleGroup<string>.Disabled), true))
+            .Variant("Multiple", v => v.Set(nameof(ToggleGroup<string>.SelectionMode), SelectionMode.MultiSelection));
+
+        // Deliberately Checked, not Value. Checkbox and Switch read the MudBlazor alias Checked as
+        // soon as CheckedChanged has a delegate, and the bench wires EVERY EventCallback to its event
+        // log, CheckedChanged included. So on the bench Checked is the source of truth and the Value
+        // control does nothing; a page that binds @bind-Value gets Value instead. Checked="true" is
+        // also what checks the box in pasted markup with no binding (_usesChecked at v0.6.0).
+        // Indeterminate is a DOM property, not an attribute: Checkbox sets it after render through
+        // JS interop (Reflect.set), so that variant changes the live checkbox, not the markup.
+        options.For<Checkbox>()
+            .Parameter(nameof(Checkbox.Label), "Remember me")
+            .Parameter(nameof(Checkbox.Checked), true)
+            .Related<Switch>()
+            .Variant("Primary", v => v.Set(nameof(Checkbox.Color), Color.Primary))
+            .Variant("Large", v => v.Set(nameof(Checkbox.Size), Size.Large))
+            .Variant("Disabled", v => v.Set(nameof(Checkbox.Disabled), true))
+            .Variant("Indeterminate", v => v.Set(nameof(Checkbox.Indeterminate), true).Set(nameof(Checkbox.Checked), false));
+
+        // Checked rather than Value, for the same reason as Checkbox.
+        options.For<Switch>()
+            .Parameter(nameof(Switch.Label), "Email notifications")
+            .Parameter(nameof(Switch.Checked), true)
+            .Related<Checkbox>()
+            .Variant("Success", v => v.Set(nameof(Switch.Color), Color.Success))
+            .Variant("Large", v => v.Set(nameof(Switch.Size), Size.Large))
+            .Variant("Small", v => v.Set(nameof(Switch.Size), Size.Small))
+            .Variant("Disabled", v => v.Set(nameof(Switch.Disabled), true));
+
+        // Label is the slider's aria-label only: Range renders a bare <input type="range">, no text.
+        // Value, Min, Max and Step are doubles.
+        options.For<DaisyBlazor.Range>()
+            .Parameter(nameof(DaisyBlazor.Range.Label), "Volume")
+            .Parameter(nameof(DaisyBlazor.Range.Value), 40d)
+            .Variant("Primary", v => v.Set(nameof(DaisyBlazor.Range.Color), Color.Primary))
+            .Variant("Small", v => v.Set(nameof(DaisyBlazor.Range.Size), Size.Small))
+            .Variant("Large", v => v.Set(nameof(DaisyBlazor.Range.Size), Size.Large))
+            .Variant("Steps of 25", v => v.Set(nameof(DaisyBlazor.Range.Step), 25d));
+
+        // Radios masked as stars (mask-star-2) filled bg-{Color}; Warning is the default colour.
+        // Rating has no Label parameter: the group is aria-labelled "Rating".
+        options.For<Rating>()
+            .Parameter(nameof(Rating.Value), 3)
+            .Variant("Hearts", v => v.Set(nameof(Rating.Mask), "mask-heart").Set(nameof(Rating.Color), Color.Error))
+            .Variant("Primary", v => v.Set(nameof(Rating.Color), Color.Primary))
+            .Variant("Large", v => v.Set(nameof(Rating.Size), Size.Large))
+            .Variant("Ten stars", v => v.Set(nameof(Rating.Max), 10))
+            .Variant("Read-only", v => v.Set(nameof(Rating.ReadOnly), true));
+
+        // A native <input type="color"> beside its hex. PickerVariant and ColorPickerView are
+        // MudBlazor-compat parameters the markup never reads, so no variant uses them.
+        options.For<ColorPicker>()
+            .Parameter(nameof(ColorPicker.Label), "Brand colour")
+            .Parameter(nameof(ColorPicker.Value), "#605dff")
+            .Variant("Other colour", v => v.Set(nameof(ColorPicker.Value), "#f43098"))
+            .Variant("Compact", v => v.Set(nameof(ColorPicker.FullWidth), false))
+            .Variant("Disabled", v => v.Set(nameof(ColorPicker.Disabled), true));
+
+        // A text field in DateFormat (default: the current culture's short date) with the native
+        // date input laid invisibly over the calendar glyph. That overlay is DatePicker.razor.css,
+        // scoped CSS that reaches the page through PlayBlazor.Demo.Daisy.styles.css, which imports
+        // DaisyBlazor's bundle. Color is MudBlazor-compat and does nothing.
+        options.For<DatePicker>()
+            .Parameter(nameof(DatePicker.Label), "Birth date")
+            .Parameter(nameof(DatePicker.Date), new DateTime(1815, 12, 10), "@(new DateTime(1815, 12, 10))")
+            .Variant("Filled", v => v.Set(nameof(DatePicker.Variant), Variant.Filled))
+            .Variant("Dense", v => v.Set(nameof(DatePicker.Dense), true))
+            .Variant("Disabled", v => v.Set(nameof(DatePicker.Disabled), true))
+            .Variant("ISO format", v => v.Set(nameof(DatePicker.DateFormat), "yyyy-MM-dd"))
+            .Variant("Picker only", v => v.Set(nameof(DatePicker.Editable), false));
+
+        options.For<FileInput>()
+            .Parameter(nameof(FileInput.Label), "Profile picture")
+            .Parameter(nameof(FileInput.Accept), "image/*")
+            .Variant("Primary", v => v.Set(nameof(FileInput.Color), Color.Primary))
+            .Variant("Small", v => v.Set(nameof(FileInput.Size), Size.Small))
+            .Variant("Large", v => v.Set(nameof(FileInput.Size), Size.Large))
+            .Variant("Ghost", v => v.Set(nameof(FileInput.Ghost), true))
+            .Variant("Multiple", v => v.Set(nameof(FileInput.Multiple), true));
+
+        // The label wraps a span and the input it floats over; it has no axis of its own beyond Class.
+        options.For<FloatingLabel>()
+            .Parameter(nameof(FloatingLabel.Label), "Email")
+            .Slot(nameof(FloatingLabel.ChildContent), DaisyDemoFragments.FloatingInput, DaisyDemoFragmentSources.FloatingInput)
+            .Related<TextField>()
+            .Variant("Work email", v => v.Set(nameof(FloatingLabel.Label), "Work email"))
+            .Variant("Narrow", v => v.Set(nameof(FloatingLabel.Class), "max-w-xs"))
+            .Variant("Bold", v => v.Set(nameof(FloatingLabel.Class), "font-semibold"));
+    }
+
+    private static Task<IEnumerable<string>> SearchFruits(string text, CancellationToken cancellationToken)
+        => Task.FromResult(ListOptions.Where(f => f.Contains(text, StringComparison.OrdinalIgnoreCase)));
 
     private static string StripArity(string name)
     {

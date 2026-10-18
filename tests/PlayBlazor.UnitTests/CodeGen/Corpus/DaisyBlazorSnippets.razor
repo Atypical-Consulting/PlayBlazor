@@ -32,7 +32,10 @@
 <AppCard />
 
 @* Autocomplete *@
-<Autocomplete T="string" />
+<Autocomplete T="string"
+              Label="Fruit"
+              Placeholder="Type two letters, e.g. an"
+              SearchFunc="@((text, _) => Task.FromResult(_fruits.Where(f => f.Contains(text, StringComparison.OrdinalIgnoreCase))))" />
 
 @* Avatar *@
 <Avatar />
@@ -47,7 +50,11 @@
 <Button Variant="Variant.Filled">Click me</Button>
 
 @* ButtonGroup *@
-<ButtonGroup />
+<ButtonGroup Variant="Variant.Filled">
+    <Button>Day</Button>
+    <Button>Week</Button>
+    <Button>Month</Button>
+</ButtonGroup>
 
 @* Card *@
 <Card />
@@ -92,13 +99,13 @@
 <ChatBubble />
 
 @* Checkbox *@
-<Checkbox />
+<Checkbox Checked="true" Label="Remember me" />
 
 @* Chip *@
 <Chip />
 
 @* ColorPicker *@
-<ColorPicker />
+<ColorPicker Value="#605dff" Label="Brand colour" />
 
 @* ConfirmDialog *@
 <div class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
@@ -131,7 +138,7 @@
 <DataTable T="Person" />
 
 @* DatePicker *@
-<DatePicker />
+<DatePicker Date="@(new DateTime(1815, 12, 10))" Label="Birth date" />
 
 @* DetailCard *@
 <DetailCard />
@@ -205,7 +212,13 @@
 <ExpansionPanels />
 
 @* Fab *@
-<Fab />
+@* The transform keeps even a fixed (default) Fab inside this box. *@
+<div class="relative isolate h-64" style="transform: translateZ(0)">
+    <Fab AriaLabel="Actions" Fixed="false">
+        <FabAction Icon="@Icons.Material.Filled.Edit" Tooltip="Edit" />
+        <FabAction Icon="@Icons.Material.Filled.Share" Tooltip="Share" />
+    </Fab>
+</div>
 
 @* FabAction *@
 <div class="relative isolate h-64">
@@ -237,13 +250,13 @@
 </ServerValidation>
 
 @* FileInput *@
-<FileInput />
+<FileInput Label="Profile picture" Accept="image/*" />
 
 @* FilterPanel *@
 <FilterPanel />
 
 @* FloatingLabel *@
-<FloatingLabel />
+<FloatingLabel Label="Email"><input type="email" class="input" placeholder="ada@example.com" /></FloatingLabel>
 
 @* Footer *@
 <Footer />
@@ -274,7 +287,7 @@
 <Icon />
 
 @* IconButton *@
-<IconButton />
+<IconButton Icon="favorite" Title="Add to favourites" />
 
 @* Image *@
 <Image />
@@ -372,7 +385,13 @@
 <Navbar />
 
 @* NumericField *@
-<NumericField T="int" />
+<NumericField T="int"
+              Value="42"
+              Label="Quantity"
+              Min="0"
+              Max="100"
+              Step="2"
+              HelperText="Even numbers from 0 to 100." />
 
 @* PageHeader *@
 <PageHeader />
@@ -415,19 +434,32 @@
 </RadioGroup>
 
 @* RadioGroup *@
-<RadioGroup T="string" />
+<RadioGroup T="string"
+            Value="@("banana")"
+            Label="Fruit">
+    <Radio Value="@("apple")" Label="Apple" />
+    <Radio Value="@("banana")" Label="Banana" />
+    <Radio Value="@("cherry")" Label="Cherry" />
+</RadioGroup>
 
 @* Range *@
-<Range />
+<Range Value="40" Label="Volume" />
 
 @* Rating *@
-<Rating />
+<Rating Value="3" />
 
 @* SectionCard *@
 <SectionCard />
 
 @* Select *@
-<Select T="string" />
+<Select T="string"
+        Value="@("banana")"
+        SelectedValues="@(new[] { "apple", "cherry" })"
+        Label="Fruit">
+    <SelectItem Value="@("apple")">Apple</SelectItem>
+    <SelectItem Value="@("banana")">Banana</SelectItem>
+    <SelectItem Value="@("cherry")">Cherry</SelectItem>
+</Select>
 
 @* SelectItem *@
 <Select T="string" Label="Fruit" Value="@("banana")">
@@ -481,10 +513,17 @@
 <Steps />
 
 @* Swap *@
-<Swap />
+<Swap AriaLabel="Dark mode">
+    <On>
+        <Icon Name="@Icons.Material.Filled.DarkMode" Size="Size.Large" />
+    </On>
+    <Off>
+        <Icon Name="@Icons.Material.Filled.LightMode" Size="Size.Large" />
+    </Off>
+</Swap>
 
 @* Switch *@
-<Switch />
+<Switch Checked="true" Label="Email notifications" />
 
 @* Tab *@
 <Tabs ActiveIndex="1">
@@ -535,7 +574,10 @@
 </DataGrid>
 
 @* TextField *@
-<TextField />
+<TextField Label="Email"
+           Placeholder="ada@example.com"
+           HelperText="We never share your email."
+           InputType="InputType.Email" />
 
 @* TextLink *@
 <TextLink />
@@ -566,7 +608,13 @@
 </Timeline>
 
 @* ToggleGroup *@
-<ToggleGroup T="string" />
+<ToggleGroup T="string"
+             Value="@("grid")"
+             Values="@(new[] { "list", "table" })">
+    <ToggleItem Value="@("list")" Text="List" Icon="@Icons.Material.Filled.ViewList" />
+    <ToggleItem Value="@("grid")" Text="Grid" Icon="@Icons.Material.Filled.GridView" />
+    <ToggleItem Value="@("table")" Text="Table" Icon="@Icons.Material.Filled.TableRows" />
+</ToggleGroup>
 
 @* ToggleItem *@
 <ToggleGroup T="string" Value="@("grid")">
@@ -609,4 +657,5 @@
 @code {
     private readonly IReadOnlyList<Person> _people = DaisyPlaygroundConfig.SampleRows;
     private readonly ServerValidationState _validation = DaisyPlaygroundConfig.SampleValidation;
+    private readonly IReadOnlyList<string> _fruits = DaisyPlaygroundConfig.ListOptions;
 }

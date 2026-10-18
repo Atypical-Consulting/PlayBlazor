@@ -32,6 +32,48 @@ public static class DaisyDemoFragmentSources
 
     public const string CardButtons = """<Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button>""";
 
+    public const string GroupButtons = """
+<Button>Day</Button>
+<Button>Week</Button>
+<Button>Month</Button>
+""";
+
+    public const string FabActions = """
+<FabAction Icon="@Icons.Material.Filled.Edit" Tooltip="Edit" />
+<FabAction Icon="@Icons.Material.Filled.Share" Tooltip="Share" />
+""";
+
+    public const string SwapOn = """<Icon Name="@Icons.Material.Filled.DarkMode" Size="Size.Large" />""";
+
+    public const string SwapOff = """<Icon Name="@Icons.Material.Filled.LightMode" Size="Size.Large" />""";
+
+    public const string SelectOptions = """
+<SelectItem Value="@("apple")">Apple</SelectItem>
+<SelectItem Value="@("banana")">Banana</SelectItem>
+<SelectItem Value="@("cherry")">Cherry</SelectItem>
+""";
+
+    public const string RadioOptions = """
+<Radio Value="@("apple")" Label="Apple" />
+<Radio Value="@("banana")" Label="Banana" />
+<Radio Value="@("cherry")" Label="Cherry" />
+""";
+
+    public const string ToggleItems = """
+<ToggleItem Value="@("list")" Text="List" Icon="@Icons.Material.Filled.ViewList" />
+<ToggleItem Value="@("grid")" Text="Grid" Icon="@Icons.Material.Filled.GridView" />
+<ToggleItem Value="@("table")" Text="Table" Icon="@Icons.Material.Filled.TableRows" />
+""";
+
+    public const string FloatingInput = """<input type="email" class="input" placeholder="ada@example.com" />""";
+
+    public const string InFabFrame = """
+@* The transform keeps even a fixed (default) Fab inside this box. *@
+<div class="relative isolate h-64" style="transform: translateZ(0)">
+    {specimen}
+</div>
+""";
+
     public const string InTabs = """
 <Tabs ActiveIndex="1">
     <Tab Title="Overview">Born in London in 1815.</Tab>
