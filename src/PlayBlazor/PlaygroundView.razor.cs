@@ -240,6 +240,9 @@ public partial class PlaygroundView : ComponentBase, IDisposable
         _errorBoundary?.Recover();
     }
 
+    /// <summary>Nothing edited, no example picked: the stage shows the demo's own setup.</summary>
+    private bool IsDefault => _activeVariant is null && _state.ModifiedValues.Count == 0 && _overrides.Count == 0;
+
     private void ResetAll()
     {
         _state.ResetAll();

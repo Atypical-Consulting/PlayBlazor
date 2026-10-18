@@ -89,6 +89,9 @@
     color: var(--pbw-ink);
     background: var(--pbw-bg);
 }
+.pbw-ph-actions ::deep button:disabled, .pbw-ph-actions ::deep button:disabled:hover {
+    opacity: 0.45; cursor: default; color: var(--pbw-muted); background: transparent;
+}
 .pbw-panel-body { flex: 1; min-height: 0; overflow: auto; padding: 0.6rem 0.7rem; }
 .pbw-rz { position: absolute; z-index: 4; touch-action: none; }
 .pbw-rz-r { top: 0; right: -4px; width: 8px; height: 100%; cursor: ew-resize; }

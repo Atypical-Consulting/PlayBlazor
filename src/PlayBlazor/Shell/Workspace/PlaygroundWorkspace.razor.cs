@@ -54,6 +54,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private bool _allFolded;
     private int _pickerVersion;
     private string? _toast;
+    private Action? _toastUndo;
     private CancellationTokenSource? _toastCts;
     private bool _present;
     private bool _help;
@@ -623,13 +624,58 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         _errorBoundary?.Recover();
     }
 
-    private void ResetNode()
+    /// <summary>Nothing edited, no example picked: the stage shows the demo's own setup.</summary>
+    private bool IsDefault => _activeVariant is null && _state.ModifiedValues.Count == 0 && _overrides.Count == 0;
+
+    private void BackToDefault()
     {
         _state.ResetAll();
         _overrides.Clear();
         _activeVariant = null;
         _errorBoundary?.Recover();
-        ShowToast("Parameters reset ✓");
+    }
+
+    private void ResetNode()
+    {
+        // One click wipes every edit, so it stays one click away from coming back.
+        var type = _selected!.Type;
+        var values = _state.ModifiedValues.ToArray();
+        var overrides = _overrides.ToArray();
+        var variant = _activeVariant;
+        var count = values.Length + overrides.Count(o => values.All(v => v.Key != o));
+        BackToDefault();
+        ShowToast(
+            count == 1 ? "1 parameter reset" : $"{count} parameters reset", 6000,
+            () =>
+            {
+                if (_selected!.Type == type)
+                {
+                    Restore(values, overrides, variant);
+                }
+            });
+    }
+
+    private void Restore(KeyValuePair<string, object?>[] values, string[] overrides, string? variant)
+    {
+        _state.ResetAll();
+        foreach (var (name, value) in values)
+        {
+            _state.Set(name, value);
+        }
+
+        _overrides.Clear();
+        _overrides.UnionWith(overrides);
+        _activeVariant = variant;
+        _errorBoundary?.Recover();
+    }
+
+    private void UndoFromToast()
+    {
+        var undo = _toastUndo;
+        _toastCts?.Cancel();
+        _toast = null;
+        _toastUndo = null;
+        undo?.Invoke();
     }
 
     /* ── Razor / share ───────────────────────────────── */
@@ -685,11 +731,12 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         }
     }
 
-    private void ShowToast(string message, int milliseconds = 1600)
+    private void ShowToast(string message, int milliseconds = 1600, Action? undo = null)
     {
         _toastCts?.Cancel();
         var cts = _toastCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token);
         _toast = message;
+        _toastUndo = undo;
         StateHasChanged();
         _ = HideToastLater(milliseconds, cts.Token);
     }
@@ -702,6 +749,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             await InvokeAsync(() =>
             {
                 _toast = null;
+                _toastUndo = null;
                 StateHasChanged();
             });
         }
@@ -900,16 +948,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         StopAutoplay();
         if (_playSnapshot is { } saved && saved.Type == _selected!.Type)
         {
-            _state.ResetAll();
-            foreach (var (name, value) in saved.Values)
-            {
-                _state.Set(name, value);
-            }
-
-            _overrides.Clear();
-            _overrides.UnionWith(saved.Overrides);
-            _activeVariant = saved.Variant;
-            _errorBoundary?.Recover();
+            Restore(saved.Values, saved.Overrides, saved.Variant);
         }
 
         _playSnapshot = null;

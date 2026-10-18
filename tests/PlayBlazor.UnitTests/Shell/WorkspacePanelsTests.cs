@@ -77,7 +77,13 @@ public class WorkspacePanelsTests
         cut.Find(".pbw-preset-node").Click();
 
         cut.Find(".pbw-modchip").TextContent.Should().Contain("0/");
-        cut.Find(".pbw-toast").TextContent.Should().Contain("reset");
+        cut.Find(".pbw-toast").TextContent.Should().Contain("1 parameter reset");
+        cut.Find(".pbw-preset-node").HasAttribute("disabled").Should().BeTrue();
+
+        cut.Find(".pbw-toast-undo").Click();
+
+        cut.Find(".pbw-modchip").TextContent.Should().Contain("1/");
+        cut.Find(".pbw-preset-node").HasAttribute("disabled").Should().BeFalse();
     }
 
     [Test]

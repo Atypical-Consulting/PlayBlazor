@@ -79,7 +79,7 @@
             {
                 <span class="pb-warning" title="@_descriptor.Warning">&#9888;</span>
             }
-            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">@(_copied == "share" ? "Copied ✓" : "Share")</button>
+            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">@PlayBlazor.Shell.Workspace.PlaygroundWorkspace.Icon(_copied == "share" ? PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconCheck : PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconShare) @(_copied == "share" ? "Copied" : "Share")</button>
             @* Always present, so copy that points at it is never wrong; disabled until there is something to undo. *@
             <button type="button" class="pb-reset" title="Reset every parameter to its default"
                     disabled="@(_state.ModifiedValues.Count == 0)" @onclick="ResetAll">Reset all</button>
@@ -88,6 +88,10 @@
         {
             <span class="pb-eyebrow" id="@($"{_idPrefix}-examples")">Examples</span>
             <div class="pb-variants" role="group" aria-labelledby="@($"{_idPrefix}-examples")">
+                @* Same chip as the explorer: what the stage shows before any example is picked. *@
+                <button type="button" class="pb-variant-default @(IsDefault ? "pb-variant-active" : null)"
+                        aria-pressed="@(IsDefault ? "true" : "false")" title="The demo's own setup, before any example"
+                        @onclick="ResetAll">Default</button>
                 @foreach (var variant in VariantDefinitions)
                 {
                     <button type="button" @key="variant.Name"
@@ -154,7 +158,7 @@
     </div>
     <div class="pb-code">
         <pre><code>@SnippetMarkup</code></pre>
-        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">@(_copied == "snippet" ? "Copied ✓" : "Copy")</button>
+        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">@PlayBlazor.Shell.Workspace.PlaygroundWorkspace.Icon(_copied == "snippet" ? PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconCheck : PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconCopy) @(_copied == "snippet" ? "Copied" : "Copy")</button>
     </div>
     @if (_copyFailed is not null)
     {
