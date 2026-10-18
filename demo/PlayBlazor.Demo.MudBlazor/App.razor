@@ -3,6 +3,13 @@
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
     </Found>
     <NotFound>
-        <p>Page not found.</p>
+        <LayoutView Layout="typeof(MainLayout)">
+            <main class="demo-main">
+                <h1 class="demo-tag">NotFound</h1>
+                <p class="demo-note">No page lives at this address.</p>
+                @* Base-relative: "" resolves to <base href>, so this also works under a subpath. *@
+                <a class="demo-back" href="">&larr; Back to the MudBlazor showcase</a>
+            </main>
+        </LayoutView>
     </NotFound>
 </Router>

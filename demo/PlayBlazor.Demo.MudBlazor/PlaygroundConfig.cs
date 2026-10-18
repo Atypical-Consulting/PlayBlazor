@@ -52,8 +52,13 @@ public static class PlaygroundConfig
         {
             builder.OpenElement(0, "svg");
             builder.AddAttribute(1, "viewBox", "0 0 24 24");
-            builder.AddAttribute(2, "aria-hidden", "true");
-            builder.AddMarkupContent(3, markup);
+            // Sized here: outside the explorer's workspace nothing sizes the preview box, and an
+            // svg without width/height stretches to its container's width.
+            builder.AddAttribute(2, "width", "20");
+            builder.AddAttribute(3, "height", "20");
+            builder.AddAttribute(4, "fill", "currentColor");
+            builder.AddAttribute(5, "aria-hidden", "true");
+            builder.AddMarkupContent(6, markup);
             builder.CloseElement();
         });
 
@@ -70,9 +75,15 @@ public static class PlaygroundConfig
 
         options.For<MudButton>()
             .Slot(nameof(MudButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
-            .Variant("Filled primary", v => v.Set(nameof(MudButton.Variant), Variant.Filled).Set(nameof(MudButton.Color), Color.Primary))
-            .Variant("Outlined", v => v.Set(nameof(MudButton.Variant), Variant.Outlined).Set(nameof(MudButton.Color), Color.Secondary))
+            // The landing page's flagship. MudButton defaults to Variant.Text and Color.Default:
+            // a faint grey label on an empty stage, so start it Filled primary.
+            .Parameter(nameof(MudButton.Variant), Variant.Filled)
+            .Parameter(nameof(MudButton.Color), Color.Primary)
+            .Variant("With icon", v => v.Set(nameof(MudButton.StartIcon), Icons.Material.Filled.Add))
+            .Variant("Secondary", v => v.Set(nameof(MudButton.Color), Color.Secondary))
+            .Variant("Outlined", v => v.Set(nameof(MudButton.Variant), Variant.Outlined))
             .Variant("Text", v => v.Set(nameof(MudButton.Variant), Variant.Text))
+            .Variant("Large", v => v.Set(nameof(MudButton.Size), Size.Large))
             .Variant("Disabled", v => v.Set(nameof(MudButton.Disabled), true));
 
         options.For<MudIconButton>()
@@ -449,6 +460,8 @@ public static class PlaygroundConfig
                     </Columns>
                 </MudDataGrid>
                 """)
+            .Variant("Custom title", v => v.Set(nameof(PropertyColumn<Person, string>.Title), "Full name"))
+            .Variant("Hidden", v => v.Set(nameof(PropertyColumn<Person, string>.Hidden), true))
             .Related<MudDataGrid<Person>>();
 
         // Providers make no sense as playground specimens (defense in depth next to the filter).
