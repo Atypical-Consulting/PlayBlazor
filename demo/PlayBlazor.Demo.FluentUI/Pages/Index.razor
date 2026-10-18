@@ -16,19 +16,19 @@
 
         <section class="demo-section fx-bench" id="bench-button">
             <h2 class="demo-tag">FluentButton</h2>
-            <p class="demo-note">Opens on Fluent's Primary appearance. Each example sets one parameter, such as <code>Appearance</code> or <code>Loading</code>, and the Razor below shows exactly what changed. <a class="fx-open" href="explorer?pb-FluentButton=e30">Open in the Explorer &rarr;</a></p>
+            <p class="demo-note">Opens on Fluent's Default appearance. Each example sets one parameter, listed first below, and the Razor shows exactly what changed. <code>Appearance</code> sets the look; <code>Type</code> is the HTML button type (submit or reset). Under <code>Loading</code>, Fluent itself draws the spinner over the label. <a class="fx-open" href="explorer?pb-FluentButton=e30">Open in the Explorer &rarr;</a></p>
             <PlaygroundView Component="typeof(FluentButton)" />
         </section>
 
         <section class="demo-section fx-bench fx-wide" id="bench-grid">
             <h2 class="demo-tag">FluentDataGrid&lt;Person&gt;</h2>
-            <p class="demo-note">The demo supplies three sample rows and their columns. The examples turn on striped rows, resizable or auto-fit columns, and table display. <a class="fx-open" href="explorer?pb-FluentDataGrid=e30">Open in the Explorer &rarr;</a></p>
+            <p class="demo-note">The demo supplies three sample rows and their columns. The examples turn on striped rows, resizable or auto-fit columns, and table display. The parameters those examples set come first; the four virtualization ones change nothing on three rows. <a class="fx-open" href="explorer?pb-FluentDataGrid=e30">Open in the Explorer &rarr;</a></p>
             <PlaygroundView Component="typeof(FluentDataGrid<Person>)" />
         </section>
 
         <section class="demo-section fx-bench fx-wide" id="bench-column">
             <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
-            <p class="demo-note">A column cannot render on its own, so the demo places the column you are editing inside a real FluentDataGrid. <a class="fx-open" href="explorer?pb-PropertyColumn=e30">Open in the Explorer &rarr;</a></p>
+            <p class="demo-note">A column cannot render on its own, so the demo places the column you are editing inside a real FluentDataGrid. The examples' <code>Sortable</code>, <code>Align</code> and <code>Tooltip</code> lead the parameter list. <a class="fx-open" href="explorer?pb-PropertyColumn=e30">Open in the Explorer &rarr;</a></p>
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 

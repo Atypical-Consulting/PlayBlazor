@@ -21,6 +21,13 @@
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
   </ItemGroup>
 
+  <!-- wwwroot/index.html carries Fluent 5.0.1's dark-theme tokens and bench row positions,
+       captured by hand: say so the moment the package moves. -->
+  <Target Name="WarnFluentThemeSnapshot" BeforeTargets="Build">
+    <Warning Condition="'%(PackageVersion.Identity)' == 'Microsoft.FluentUI.AspNetCore.Components' and '%(PackageVersion.Version)' != '5.0.1'"
+             Text="Fluent UI is now %(PackageVersion.Version): regenerate the dark-theme tokens and re-check the hidden bench rows in wwwroot/index.html (captured for 5.0.1)." />
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\PlayBlazor\PlayBlazor.csproj" />
     <ProjectReference Include="..\PlayBlazor.Demo.Shared\PlayBlazor.Demo.Shared.csproj" />

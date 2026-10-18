@@ -1,7 +1,37 @@
 @page "/explorer"
 @using PlayBlazor.Demo.Shared
 @using PlayBlazor.Shell.Workspace
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Nav
 <div class="demo-explorer-page">
     <DemoNav Current="fluent" Page="explorer" />
-    <PlaygroundWorkspace Assemblies="@(new[] { typeof(FluentButton).Assembly })" />
+    @if (HasPermalink)
+    {
+        <PlaygroundWorkspace Assemblies="@(new[] { typeof(FluentButton).Assembly })" />
+    }
 </div>
+
+@code {
+    // A bare /explorer opens on the flagship the home page leads with, not the alphabetical first
+    // (FluentAccordion). The workspace takes no default-component option, so a permalink stands in;
+    // the redirect lands after initialization, so the workspace waits for it.
+    private bool HasPermalink => new Uri(Nav.Uri).Query.Contains("pb-", StringComparison.Ordinal);
+
+    protected override void OnInitialized()
+    {
+        if (!HasPermalink)
+        {
+            Nav.LocationChanged += OnLocationChanged;
+            Nav.NavigateTo("explorer?pb-FluentButton=e30", replace: true);
+        }
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}
