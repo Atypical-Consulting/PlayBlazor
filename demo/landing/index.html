@@ -237,15 +237,15 @@
     <main>
         <section class="wrap hero" aria-labelledby="headline">
             <div>
-                <h1 id="headline">Every <code>[Parameter]</code> becomes a&nbsp;control.</h1>
+                <h1 id="headline">A live playground for Blazor UI&nbsp;libraries.</h1>
                 <p class="lede">
-                    Point PlayBlazor at any Blazor component library and get a live playground:
-                    <strong>typed controls, the matching Razor markup and an event log</strong>,
-                    with no stories to write by hand.
+                    Point PlayBlazor at any Blazor component library and every <code>[Parameter]</code> becomes a typed control,
+                    next to <strong>the live component, the matching Razor markup and an event log</strong>.
+                    No stories to write by hand.
                 </p>
                 <div class="actions">
-                    <a class="btn btn-primary" href="mud/">
-                        Open the MudBlazor playground
+                    <a class="btn btn-primary" href="daisy/">
+                        Open the DaisyBlazor playground
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg>
                     </a>
                     <a class="btn btn-secondary" href="https://github.com/Atypical-Consulting/PlayBlazor">
@@ -254,7 +254,7 @@
                     </a>
                 </div>
                 <p class="wasm">Runs .NET in your browser: <strong>the first visit downloads 4 to 6&nbsp;MB</strong>, later visits load from cache.</p>
-                <p class="also">Also live for <a href="fluent/">Fluent UI Blazor</a> and <a href="daisy/">DaisyBlazor</a>, or <a href="#libraries">compare all three</a>.</p>
+                <p class="also">Also live for <a href="mud/">MudBlazor</a> and <a href="fluent/">Fluent UI Blazor</a>, or <a href="#libraries">compare all three</a>.</p>
             </div>
 
             <figure class="sketch-wrap">
@@ -296,6 +296,23 @@
             </p>
 
             <ul class="libs">
+                <li class="lib daisy">
+                    <div class="preview" aria-hidden="true">
+                        <span class="pv-btn">Primary</span><span class="pv-btn alt">Secondary</span><span class="pv-chip">Badge</span>
+                    </div>
+                    <div class="lib-body">
+                        <div>
+                            <h3><a href="daisy/">DaisyBlazor</a></h3>
+                            <span class="count"><b>127</b>components</span>
+                        </div>
+                        <dl class="facts">
+                            <div><dt>Design system</dt><dd>daisyUI 5 on Tailwind CSS 4</dd></div>
+                            <div><dt>Package</dt><dd>DaisyBlazor 0.6</dd></div>
+                            <div><dt>First load</dt><dd>about 4.5&nbsp;MB</dd></div>
+                        </dl>
+                        <a class="go" href="daisy/">Open playground<span class="vh">: DaisyBlazor</span> <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></a>
+                    </div>
+                </li>
                 <li class="lib mud">
                     <div class="preview" aria-hidden="true">
                         <span class="pv-btn">Button</span><span class="pv-btn alt">Outlined</span><span class="pv-chip">Chip</span>
@@ -328,23 +345,6 @@
                             <div><dt>First load</dt><dd>about 4.3&nbsp;MB</dd></div>
                         </dl>
                         <a class="go" href="fluent/">Open playground<span class="vh">: Fluent UI Blazor</span> <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></a>
-                    </div>
-                </li>
-                <li class="lib daisy">
-                    <div class="preview" aria-hidden="true">
-                        <span class="pv-btn">Primary</span><span class="pv-btn alt">Secondary</span><span class="pv-chip">Badge</span>
-                    </div>
-                    <div class="lib-body">
-                        <div>
-                            <h3><a href="daisy/">DaisyBlazor</a></h3>
-                            <span class="count"><b>127</b>components</span>
-                        </div>
-                        <dl class="facts">
-                            <div><dt>Design system</dt><dd>daisyUI 5 on Tailwind CSS 4</dd></div>
-                            <div><dt>Package</dt><dd>DaisyBlazor 0.6</dd></div>
-                            <div><dt>First load</dt><dd>about 4.5&nbsp;MB</dd></div>
-                        </dl>
-                        <a class="go" href="daisy/">Open playground<span class="vh">: DaisyBlazor</span> <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></a>
                     </div>
                 </li>
             </ul>
@@ -393,9 +393,9 @@ builder.Services.<span class="a">AddPlayBlazor</span>();
         <section class="wrap close" aria-labelledby="close-title">
             <h2 id="close-title">See your parameters move.</h2>
             <div class="actions">
-                <a class="btn btn-primary" href="mud/">MudBlazor <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></a>
+                <a class="btn btn-primary" href="daisy/">DaisyBlazor <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></a>
+                <a class="btn btn-secondary" href="mud/">MudBlazor</a>
                 <a class="btn btn-secondary" href="fluent/">Fluent UI Blazor</a>
-                <a class="btn btn-secondary" href="daisy/">DaisyBlazor</a>
             </div>
         </section>
     </main>

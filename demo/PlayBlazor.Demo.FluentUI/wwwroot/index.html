@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlayBlazor — Fluent UI</title>
     <base href="/" />
+    <script>
+        // Deep links on GitHub Pages: the site-root 404.html sends /<app>/explorer?x back here as
+        // ?pb-redirect=explorer%3Fx. Restore the real URL before Blazor's router reads it.
+        (function () {
+            var r = new URLSearchParams(location.search).get("pb-redirect");
+            if (r !== null) history.replaceState(null, "", document.baseURI + r);
+        })();
+    </script>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link href="_content/PlayBlazor.Demo.Shared/css/demo.css" rel="stylesheet" />
