@@ -101,7 +101,11 @@
 <ColorPicker />
 
 @* ConfirmDialog *@
-<ConfirmDialog />
+<div class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    <ConfirmDialog ContentText="Delete this project? This cannot be undone."
+                   ButtonText="Delete"
+                   Color="Color.Error" />
+</div>
 
 @* Container *@
 <Container />
@@ -139,7 +143,15 @@
 <DetailRow />
 
 @* Dialog *@
-<Dialog />
+<Dialog Title="Deploy v2.4.0 to production?" Class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    <DialogContent>
+        <p>12 services restart in all 3 regions on Friday at midnight.</p>
+    </DialogContent>
+    <DialogActions>
+        <Button Variant="Variant.Text">Later</Button>
+        <Button Color="Color.Primary" Variant="Variant.Filled">Deploy</Button>
+    </DialogActions>
+</Dialog>
 
 @* Diff *@
 <Diff />
@@ -157,7 +169,22 @@
 </Dock>
 
 @* Drawer *@
-<Drawer />
+<div class="rounded-box border-2 border-base-300 h-64 overflow-hidden">
+    <Drawer Open="true" Class="h-full">
+        <ChildContent>
+            <p class="p-4">Main content sits beside the open panel.</p>
+        </ChildContent>
+        <SideContent>
+            <div class="bg-base-200 min-h-full w-40 p-2">
+                <ItemList>
+                    <ListItem Icon="home" Text="Home" />
+                    <ListItem Icon="folder" Text="Projects" />
+                    <ListItem Icon="settings" Text="Settings" />
+                </ItemList>
+            </div>
+        </SideContent>
+    </Drawer>
+</div>
 
 @* Dropdown *@
 <Dropdown />
@@ -198,10 +225,16 @@
 <FeatureNavCard />
 
 @* Field *@
-<Field />
+<Field Label="Invoice no.">INV-2041</Field>
 
 @* FieldError *@
-<FieldError />
+<ServerValidation State="@_validation">
+    <fieldset class="fieldset">
+        <legend class="fieldset-legend">Email</legend>
+        <input type="email" class="input" value="ada@example.com" />
+        <FieldError For="Email" />
+    </fieldset>
+</ServerValidation>
 
 @* FileInput *@
 <FileInput />
@@ -225,7 +258,11 @@
 </Footer>
 
 @* Form *@
-<Form />
+<Form>
+    <TextField Label="Name" Value="@("Ada Lovelace")" Required="true" />
+    <TextField Label="Email" InputType="InputType.Email" Placeholder="ada@example.com" />
+    <Button Color="Color.Primary" Variant="Variant.Filled">Submit</Button>
+</Form>
 
 @* Grid *@
 <Grid />
@@ -296,7 +333,12 @@
 </div>
 
 @* MessageBoxDialog *@
-<MessageBoxDialog />
+<div class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    <MessageBoxDialog Message="Save your changes before closing?"
+                      YesText="Save"
+                      NoText="Discard"
+                      CancelText="Cancel" />
+</div>
 
 @* MockupBrowser *@
 <MockupBrowser />
@@ -311,7 +353,17 @@
 <MockupWindow />
 
 @* Modal *@
-<Modal />
+<div>
+    <p class="text-sm opacity-70">Shown while Open is true (bind it with @@bind-Open). It opens as a native modal over the whole page: Escape, the backdrop or the close button dismiss it.</p>
+    <Modal Title="Invite a team member" CloseButton="true">
+        <ChildContent>
+            <p>We will email Dana an invitation to join the workspace.</p>
+        </ChildContent>
+        <DialogActions>
+            <Button Color="Color.Primary" Variant="Variant.Filled">Send invite</Button>
+        </DialogActions>
+    </Modal>
+</div>
 
 @* NavMenuLink *@
 <NavMenuLink />
@@ -384,7 +436,7 @@
 </Select>
 
 @* ServerValidation *@
-<ServerValidation />
+<ServerValidation State="@_validation"><TextField Label="Email" FieldName="Email" Value="@("ada@example.com")" /></ServerValidation>
 
 @* SimpleTable *@
 <SimpleTable />
@@ -502,7 +554,7 @@
 </SimpleTable>
 
 @* ThemeController *@
-<ThemeController />
+<ThemeController Value="dark" Class="inline-flex items-center gap-3">Dark theme</ThemeController>
 
 @* Timeline *@
 <Timeline />
@@ -545,12 +597,16 @@
 <Typography />
 
 @* Validator *@
-<Validator />
+<Validator Hint="Enter a valid email address."><input type="email" class="input validator" placeholder="ada@example.com" required /></Validator>
 
 @* ValidatorHint *@
-<ValidatorHint />
+<Validator>
+    <input type="email" class="input validator" value="ada.example.com" aria-invalid="true" />
+    <ValidatorHint>Enter a valid email address.</ValidatorHint>
+</Validator>
 @* ==> generated snippets end <== *@
 
 @code {
     private readonly IReadOnlyList<Person> _people = DaisyPlaygroundConfig.SampleRows;
+    private readonly ServerValidationState _validation = DaisyPlaygroundConfig.SampleValidation;
 }

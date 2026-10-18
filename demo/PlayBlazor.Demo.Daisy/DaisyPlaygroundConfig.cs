@@ -1,14 +1,16 @@
 using System.Linq.Expressions;
 using DaisyBlazor;
 using DaisyBlazor.Data;
+using DaisyBlazor.Feedback;
 using DaisyBlazor.Theming;
+using DaisyBlazor.Validation;
 
 namespace PlayBlazor.Demo.Daisy;
 
 /// <summary>
 /// Curation for the DaisyBlazor showcase, in progress (milestone 4): the listed surface, the icon
-/// catalogue, the flagship <see cref="Button" /> and the scaffolds of the child components
-/// (<see cref="Scaffolds" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
+/// catalogue, the flagship <see cref="Button" />, the scaffolds of the child components
+/// (<see cref="Scaffolds" />) and the cascading, validation and overlay components (<see cref="ContextAndOverlays" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
 /// package's own markup (its <c>.razor</c> source at tag v0.6.0 and shipped <c>safelist.css</c>).
 /// </summary>
 /// <remarks>
@@ -24,6 +26,10 @@ namespace PlayBlazor.Demo.Daisy;
 /// <item>Known safelist holes at 0.6.0: <c>gap-{n}</c> for n &gt; 12 (Stack.Spacing, Grid.Spacing)
 /// renders no gap; <c>tooltip-neutral</c> (Tooltip Color=Dark) is safelisted but bundled daisyUI 5
 /// does not define it, so the tooltip falls back to the default colour.</item>
+/// <item>Not safelist holes but upstream notes at 0.6.0: <c>label-text</c> (FieldError, Field, TextField)
+/// is a daisyUI 4 class that daisyUI 5 no longer defines, so it styles nothing; and Dialog's header
+/// comment advises <c>Class="modal-box"</c> for a static preview, which daisyUI renders at opacity 0
+/// outside an open <c>.modal</c> (see <see cref="ContextAndOverlays" />).</item>
 /// </list>
 /// </remarks>
 public static class DaisyPlaygroundConfig
@@ -55,6 +61,19 @@ public static class DaisyPlaygroundConfig
         new("Grace Hopper", "Rear Admiral", 45),
         new("Alan Turing", "Cryptanalyst", 41),
     ];
+
+    /// <summary>
+    /// One server error, for "Email", cascaded by the ServerValidation preset and the FieldError
+    /// scaffold. Nothing on the bench mutates it: inputs only read their error from the state.
+    /// </summary>
+    public static ServerValidationState SampleValidation { get; } = CreateSampleValidation();
+
+    private static ServerValidationState CreateSampleValidation()
+    {
+        var state = new ServerValidationState();
+        state.AddError("Email", "This email is already registered.");
+        return state;
+    }
 
     /// <summary>Applies the DaisyBlazor curation to the playground options.</summary>
     /// <param name="options">The options to configure.</param>
@@ -108,6 +127,7 @@ public static class DaisyPlaygroundConfig
             .Variant("Large", v => v.Set(nameof(Button.Size), Size.Large));
 
         Scaffolds(options);
+        ContextAndOverlays(options);
     }
 
     /// <summary>
@@ -368,6 +388,155 @@ public static class DaisyPlaygroundConfig
             .Related<Footer>()
             .Slot(nameof(FooterTitle.ChildContent), b => b.AddContent(0, "Services"), "Services")
             .Variant("Primary", v => v.Set(nameof(FooterTitle.Class), "text-primary"));
+    }
+
+    /// <summary>
+    /// Components that need a cascade, a required object or containment rather than a plain parent:
+    /// the validation family, the dialog bodies and the page-level overlays. Verified against the
+    /// .razor source at tag v0.6.0 and the compiled app.css; DaisyScaffoldTests pins each one.
+    /// </summary>
+    private static void ContextAndOverlays(PlayBlazorOptions options)
+    {
+        // --- Validation ---
+
+        // State is [EditorRequired] and has no control. Inputs with a FieldName read their error from
+        // it (TextField's FieldName, not its MudBlazor-compat For, which does nothing). State is the
+        // only non-slot parameter and an unsupported one, so no variant can swap it: none is offered.
+        options.For<ServerValidation>()
+            .Parameter(nameof(ServerValidation.State), SampleValidation, "@_validation")
+            .Slot(nameof(ServerValidation.ChildContent), DaisyDemoFragments.ServerValidatedField, DaisyDemoFragmentSources.ServerValidatedField)
+            .Related<FieldError>();
+
+        // FieldError renders nothing without a cascading ServerValidationState.
+        options.For<FieldError>()
+            .Scaffold(DaisyDemoFragments.InServerValidation, DaisyDemoFragmentSources.InServerValidation)
+            .Related<ServerValidation>()
+            .Parameter(nameof(FieldError.For), "Email")
+            .Variant("Field without an error", v => v.Set(nameof(FieldError.For), "Name"))
+            .Variant("Qualified server name", v => v.Set(nameof(FieldError.For), "request.Email"));
+
+        // Form is a flex column that fields register with (TextField, NumericField and Select call
+        // Form?.Register); a field validates on edit, so clearing the Required name shows "Required".
+        // It renders a <div>, not a <form>: the Submit button has no submit semantics until the Form is
+        // wrapped in an EditForm or <form>, as DaisyBlazor's own example says. Model and Validation are
+        // objects without a control and IsValid is output, so the variants use Class.
+        options.For<Form>()
+            .Slot(nameof(Form.ChildContent), DaisyDemoFragments.FormFields, DaisyDemoFragmentSources.FormFields)
+            .Related<TextField>()
+            .Variant("Constrained width", v => v.Set(nameof(Form.Class), "max-w-md"))
+            .Variant("Roomy", v => v.Set(nameof(Form.Class), "gap-6"));
+
+        // Field is MudField's replacement: a READ-ONLY labelled value (fieldset + label + surface), so
+        // its content is text, not an input. Its default Variant.Text draws only a bottom border.
+        options.For<Field>()
+            .Parameter(nameof(Field.Label), "Invoice no.")
+            .Slot(nameof(Field.ChildContent), b => b.AddContent(0, "INV-2041"), "INV-2041")
+            .Variant("Outlined", v => v.Set(nameof(Field.Variant), Variant.Outlined))
+            .Variant("Filled", v => v.Set(nameof(Field.Variant), Variant.Filled))
+            .Variant("With adornment", v => v.Set(nameof(Field.Adornment), Adornment.Start).Set(nameof(Field.AdornmentIcon), Icons.Material.Filled.Receipt));
+
+        // The hint is the inner .validator's sibling and turns visible once the input is :user-invalid,
+        // i.e. after the user has typed something that is not an email and left the field: that is
+        // daisyUI's CSS-only validation, so the untouched bench shows only the input. The input's
+        // classes are literal in DaisyDemoFragments.razor, which is what makes Tailwind emit them.
+        options.For<Validator>()
+            .Slot(nameof(Validator.ChildContent), DaisyDemoFragments.EmailInput, DaisyDemoFragmentSources.EmailInput)
+            .Parameter(nameof(Validator.Hint), "Enter a valid email address.")
+            .Related<ValidatorHint>()
+            .Variant("Longer hint", v => v.Set(nameof(Validator.Hint), "Use your work address, for example ada@example.com."))
+            .Variant("Full width", v => v.Set(nameof(Validator.Class), "w-full"));
+
+        // .validator-hint is visibility:hidden in daisyUI until a preceding sibling .validator is
+        // invalid, so a standalone hint shows nothing. The scaffold puts it after an aria-invalid input.
+        options.For<ValidatorHint>()
+            .Scaffold(DaisyDemoFragments.AfterInvalidInput, DaisyDemoFragmentSources.AfterInvalidInput)
+            .Related<Validator>()
+            .Slot(nameof(ValidatorHint.ChildContent), b => b.AddContent(0, "Enter a valid email address."), "Enter a valid email address.")
+            .Variant("Other message", v => v.Set(nameof(ValidatorHint.ChildContent), "An email needs a domain after the @."))
+            .Variant("Bold", v => v.Set(nameof(ValidatorHint.Class), "font-semibold"));
+
+        // --- Dialog bodies ---
+        // Dialog, ConfirmDialog and MessageBoxDialog render inside the .modal-box DialogProvider opens,
+        // and read a cascading IMudDialogInstance that is null here. Every button null-checks it
+        // (MudDialog?.Close), so nothing throws, but outside the provider the buttons do nothing.
+        // Upstream at 0.6.0: Dialog's header comment advises Class="modal-box" for a static preview,
+        // but daisyUI's .modal-box is opacity:0 (scale .95) until an open .modal parent fades it in, so
+        // that preview is invisible. The box here is the one DaisyBlazor's own DialogCoverExample uses.
+
+        options.For<Dialog>()
+            .Parameter(nameof(Dialog.Class), "rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300")
+            .Parameter(nameof(Dialog.Title), "Deploy v2.4.0 to production?")
+            .Slot(nameof(Dialog.DialogContent), DaisyDemoFragments.DialogBody, DaisyDemoFragmentSources.DialogBody)
+            .Slot(nameof(Dialog.DialogActions), DaisyDemoFragments.DialogButtons, DaisyDemoFragmentSources.DialogButtons)
+            .Related<Modal>()
+            .Variant("Rich title", v => v.Set(nameof(Dialog.TitleContent), "⚠ Deploy now?"))
+            .Variant("Extra body text", v => v.Set(nameof(Dialog.ChildContent), "Rollback stays available for 24 hours."));
+
+        options.For<ConfirmDialog>()
+            .Scaffold(DaisyDemoFragments.InDialogBox, DaisyDemoFragmentSources.InDialogBox)
+            .Related<Dialog>()
+            .Parameter(nameof(ConfirmDialog.ContentText), "Delete this project? This cannot be undone.")
+            .Parameter(nameof(ConfirmDialog.ButtonText), "Delete")
+            .Parameter(nameof(ConfirmDialog.Color), Color.Error)
+            .Variant("Neutral confirm", v => v.Set(nameof(ConfirmDialog.Color), Color.Primary).Set(nameof(ConfirmDialog.ButtonText), "Confirm"))
+            .Variant("Custom cancel", v => v.Set(nameof(ConfirmDialog.CancelText), "Keep it"));
+
+        // No Title parameter: the title comes from IDialogService.ShowMessageBoxAsync through the
+        // dialog instance, so a static preview shows the message and buttons only.
+        options.For<MessageBoxDialog>()
+            .Scaffold(DaisyDemoFragments.InDialogBox, DaisyDemoFragmentSources.InDialogBox)
+            .Related<Dialog>()
+            .Parameter(nameof(MessageBoxDialog.Message), "Save your changes before closing?")
+            .Parameter(nameof(MessageBoxDialog.YesText), "Save")
+            .Parameter(nameof(MessageBoxDialog.NoText), "Discard")
+            .Parameter(nameof(MessageBoxDialog.CancelText), "Cancel")
+            .Variant("OK only", v => v.Set(nameof(MessageBoxDialog.NoText), string.Empty).Set(nameof(MessageBoxDialog.CancelText), string.Empty).Set(nameof(MessageBoxDialog.YesText), "OK"))
+            .Variant("Multi-line message", v => v.Set(nameof(MessageBoxDialog.Message), "3 files changed.\nSave them before closing?"));
+
+        // --- Page-level overlays ---
+
+        // Open=true renders <dialog class="modal modal-open"> and dialog.js calls showModal(): the
+        // dialog joins the browser's TOP LAYER, which no transform or overflow on an ancestor can
+        // contain, and makes everything else inert. So Open stays false (the default) and the
+        // scaffold explains it; the "Open" variants are opt-in. CloseButton guarantees a way out
+        // besides Escape and the backdrop: the action button only closes in an app that binds Open.
+        options.For<Modal>()
+            .Scaffold(DaisyDemoFragments.WithModalNote, DaisyDemoFragmentSources.WithModalNote)
+            .Related<Dialog>()
+            .Parameter(nameof(Modal.Title), "Invite a team member")
+            .Parameter(nameof(Modal.CloseButton), true)
+            .Slot(nameof(Modal.ChildContent), DaisyDemoFragments.ModalBody, DaisyDemoFragmentSources.ModalBody)
+            .Slot(nameof(Modal.DialogActions), DaisyDemoFragments.ModalButtons, DaisyDemoFragmentSources.ModalButtons)
+            .Variant("Open", v => v.Set(nameof(Modal.Open), true))
+            .Variant("Open as an alert", v => v.Set(nameof(Modal.Open), true).Set(nameof(Modal.AlertDialog), true).Set(nameof(Modal.BackdropClick), false));
+
+        // Persistent (the default) with Open docks the panel beside the content (drawer-open), inline.
+        // Temporary is left to the control, not offered as a variant: daisyUI's overlay panel is
+        // position:fixed over the viewport and a checked toggle locks the page scroll.
+        options.For<Drawer>()
+            .Scaffold(DaisyDemoFragments.InDrawerFrame, DaisyDemoFragmentSources.InDrawerFrame)
+            .Related<ItemList>()
+            .Parameter(nameof(Drawer.Open), true)
+            .Parameter(nameof(Drawer.Class), "h-full")
+            .Slot(nameof(Drawer.SideContent), DaisyDemoFragments.DrawerSide, DaisyDemoFragmentSources.DrawerSide)
+            .Slot(nameof(Drawer.ChildContent), DaisyDemoFragments.DrawerMain, DaisyDemoFragmentSources.DrawerMain)
+            .Variant("From the end", v => v.Set(nameof(Drawer.End), true))
+            .Variant("Closed", v => v.Set(nameof(Drawer.Open), false))
+            .Variant("With toggle button", v => v.Set(nameof(Drawer.ToggleContent), "☰ Menu"));
+
+        // Deliberately global: daisyUI applies a theme through
+        // ":root:has(input.theme-controller[value=x]:checked)", so checking the specimen re-themes the
+        // WHOLE page, not just the stage. That is the component's purpose, and it reverts when the
+        // specimen unmounts (uncheck, reset or leave the bench). That selector outranks the
+        // [data-theme=daisyblazor] light pin in wwwroot/index.html, so it still works. A radio cannot
+        // be unchecked by clicking it again: reset the bench to return to the light theme.
+        options.For<ThemeController>()
+            .Parameter(nameof(ThemeController.Value), "dark")
+            .Parameter(nameof(ThemeController.Class), "inline-flex items-center gap-3")
+            .Slot(nameof(ThemeController.ChildContent), b => b.AddContent(0, "Dark theme"), "Dark theme")
+            .Variant("Radio", v => v.Set(nameof(ThemeController.Type), ThemeControllerType.Radio).Set(nameof(ThemeController.Name), "theme"))
+            .Variant("Synthwave", v => v.Set(nameof(ThemeController.Value), "synthwave"))
+            .Variant("Hidden input", v => v.Set(nameof(ThemeController.HideInput), true));
     }
 
     private static string StripArity(string name)

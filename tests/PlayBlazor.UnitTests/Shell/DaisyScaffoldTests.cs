@@ -3,6 +3,8 @@ using AwesomeAssertions;
 using Bunit;
 using DaisyBlazor;
 using DaisyBlazor.Data;
+using DaisyBlazor.Feedback;
+using DaisyBlazor.Validation;
 using NUnit.Framework;
 using PlayBlazor.Demo.Daisy;
 
@@ -26,7 +28,16 @@ public partial class DaisyScaffoldTests
         typeof(Item), typeof(Tr), typeof(Td), typeof(Th), typeof(CardHeader), typeof(CardContent),
         typeof(CardActions), typeof(Stat), typeof(FooterTitle), typeof(TablePager),
         typeof(DataGridPager<Person>), typeof(PropertyColumn<Person, string>), typeof(TemplateColumn<Person>),
+        typeof(FieldError), typeof(ValidatorHint), typeof(ConfirmDialog), typeof(MessageBoxDialog),
+        typeof(Modal), typeof(Drawer),
     ];
+
+    /// <summary>Curated without a scaffold, but variant-checked with the children above.</summary>
+    private static readonly Type[] Unscaffolded =
+        [typeof(Form), typeof(Field), typeof(Validator), typeof(Dialog), typeof(ThemeController)];
+
+    // ServerValidation is absent: its one non-slot parameter, State, has no control to vary.
+    private static IEnumerable<Type> WithVariants => Scaffolded.Concat(Unscaffolded);
 
     private static PlayBlazorOptions Configured()
     {
@@ -86,6 +97,23 @@ public partial class DaisyScaffoldTests
     [TestCase(typeof(CardActions), "div.card > div.card-actions > button.btn", "Read more")]
     [TestCase(typeof(Stat), "div.stats > div.stat > .stat-value", "31K")]
     [TestCase(typeof(FooterTitle), "footer.footer > nav > h6.footer-title", "Services")]
+    // Cascades, required objects and overlays.
+    [TestCase(typeof(ServerValidation), "div.fieldset input[aria-invalid=true]", null)]
+    [TestCase(typeof(ServerValidation), "div.fieldset", "This email is already registered.")]
+    [TestCase(typeof(FieldError), "fieldset.fieldset > input.input + span.text-error", "This email is already registered.")]
+    [TestCase(typeof(Form), "div.flex.flex-col.gap-3 > button.btn.btn-primary", "Submit")]
+    [TestCase(typeof(Form), "div.flex.flex-col.gap-3 input[required]", null)]
+    [TestCase(typeof(Field), "div.fieldset > div[role=group][aria-labelledby]", "INV-2041")]
+    [TestCase(typeof(Validator), "div.validator > input.input.validator[type=email][required]", null)]
+    [TestCase(typeof(Validator), "div.validator + p.validator-hint", "Enter a valid email address.")]
+    [TestCase(typeof(ValidatorHint), "input.validator[aria-invalid=true] ~ p.validator-hint", "Enter a valid email address.")]
+    [TestCase(typeof(Dialog), "div.rounded-box.bg-base-100 > h3", "Deploy v2.4.0")]
+    [TestCase(typeof(Dialog), "div.rounded-box.bg-base-100 > div.modal-action > button.btn-primary", "Deploy")]
+    [TestCase(typeof(ConfirmDialog), "div.rounded-box.bg-base-100 div.modal-action > button.btn-error", "Delete")]
+    [TestCase(typeof(MessageBoxDialog), "div.rounded-box.bg-base-100 div.modal-action > button.btn-outline", "Discard")]
+    [TestCase(typeof(Modal), "div > p", "Open is true")]
+    [TestCase(typeof(Drawer), "div.h-64.overflow-hidden > div.drawer.drawer-open.h-full > div.drawer-side ul.menu > li", "Projects")]
+    [TestCase(typeof(ThemeController), "label.cursor-pointer > input.theme-controller.toggle[type=checkbox][value=dark]", null)]
     public void Child_RendersItsDaisyMarkup_InsideItsParent(Type component, string selector, string? text)
     {
         using var context = NewContext();
@@ -112,6 +140,45 @@ public partial class DaisyScaffoldTests
     }
 
     [Test]
+    public void FieldError_ForAFieldWithoutAnError_RendersNothing()
+    {
+        using var context = NewContext();
+        var cut = Bench(context, typeof(FieldError));
+
+        cut.FindAll("button.pb-variant").Single(b => b.TextContent == "Field without an error").Click();
+
+        cut.FindAll(".pb-specimen span.text-error").Should().BeEmpty();
+    }
+
+    [Test]
+    public void Modal_StaysClosedUntilAVariantOpensIt()
+    {
+        // An open Modal is a native top-layer modal over the whole explorer: never by default.
+        using var context = NewContext();
+        var cut = Bench(context, typeof(Modal));
+        cut.FindAll(".pb-specimen dialog").Should().BeEmpty();
+
+        cut.FindAll("button.pb-variant").Single(b => b.TextContent == "Open").Click();
+
+        cut.Find(".pb-specimen dialog.modal.modal-open[open] .modal-box button[aria-label=Close]").Should().NotBeNull();
+    }
+
+    [Test]
+    public void ThemeController_RadioVariant_JoinsANamedGroup_AndStartsUnchecked()
+    {
+        // Checked re-themes the whole page (:root:has(...:checked)), so no preset checks it.
+        using var context = NewContext();
+        var cut = Bench(context, typeof(ThemeController));
+        cut.Find(".pb-specimen input.theme-controller").HasAttribute("checked").Should().BeFalse();
+
+        cut.FindAll("button.pb-variant").Single(b => b.TextContent == "Radio").Click();
+
+        var radio = cut.Find(".pb-specimen input.theme-controller.radio[type=radio]");
+        radio.GetAttribute("name").Should().Be("theme");
+        radio.HasAttribute("checked").Should().BeFalse();
+    }
+
+    [Test]
     public void Pagers_ShowTheRangeOfTheirHost()
     {
         using var context = NewContext();
@@ -126,7 +193,7 @@ public partial class DaisyScaffoldTests
     /// parameter-dictionary liveness gate cannot: a parent that renders its child's state and is not
     /// told it changed.
     /// </summary>
-    [TestCaseSource(nameof(Scaffolded))]
+    [TestCaseSource(nameof(WithVariants))]
     public void EveryVariant_ChangesTheRenderedChild(Type component)
     {
         var variants = Configured().GetVariants(component);

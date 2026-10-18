@@ -251,4 +251,73 @@ public static class DaisyDemoFragmentSources
     </nav>
 </Footer>
 """;
+
+    public const string ServerValidatedField = """<TextField Label="Email" FieldName="Email" Value="@("ada@example.com")" />""";
+
+    public const string FormFields = """
+<TextField Label="Name" Value="@("Ada Lovelace")" Required="true" />
+<TextField Label="Email" InputType="InputType.Email" Placeholder="ada@example.com" />
+<Button Color="Color.Primary" Variant="Variant.Filled">Submit</Button>
+""";
+
+    public const string EmailInput = """<input type="email" class="input validator" placeholder="ada@example.com" required />""";
+
+    public const string DialogBody = "<p>12 services restart in all 3 regions on Friday at midnight.</p>";
+
+    public const string DialogButtons = """
+<Button Variant="Variant.Text">Later</Button>
+<Button Color="Color.Primary" Variant="Variant.Filled">Deploy</Button>
+""";
+
+    public const string ModalBody = "<p>We will email Dana an invitation to join the workspace.</p>";
+
+    public const string ModalButtons = """<Button Color="Color.Primary" Variant="Variant.Filled">Send invite</Button>""";
+
+    public const string DrawerSide = """
+<div class="bg-base-200 min-h-full w-40 p-2">
+    <ItemList>
+        <ListItem Icon="home" Text="Home" />
+        <ListItem Icon="folder" Text="Projects" />
+        <ListItem Icon="settings" Text="Settings" />
+    </ItemList>
+</div>
+""";
+
+    public const string DrawerMain = """<p class="p-4">Main content sits beside the open panel.</p>""";
+
+    public const string InServerValidation = """
+<ServerValidation State="@_validation">
+    <fieldset class="fieldset">
+        <legend class="fieldset-legend">Email</legend>
+        <input type="email" class="input" value="ada@example.com" />
+        {specimen}
+    </fieldset>
+</ServerValidation>
+""";
+
+    public const string AfterInvalidInput = """
+<Validator>
+    <input type="email" class="input validator" value="ada.example.com" aria-invalid="true" />
+    {specimen}
+</Validator>
+""";
+
+    public const string InDialogBox = """
+<div class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
+    {specimen}
+</div>
+""";
+
+    public const string WithModalNote = """
+<div>
+    <p class="text-sm opacity-70">Shown while Open is true (bind it with @@bind-Open). It opens as a native modal over the whole page: Escape, the backdrop or the close button dismiss it.</p>
+    {specimen}
+</div>
+""";
+
+    public const string InDrawerFrame = """
+<div class="rounded-box border-2 border-base-300 h-64 overflow-hidden">
+    {specimen}
+</div>
+""";
 }
