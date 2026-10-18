@@ -2,48 +2,100 @@
 @using PlayBlazor.Discovery
 @inject IComponentCatalogProvider Catalog
 @inject PlayBlazorOptions Options
+@inject NavigationManager Navigation
 
-<LibrarySwitcher Current="@Current" />
-
-<header class="demo-hero">
-    <div class="demo-wordmark"><span class="demo-mark">▶</span> PlayBlazor</div>
-    <p class="demo-tagline">
-        Auto-generated playgrounds for any Blazor component library.
-        Point it at an assembly — every parameter becomes a control, every
-        <code>EventCallback</code> a log entry, every configuration a shareable link.
-        No story files. Nothing below is hand-written.
-    </p>
-    @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
-       walks past <base href> straight to the domain root. *@
-    <a class="demo-cta" href="explorer">Open the explorer &rarr;</a>
+<header class="demo-hero" id="top">
+    <div class="demo-hero-inner">
+        <LibrarySwitcher Current="@Current" />
+        <div class="demo-wordmark"><span class="demo-mark">▶</span> PlayBlazor</div>
+        <p class="demo-tagline">
+            Auto-generated playgrounds for any Blazor component library.
+            Point it at an assembly — every parameter becomes a control, every
+            <code>EventCallback</code> a log entry, every configuration a shareable link.
+            No story files. Nothing below is hand-written.
+        </p>
+        @* The proof, computed from discovery at render time: never a hand-typed number. *@
+        <p class="demo-proof">
+            <code class="demo-proof-src">@AssemblyFile</code>
+            <span class="demo-proof-arrow" aria-hidden="true">→</span>
+            <span><strong>@_covered.Count</strong> components</span>
+            <span><strong>@_parameterCount.ToString("N0")</strong> parameters</span>
+            <span><strong>0</strong> story files</span>
+            <span class="demo-proof-note">Counted by reflection as this page rendered.</span>
+        </p>
+        <div class="demo-actions">
+            @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
+               walks past <base href> straight to the domain root. *@
+            <a class="demo-cta" href="explorer">Open the explorer</a>
+            <a class="demo-cta-2" href="#catalog">Browse all @_covered.Count components ↓</a>
+        </div>
+    </div>
 </header>
 
 <main class="demo-main">
     @Flagships
 
-    <section class="demo-section">
-        <h2 class="demo-covered-title">The documented surface, discovered</h2>
-        <p class="demo-note">@_covered.Count @LibraryName components were discovered here — each tile opens its playground.</p>
-        <div class="demo-tiles">
-            @foreach (var component in _covered)
-            {
-                <a class="demo-tile" href="@($"explorer?pb-{component.DisplayName}=e30")">
-                    @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
-                    {
-                        <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
-                    }
-                    <span>@component.DisplayName</span>
-                </a>
-            }
+    <section class="demo-section demo-catalog" id="catalog" aria-labelledby="catalog-title">
+        <div class="demo-catalog-head">
+            <div>
+                <h2 class="demo-covered-title" id="catalog-title">Every @LibraryName component, discovered</h2>
+                <p class="demo-note">@_covered.Count components found by reflection — each tile opens its playground.</p>
+            </div>
+            <input class="demo-filter" type="search" placeholder="Filter by name" aria-label="Filter components by name"
+                   @bind="_filter" @bind:event="oninput" @onkeydown="OpenSingleMatch" />
         </div>
+        @if (Visible.Count == 0)
+        {
+            <div class="demo-empty">
+                <p>No component name contains “@_filter”.</p>
+                <button type="button" class="demo-empty-reset" @onclick="@(() => _filter = "")">Show all @_covered.Count</button>
+            </div>
+        }
+        else
+        {
+            @if (!string.IsNullOrWhiteSpace(_filter))
+            {
+                <p class="demo-note" role="status">@Visible.Count of @_covered.Count match@(Visible.Count == 1 ? " — press Enter to open it" : "").</p>
+            }
+            <div class="demo-tiles">
+                @foreach (var component in Visible)
+                {
+                    var name = component.DisplayName;
+                    var hasPrefix = _prefix is not null && name.Length > _prefix.Length && name.StartsWith(_prefix, StringComparison.Ordinal);
+                    var stem = hasPrefix ? name[_prefix!.Length..] : name;
+                    <a class="demo-tile" href="@TileHref(name)" title="@name" @key="name">
+                        @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
+                        {
+                            <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
+                        }
+                        else
+                        {
+                            <i class="demo-tile-mono" aria-hidden="true">@stem[..1]</i>
+                        }
+                        @* <wbr> at each PascalCase seam: a long name wraps onto a second line at a word, never mid-word or into an ellipsis. *@
+                        <span>@if (hasPrefix){<b class="demo-tile-prefix">@_prefix</b><wbr />}@foreach (var word in Words(stem)){@word<wbr />}</span>
+                    </a>
+                }
+            </div>
+        }
     </section>
 </main>
 <footer class="demo-footer">
-    <a href="@DocsUrl">@LibraryName</a> is the library this playground is pointed at, not a dependency of it.
+    <p>
+        The PlayBlazor package has no dependency on <a href="@DocsUrl">@LibraryName</a>;
+        this showcase simply points it at that library.
+    </p>
+    <p class="demo-footer-links">
+        <a href="https://github.com/Atypical-Consulting/PlayBlazor">Source on GitHub</a>
+        <a href="#top">Back to top ↑</a>
+    </p>
 </footer>
 
 @code {
     private IReadOnlyList<PlayBlazor.Model.ComponentDescriptor> _covered = [];
+    private int _parameterCount;
+    private string? _prefix;
+    private string _filter = "";
 
     /// <summary>The assembly whose components this app explores.</summary>
     [Parameter, EditorRequired] public Assembly Assembly { get; set; } = default!;
@@ -60,9 +112,45 @@
     /// <summary>This app's slug, for the library switcher.</summary>
     [Parameter, EditorRequired] public string Current { get; set; } = default!;
 
+    private static string TileHref(string name) => $"explorer?pb-{name}=e30";
+
+    private static string[] Words(string name) => System.Text.RegularExpressions.Regex.Split(name, "(?<=[a-z0-9])(?=[A-Z])");
+
+    // Enter on a filter that leaves exactly one tile opens it: type, Enter, done.
+    private void OpenSingleMatch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_filter) && Visible.Count == 1)
+        {
+            Navigation.NavigateTo(TileHref(Visible[0].DisplayName));
+        }
+    }
+
+    private string AssemblyFile => $"{Assembly.GetName().Name}.dll";
+
+    private IReadOnlyList<PlayBlazor.Model.ComponentDescriptor> Visible =>
+        string.IsNullOrWhiteSpace(_filter)
+            ? _covered
+            : _covered.Where(c => c.DisplayName.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+
     protected override void OnInitialized()
-        => _covered = Catalog.Discover(Assembly)
+    {
+        _covered = Catalog.Discover(Assembly)
             .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
             .OrderBy(c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
+        _parameterCount = _covered.Sum(c => c.Parameters.Count);
+        _prefix = SharedPrefix(_covered.Select(c => c.DisplayName).ToArray());
+    }
+
+    // The library's naming prefix ("Mud", "Fluent"): the leading PascalCase word most names share.
+    // Shown dimmed in the tiles, so the wall reads by what differs, never removed from the real name.
+    private static string? SharedPrefix(string[] names)
+    {
+        var top = names
+            .Select(n => new string(n.Take(1).Concat(n.Skip(1).TakeWhile(char.IsLower)).ToArray()))
+            .Where(w => w.Length > 1)
+            .GroupBy(w => w, StringComparer.Ordinal)
+            .MaxBy(g => g.Count());
+        return top is not null && top.Count() * 2 > names.Length ? top.Key : null;
+    }
 }
