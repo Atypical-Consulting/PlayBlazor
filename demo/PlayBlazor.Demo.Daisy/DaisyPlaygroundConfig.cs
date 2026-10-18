@@ -10,7 +10,7 @@ namespace PlayBlazor.Demo.Daisy;
 /// <summary>
 /// Curation for the DaisyBlazor showcase, in progress (milestone 4): the listed surface, the icon
 /// catalogue, the flagship <see cref="Button" />, the scaffolds of the child components
-/// (<see cref="Scaffolds" />), the cascading, validation and overlay components (<see cref="ContextAndOverlays" />) and the actions and form inputs (<see cref="FormsAndActions" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
+/// (<see cref="Scaffolds" />), the cascading, validation and overlay components (<see cref="ContextAndOverlays" />), the actions and form inputs (<see cref="FormsAndActions" />) and the data display and feedback components (<see cref="DisplayAndFeedback" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
 /// package's own markup (its <c>.razor</c> source at tag v0.6.0 and shipped <c>safelist.css</c>).
 /// </summary>
 /// <remarks>
@@ -75,6 +75,18 @@ public static class DaisyPlaygroundConfig
         return state;
     }
 
+    /// <summary>
+    /// A self-contained photo stand-in (an SVG data URI) for Avatar, Image, Mask, ChatBubble and
+    /// Diff, so the bench never depends on an external image host.
+    /// </summary>
+    public static string SamplePhoto { get; } = Photo("#605dff", "#ffd166", "#1e1b4b");
+
+    /// <summary>The same scene in greyscale: the second pane of the Diff preset.</summary>
+    public static string SamplePhotoMuted { get; } = Photo("#9ca3af", "#e5e7eb", "#374151");
+
+    private static string Photo(string sky, string sun, string hills) => "data:image/svg+xml," + Uri.EscapeDataString(
+        $"""<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" fill="{sky}"/><circle cx="140" cy="52" r="22" fill="{sun}"/><path d="M0 192 64 96l48 56 32-28 48 68z" fill="{hills}"/></svg>""");
+
     /// <summary>The options the Autocomplete preset searches, so typing "an" finds three.</summary>
     public static IReadOnlyList<string> ListOptions { get; } =
         ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Mango", "Orange", "Pineapple"];
@@ -133,6 +145,7 @@ public static class DaisyPlaygroundConfig
         Scaffolds(options);
         ContextAndOverlays(options);
         FormsAndActions(options);
+        DisplayAndFeedback(options);
     }
 
     /// <summary>
@@ -790,6 +803,377 @@ public static class DaisyPlaygroundConfig
             .Variant("Work email", v => v.Set(nameof(FloatingLabel.Label), "Work email"))
             .Variant("Narrow", v => v.Set(nameof(FloatingLabel.Class), "max-w-xs"))
             .Variant("Bold", v => v.Set(nameof(FloatingLabel.Class), "font-semibold"));
+    }
+
+    /// <summary>
+    /// Data display and feedback. Verified against each component's .razor at tag v0.6.0 and the
+    /// compiled app.css. The classes they compose come from the safelist (alert-*, badge-*,
+    /// status-*, chat-bubble-*, tooltip-*, loading-*, progress-*, mask-*, kbd-*, shadow-*,
+    /// indicator-*, the aspect-* defaults); the few a preset passes itself through Class (w-96,
+    /// h-24, menu-horizontal, ...) are literal below, which is what makes Tailwind emit them.
+    /// Containers get two or three of their real children (Card, Carousel, Stats, Timeline, List,
+    /// ItemList, ExpansionPanels, Indicator). Image slots use the self-contained
+    /// <see cref="SamplePhoto" /> data URIs, never an external host. Remember that the bench wires
+    /// EVERY EventCallback to its event log: Chip therefore shows its close button, and Card and
+    /// Paper take their clickable (role="button") form. DaisyPresetTests pins each root class.
+    /// </summary>
+    private static void DisplayAndFeedback(PlayBlazorOptions options)
+    {
+        // --- Containers ---
+
+        // Elevation maps 0 / 1 shadow-sm / 2-3 shadow / 4-6 shadow-md / 7-12 shadow-lg / 13+ shadow-xl.
+        options.For<Card>()
+            .Parameter(nameof(Card.Class), "w-80")
+            .Slot(nameof(Card.ChildContent), DaisyDemoFragments.CardParts, DaisyDemoFragmentSources.CardParts)
+            .Related<CardContent>()
+            .Variant("Outlined", v => v.Set(nameof(Card.Outlined), true))
+            .Variant("Flat", v => v.Set(nameof(Card.Elevation), 0))
+            .Variant("Raised", v => v.Set(nameof(Card.Elevation), 6))
+            .Variant("Floating", v => v.Set(nameof(Card.Elevation), 24));
+
+        // A horizontal scroll-snap strip: w-80 shows one slide and a peek of the next.
+        options.For<Carousel>()
+            .Parameter(nameof(Carousel.Class), "rounded-box gap-4 w-80")
+            .Slot(nameof(Carousel.ChildContent), DaisyDemoFragments.CarouselSlides, DaisyDemoFragmentSources.CarouselSlides)
+            .Related<CarouselItem>()
+            .Variant("Snap to center", v => v.Set(nameof(Carousel.Snap), CarouselSnap.Center))
+            .Variant("Snap to end", v => v.Set(nameof(Carousel.Snap), CarouselSnap.End))
+            .Variant("Vertical", v => v.Set(nameof(Carousel.Vertical), true).Set(nameof(Carousel.Class), "rounded-box h-40 w-64"));
+
+        options.For<Stats>()
+            .Parameter(nameof(Stats.Shadow), true)
+            .Slot(nameof(Stats.ChildContent), DaisyDemoFragments.StatCells, DaisyDemoFragmentSources.StatCells)
+            .Related<Stat>()
+            .Variant("Vertical", v => v.Set(nameof(Stats.Vertical), true))
+            .Variant("Flat", v => v.Set(nameof(Stats.Shadow), false))
+            .Variant("Primary surface", v => v.Set(nameof(Stats.Class), "bg-primary text-primary-content"));
+
+        // Alternate (the default) switches sides per item; the Timeline decides each item's side.
+        options.For<Timeline>()
+            .Slot(nameof(Timeline.ChildContent), DaisyDemoFragments.TimelineItems, DaisyDemoFragmentSources.TimelineItems)
+            .Related<TimelineItem>()
+            .Variant("Compact", v => v.Set(nameof(Timeline.TimelinePosition), TimelinePosition.Start))
+            .Variant("Boxes on the start side", v => v.Set(nameof(Timeline.TimelinePosition), TimelinePosition.End))
+            .Variant("Reversed", v => v.Set(nameof(Timeline.Reverse), true));
+
+        // daisyUI 5's .list of .list-row; Background and Rounded default to true.
+        options.For<List>()
+            .Parameter(nameof(List.Class), "w-80")
+            .Slot(nameof(List.ChildContent), DaisyDemoFragments.ListRows, DaisyDemoFragmentSources.ListRows)
+            .Related<ListRow>()
+            .Variant("Shadowed", v => v.Set(nameof(List.Shadowed), true))
+            .Variant("No background", v => v.Set(nameof(List.Background), false))
+            .Variant("Square corners", v => v.Set(nameof(List.Rounded), false));
+
+        // A .menu (always w-full p-0): Class adds the surface, not a width that would fight w-full.
+        options.For<ItemList>()
+            .Parameter(nameof(ItemList.Class), "bg-base-200 rounded-box")
+            .Slot(nameof(ItemList.ChildContent), DaisyDemoFragments.ListItems, DaisyDemoFragmentSources.ListItems)
+            .Related<ListItem>()
+            .Variant("Dense", v => v.Set(nameof(ItemList.Dense), true))
+            .Variant("Horizontal", v => v.Set(nameof(ItemList.Class), "bg-base-200 rounded-box menu-horizontal"))
+            .Variant("Large", v => v.Set(nameof(ItemList.Class), "bg-base-200 rounded-box menu-lg"));
+
+        // Single-open accordion through a shared <details name>; Elevation is each panel's shadow.
+        options.For<ExpansionPanels>()
+            .Parameter(nameof(ExpansionPanels.Class), "w-96")
+            .Slot(nameof(ExpansionPanels.ChildContent), DaisyDemoFragments.Panels, DaisyDemoFragmentSources.Panels)
+            .Related<ExpansionPanel>()
+            .Variant("Multi-expansion", v => v.Set(nameof(ExpansionPanels.MultiExpansion), true))
+            .Variant("Dense", v => v.Set(nameof(ExpansionPanels.Dense), true))
+            .Variant("Flat", v => v.Set(nameof(ExpansionPanels.Elevation), 0))
+            .Variant("Raised", v => v.Set(nameof(ExpansionPanels.Elevation), 6));
+
+        // DaisyBlazor's IndicatorContentExample: a badge over the corner of a button.
+        options.For<Indicator>()
+            .Slot(nameof(Indicator.Item), DaisyDemoFragments.IndicatorBadge, DaisyDemoFragmentSources.IndicatorBadge)
+            .Slot(nameof(Indicator.ChildContent), DaisyDemoFragments.OutlinedButton("Tickets"), DaisyDemoFragmentSources.TicketsButton)
+            .Related<Badge>()
+            .Variant("Bottom end", v => v.Set(nameof(Indicator.Vertical), IndicatorVertical.Bottom))
+            .Variant("Top start", v => v.Set(nameof(Indicator.Horizontal), IndicatorHorizontal.Start))
+            .Variant("Top center", v => v.Set(nameof(Indicator.Horizontal), IndicatorHorizontal.Center))
+            .Variant("Middle", v => v.Set(nameof(Indicator.Vertical), IndicatorVertical.Middle));
+
+        // --- Badges, chips and dots ---
+
+        // Indicator mode (the default) overlays a badge-sm on ChildContent. There is no Size axis:
+        // the badge is always badge-sm (badge-xs as a Dot). Content is an object and has no control,
+        // so the count is fixed; Max caps it. Inline mode is left to the control: it renders the
+        // ChildContent INSIDE the badge, which with this button child would nest a button in a span.
+        options.For<Badge>()
+            .Parameter(nameof(Badge.Content), 8, "8")
+            .Slot(nameof(Badge.ChildContent), DaisyDemoFragments.OutlinedButton("Inbox"), DaisyDemoFragmentSources.InboxButton)
+            .Related<Indicator>()
+            .Variant("Secondary", v => v.Set(nameof(Badge.Color), Color.Secondary))
+            .Variant("Error", v => v.Set(nameof(Badge.Color), Color.Error))
+            .Variant("Dot", v => v.Set(nameof(Badge.Dot), true))
+            .Variant("Capped at 5", v => v.Set(nameof(Badge.Max), 5))
+            .Variant("Bordered", v => v.Set(nameof(Badge.Bordered), true))
+            .Variant("Overlapping", v => v.Set(nameof(Badge.Overlap), true));
+
+        // A .badge with badge-{color}, badge-{sm,lg} and badge-{outline,soft}, all safelisted.
+        // On the bench OnClick and OnClose have delegates (the event log), so the label is a button
+        // and the close button shows; without an OnClose handler a page gets a plain span.
+        options.For<Chip>()
+            .Parameter(nameof(Chip.Text), "Blazor")
+            .Parameter(nameof(Chip.Color), Color.Primary)
+            .Related<Badge>()
+            .Variant("Success", v => v.Set(nameof(Chip.Color), Color.Success))
+            .Variant("Outlined", v => v.Set(nameof(Chip.Variant), Variant.Outlined))
+            .Variant("Soft", v => v.Set(nameof(Chip.Variant), Variant.Text))
+            .Variant("Small", v => v.Set(nameof(Chip.Size), Size.Small))
+            .Variant("Large", v => v.Set(nameof(Chip.Size), Size.Large))
+            .Variant("With icon", v => v.Set(nameof(Chip.Icon), Icons.Material.Filled.Bolt));
+
+        // status-{color} and status-{xs..xl} are safelisted (Medium adds no class). AriaLabel makes
+        // the dot role="img", which a bare dot needs to mean anything to a screen reader.
+        options.For<Status>()
+            .Parameter(nameof(Status.Color), Color.Success)
+            .Parameter(nameof(Status.AriaLabel), "Online")
+            .Related<Indicator>()
+            .Variant("Error", v => v.Set(nameof(Status.Color), Color.Error).Set(nameof(Status.AriaLabel), "Offline"))
+            .Variant("Warning", v => v.Set(nameof(Status.Color), Color.Warning).Set(nameof(Status.AriaLabel), "Away"))
+            .Variant("Extra small", v => v.Set(nameof(Status.Size), StatusSize.ExtraSmall))
+            .Variant("Extra large", v => v.Set(nameof(Status.Size), StatusSize.ExtraLarge))
+            .Variant("Animated", v => v.Set(nameof(Status.Animated), true));
+
+        options.For<Kbd>()
+            .Slot(nameof(Kbd.ChildContent), b => b.AddContent(0, "Ctrl"), "Ctrl")
+            .Variant("Small", v => v.Set(nameof(Kbd.Size), Size.Small))
+            .Variant("Large", v => v.Set(nameof(Kbd.Size), Size.Large))
+            .Variant("Extra large", v => v.Set(nameof(Kbd.Class), "kbd-xl"))
+            .Variant("Other key", v => v.Set(nameof(Kbd.ChildContent), "Shift"));
+
+        // --- Alerts and states ---
+
+        options.For<Alert>()
+            .Parameter(nameof(Alert.Severity), Severity.Info)
+            .Slot(nameof(Alert.ChildContent), b => b.AddContent(0, "12 unread messages. Tap to see them."), "12 unread messages. Tap to see them.")
+            .Related<ErrorAlert>()
+            .Variant("Success", v => v.Set(nameof(Alert.Severity), Severity.Success).Set(nameof(Alert.ChildContent), "Your purchase has been confirmed."))
+            .Variant("Warning", v => v.Set(nameof(Alert.Severity), Severity.Warning).Set(nameof(Alert.ChildContent), "Your trial ends in 3 days."))
+            .Variant("Error", v => v.Set(nameof(Alert.Severity), Severity.Error).Set(nameof(Alert.ChildContent), "The payment could not be processed."))
+            .Variant("Outlined", v => v.Set(nameof(Alert.Variant), Variant.Outlined))
+            .Variant("Soft", v => v.Set(nameof(Alert.Variant), Variant.Text))
+            .Variant("Dense, no icon", v => v.Set(nameof(Alert.Dense), true).Set(nameof(Alert.NoIcon), true));
+
+        // A filled error Alert; a blank Message renders nothing at all, hence the preset.
+        options.For<ErrorAlert>()
+            .Parameter(nameof(ErrorAlert.Message), "Could not save: the server is unreachable.")
+            .Related<Alert>()
+            .Variant("Validation error", v => v.Set(nameof(ErrorAlert.Message), "The email address is already registered."))
+            .Variant("Narrow", v => v.Set(nameof(ErrorAlert.Class), "max-w-xs"))
+            .Variant("Long message", v => v.Set(nameof(ErrorAlert.Message), "We could not reach the payment provider. Nothing was charged; try again in a few minutes or contact support."));
+
+        // Message is [EditorRequired]: without it the state is an icon over an empty line.
+        options.For<EmptyState>()
+            .Parameter(nameof(EmptyState.Message), "No projects yet")
+            .Parameter(nameof(EmptyState.Icon), Icons.Material.Filled.FolderOpen)
+            .Parameter(nameof(EmptyState.Subtitle), "Create your first project to get started.")
+            .Slot(nameof(EmptyState.ChildContent), DaisyDemoFragments.NewProjectButton, DaisyDemoFragmentSources.NewProjectButton)
+            .Related<AccessDenied>()
+            .Variant("No search results", v => v.Set(nameof(EmptyState.Icon), Icons.Material.Filled.SearchOff).Set(nameof(EmptyState.Message), "No results for “zeppelin”").Set(nameof(EmptyState.Subtitle), "Try a different keyword."))
+            .Variant("Inbox zero", v => v.Set(nameof(EmptyState.Icon), Icons.Material.Filled.Inbox).Set(nameof(EmptyState.Message), "You're all caught up").Set(nameof(EmptyState.Subtitle), "New messages will show up here."))
+            .Variant("Offline", v => v.Set(nameof(EmptyState.Icon), Icons.Material.Filled.CloudOff).Set(nameof(EmptyState.Message), "You are offline"));
+
+        // No [EditorRequired] input and no auth dependency (no AuthorizeView, no
+        // AuthenticationState cascade): every string is a parameter. The defaults are a lock icon,
+        // "Access denied" and min-height 400px; the preset trims the height to bench size. The
+        // action renders only with ActionText; "#" keeps a click on the bench instead of
+        // navigating the demo away (ActionHref defaults to "/").
+        options.For<AccessDenied>()
+            .Parameter(nameof(AccessDenied.Message), "You need the Billing admin role to view invoices.")
+            .Parameter(nameof(AccessDenied.ActionText), "Back to home")
+            .Parameter(nameof(AccessDenied.ActionHref), "#")
+            .Parameter(nameof(AccessDenied.MinHeight), "16rem")
+            .Related<EmptyState>()
+            .Variant("Custom title", v => v.Set(nameof(AccessDenied.Title), "Members only"))
+            .Variant("Warning icon", v => v.Set(nameof(AccessDenied.Icon), Icons.Material.Filled.Block).Set(nameof(AccessDenied.IconColor), Color.Warning))
+            .Variant("No action", v => v.Set(nameof(AccessDenied.ActionText), string.Empty))
+            .Variant("No icon", v => v.Set(nameof(AccessDenied.Icon), string.Empty));
+
+        // A <div class="tooltip" data-tip> plus an sr-only copy of the text. The tip shows on hover
+        // or focus, or always with Open, which the colour and placement variants turn on.
+        // Color.Dark is NOT offered: it composes tooltip-neutral, which the safelist lists but
+        // bundled daisyUI 5 does not define, so the tip keeps its default colour (upstream hole).
+        options.For<Tooltip>()
+            .Parameter(nameof(Tooltip.Text), "Saves a draft")
+            .Slot(nameof(Tooltip.ChildContent), DaisyDemoFragments.OutlinedButton("Save"), DaisyDemoFragmentSources.HoverButton)
+            .Related<Button>()
+            .Variant("Always open", v => v.Set(nameof(Tooltip.Open), true))
+            .Variant("Primary", v => v.Set(nameof(Tooltip.Color), Color.Primary).Set(nameof(Tooltip.Open), true))
+            .Variant("Error", v => v.Set(nameof(Tooltip.Color), Color.Error).Set(nameof(Tooltip.Open), true))
+            .Variant("Below", v => v.Set(nameof(Tooltip.Placement), Placement.Bottom).Set(nameof(Tooltip.Open), true))
+            .Variant("Right", v => v.Set(nameof(Tooltip.Placement), Placement.Right).Set(nameof(Tooltip.Open), true));
+
+        // --- Progress and loading ---
+
+        options.For<Loading>()
+            .Variant("Dots", v => v.Set(nameof(Loading.Type), LoadingType.Dots))
+            .Variant("Ring", v => v.Set(nameof(Loading.Type), LoadingType.Ring))
+            .Variant("Ball", v => v.Set(nameof(Loading.Type), LoadingType.Ball))
+            .Variant("Bars", v => v.Set(nameof(Loading.Type), LoadingType.Bars))
+            .Variant("Infinity", v => v.Set(nameof(Loading.Type), LoadingType.Infinity))
+            .Variant("Large primary", v => v.Set(nameof(Loading.Size), Size.Large).Set(nameof(Loading.Color), Color.Primary));
+
+        // Indeterminate (the default) is a plain loading-spinner; the preset shows the determinate
+        // radial-progress ring, which is what Value drives.
+        options.For<ProgressCircular>()
+            .Parameter(nameof(ProgressCircular.Indeterminate), false)
+            .Parameter(nameof(ProgressCircular.Value), 65d)
+            .Parameter(nameof(ProgressCircular.AriaLabel), "Upload progress")
+            .Related<RadialProgress>()
+            .Variant("Primary", v => v.Set(nameof(ProgressCircular.Color), Color.Primary))
+            .Variant("Large", v => v.Set(nameof(ProgressCircular.Size), Size.Large))
+            .Variant("Indeterminate", v => v.Set(nameof(ProgressCircular.Indeterminate), true))
+            .Variant("Out of 8", v => v.Set(nameof(ProgressCircular.Max), 8d).Set(nameof(ProgressCircular.Value), 3d));
+
+        // daisyUI's .progress is width:100%; w-56 keeps the bar a readable length on the bench.
+        options.For<ProgressLinear>()
+            .Parameter(nameof(ProgressLinear.Value), 40d)
+            .Parameter(nameof(ProgressLinear.AriaLabel), "Upload progress")
+            .Parameter(nameof(ProgressLinear.Class), "w-56")
+            .Related<ProgressCircular>()
+            .Variant("Primary", v => v.Set(nameof(ProgressLinear.Color), Color.Primary))
+            .Variant("Success, full", v => v.Set(nameof(ProgressLinear.Color), Color.Success).Set(nameof(ProgressLinear.Value), 100d))
+            .Variant("Thick", v => v.Set(nameof(ProgressLinear.Size), Size.Large))
+            .Variant("Thin", v => v.Set(nameof(ProgressLinear.Size), Size.Small))
+            .Variant("Indeterminate", v => v.Set(nameof(ProgressLinear.Indeterminate), true));
+
+        options.For<RadialProgress>()
+            .Parameter(nameof(RadialProgress.Value), 70d)
+            .Parameter(nameof(RadialProgress.AriaLabel), "Storage used")
+            .Related<ProgressCircular>()
+            .Variant("Primary", v => v.Set(nameof(RadialProgress.Color), Color.Primary))
+            .Variant("Success, full", v => v.Set(nameof(RadialProgress.Color), Color.Success).Set(nameof(RadialProgress.Value), 100d))
+            .Variant("Small", v => v.Set(nameof(RadialProgress.SizeRem), "3rem"))
+            .Variant("Thick ring", v => v.Set(nameof(RadialProgress.Thickness), "0.75rem"));
+
+        // Skeleton is a block with no intrinsic width: on the flex bench it would collapse, so every
+        // shape sets its own size (DaisyBlazor's SkeletonShapesExample).
+        options.For<Skeleton>()
+            .Parameter(nameof(Skeleton.Width), "12rem")
+            .Parameter(nameof(Skeleton.Height), "1rem")
+            .Variant("Circle", v => v.Set(nameof(Skeleton.SkeletonType), SkeletonType.Circle).Set(nameof(Skeleton.Width), "4rem").Set(nameof(Skeleton.Height), "4rem"))
+            .Variant("Rectangle", v => v.Set(nameof(Skeleton.SkeletonType), SkeletonType.Rectangle).Set(nameof(Skeleton.Width), "8rem").Set(nameof(Skeleton.Height), "5rem"))
+            .Variant("Heading line", v => v.Set(nameof(Skeleton.Width), "16rem").Set(nameof(Skeleton.Height), "2rem"));
+
+        // One animated cell (daisyUI paints the digits with ::before/::after); MinDigits emits
+        // --digits, so 7 reads "07" with 2.
+        options.For<Countdown>()
+            .Parameter(nameof(Countdown.Value), 42)
+            .Parameter(nameof(Countdown.Class), "font-mono text-5xl")
+            .Variant("Two digits", v => v.Set(nameof(Countdown.Value), 7).Set(nameof(Countdown.MinDigits), 2))
+            .Variant("Three digits", v => v.Set(nameof(Countdown.MinDigits), 3))
+            .Variant("Hundreds", v => v.Set(nameof(Countdown.Value), 365))
+            .Variant("With label", v => v.Set(nameof(Countdown.Label), "sec"));
+
+        // --- Images and shapes ---
+
+        options.For<Avatar>()
+            .Parameter(nameof(Avatar.Image), SamplePhoto, "@_photo")
+            .Parameter(nameof(Avatar.Alt), "Ada Lovelace")
+            .Related<Image>()
+            .Variant("Initials", v => v.Set(nameof(Avatar.Image), string.Empty).Set(nameof(Avatar.ChildContent), "AL").Set(nameof(Avatar.Color), Color.Primary))
+            .Variant("Outlined initials", v => v.Set(nameof(Avatar.Image), string.Empty).Set(nameof(Avatar.ChildContent), "GH").Set(nameof(Avatar.Variant), Variant.Outlined).Set(nameof(Avatar.Color), Color.Secondary))
+            .Variant("Large", v => v.Set(nameof(Avatar.Size), Size.Large))
+            .Variant("Small", v => v.Set(nameof(Avatar.Size), Size.Small))
+            .Variant("Rounded box", v => v.Set(nameof(Avatar.Rounded), true).Set(nameof(Avatar.Size), Size.Large))
+            .Variant("Square", v => v.Set(nameof(Avatar.Square), true).Set(nameof(Avatar.Size), Size.Large));
+
+        // A plain <img>; ObjectFit maps only "contain", "cover", "fill", "none" and "scale-down".
+        options.For<Image>()
+            .Parameter(nameof(Image.Src), SamplePhoto, "@_photo")
+            .Parameter(nameof(Image.Alt), "Mountains at dusk")
+            .Parameter(nameof(Image.Width), 192)
+            .Related<Mask>()
+            .Variant("Cover, wide", v => v.Set(nameof(Image.ObjectFit), "cover").Set(nameof(Image.Width), 288).Set(nameof(Image.Height), 120))
+            .Variant("Contain, wide", v => v.Set(nameof(Image.ObjectFit), "contain").Set(nameof(Image.Width), 288).Set(nameof(Image.Height), 120))
+            .Variant("Rounded", v => v.Set(nameof(Image.Class), "rounded-box"))
+            .Variant("Fluid", v => v.Set(nameof(Image.Fluid), true).Set(nameof(Image.Width), 960));
+
+        // mask-* are all safelisted at 0.6.0, the four triangle/decagon extras included.
+        options.For<Mask>()
+            .Parameter(nameof(Mask.Class), "w-24")
+            .Slot(nameof(Mask.ChildContent), DaisyDemoFragments.MaskedPhoto, DaisyDemoFragmentSources.MaskedPhoto)
+            .Related<Image>()
+            .Variant("Circle", v => v.Set(nameof(Mask.Shape), MaskShape.Circle))
+            .Variant("Hexagon", v => v.Set(nameof(Mask.Shape), MaskShape.Hexagon))
+            .Variant("Heart", v => v.Set(nameof(Mask.Shape), MaskShape.Heart))
+            .Variant("Star", v => v.Set(nameof(Mask.Shape), MaskShape.Star2))
+            .Variant("Decagon", v => v.Set(nameof(Mask.Shape), MaskShape.Decagon))
+            .Variant("Left half", v => v.Set(nameof(Mask.Half), 1));
+
+        // daisyUI's .diff is width:100%, aspect-16/9 by default: w-96 keeps it bench-sized. Drag the
+        // handle (or focus and use the keyboard) to reveal the greyscale pane.
+        options.For<Diff>()
+            .Parameter(nameof(Diff.Class), "w-96 max-w-full rounded-box")
+            .Parameter(nameof(Diff.Item1Label), "Colour")
+            .Parameter(nameof(Diff.Item2Label), "Greyscale")
+            .Slot(nameof(Diff.Item1), DaisyDemoFragments.DiffBefore, DaisyDemoFragmentSources.DiffBefore)
+            .Slot(nameof(Diff.Item2), DaisyDemoFragments.DiffAfter, DaisyDemoFragmentSources.DiffAfter)
+            .Variant("Square", v => v.Set(nameof(Diff.AspectClass), "aspect-square").Set(nameof(Diff.Class), "w-64 rounded-box"))
+            .Variant("4:3", v => v.Set(nameof(Diff.AspectClass), "aspect-4/3"))
+            .Variant("Narrow", v => v.Set(nameof(Diff.Class), "w-64 rounded-box"));
+
+        // --- Text and glyphs ---
+
+        // Name does not end in "Icon", so the icon picker does not drive it: a preset and variants
+        // that set other Icons.Material.Filled constants instead.
+        options.For<Icon>()
+            .Parameter(nameof(Icon.Name), Icons.Material.Filled.Favorite, "@Icons.Material.Filled.Favorite")
+            .Related<IconButton>()
+            .Variant("Home", v => v.Set(nameof(Icon.Name), Icons.Material.Filled.Home))
+            .Variant("Rocket", v => v.Set(nameof(Icon.Name), Icons.Material.Filled.RocketLaunch).Set(nameof(Icon.Color), Color.Primary))
+            .Variant("Error", v => v.Set(nameof(Icon.Color), Color.Error))
+            .Variant("Large", v => v.Set(nameof(Icon.Size), Size.Large))
+            .Variant("Small", v => v.Set(nameof(Icon.Size), Size.Small))
+            .Variant("Outlined", v => v.Set(nameof(Icon.Outlined), true));
+
+        // Typo picks both the element (h1-h6 or p) and its utility classes.
+        options.For<Typography>()
+            .Slot(nameof(Typography.ChildContent), b => b.AddContent(0, "The Analytical Engine weaves algebraic patterns."), "The Analytical Engine weaves algebraic patterns.")
+            .Variant("Heading 1", v => v.Set(nameof(Typography.Typo), Typo.h1))
+            .Variant("Heading 4", v => v.Set(nameof(Typography.Typo), Typo.h4))
+            .Variant("Subtitle", v => v.Set(nameof(Typography.Typo), Typo.subtitle1))
+            .Variant("Caption", v => v.Set(nameof(Typography.Typo), Typo.caption))
+            .Variant("Overline", v => v.Set(nameof(Typography.Typo), Typo.overline))
+            .Variant("Primary, centred", v => v.Set(nameof(Typography.Color), Color.Primary).Set(nameof(Typography.Align), "center"));
+
+        // A horizontal rule with optional text; Vertical (divider-horizontal) draws a vertical line,
+        // which needs a height, hence its Class. w-64 gives the horizontal one a length on the bench.
+        options.For<Divider>()
+            .Parameter(nameof(Divider.Class), "w-64")
+            .Slot(nameof(Divider.ChildContent), b => b.AddContent(0, "OR"), "OR")
+            .Variant("Vertical", v => v.Set(nameof(Divider.Vertical), true).Set(nameof(Divider.Class), "h-24"))
+            .Variant("Other text", v => v.Set(nameof(Divider.ChildContent), "Continue with"))
+            .Variant("Wide", v => v.Set(nameof(Divider.Class), "w-96"));
+
+        // Elevation: 0 none, 1 shadow-xs, 2-3 shadow-sm, 4-6 shadow-md, 7-12 shadow-lg, 13-18
+        // shadow-xl, 19+ shadow-2xl; each of those is in the safelist and in app.css.
+        options.For<Paper>()
+            .Parameter(nameof(Paper.Class), "p-6 w-64")
+            .Slot(nameof(Paper.ChildContent), DaisyDemoFragments.PaperText, DaisyDemoFragmentSources.PaperText)
+            .Related<Card>()
+            .Variant("Flat", v => v.Set(nameof(Paper.Elevation), 0))
+            .Variant("Elevation 3", v => v.Set(nameof(Paper.Elevation), 3))
+            .Variant("Elevation 6", v => v.Set(nameof(Paper.Elevation), 6))
+            .Variant("Elevation 12", v => v.Set(nameof(Paper.Elevation), 12))
+            .Variant("Elevation 24", v => v.Set(nameof(Paper.Elevation), 24))
+            .Variant("Outlined", v => v.Set(nameof(Paper.Outlined), true));
+
+        // The bubble belongs in a full-width row: chat-end only moves it right when the row is wide.
+        options.For<ChatBubble>()
+            .Parameter(nameof(ChatBubble.Class), "w-full")
+            .Parameter(nameof(ChatBubble.Header), "Ana · 18:02")
+            .Parameter(nameof(ChatBubble.Footer), "Delivered")
+            .Slot(nameof(ChatBubble.Image), DaisyDemoFragments.ChatAvatar, DaisyDemoFragmentSources.ChatAvatar)
+            .Slot(nameof(ChatBubble.ChildContent), b => b.AddContent(0, "The hotfix is on staging, you can test it."), "The hotfix is on staging, you can test it.")
+            .Related<Avatar>()
+            .Variant("End", v => v.Set(nameof(ChatBubble.Placement), ChatPlacement.End).Set(nameof(ChatBubble.Footer), "Seen at 18:05"))
+            .Variant("Primary", v => v.Set(nameof(ChatBubble.Color), Color.Primary))
+            .Variant("End, secondary", v => v.Set(nameof(ChatBubble.Placement), ChatPlacement.End).Set(nameof(ChatBubble.Color), Color.Secondary))
+            .Variant("Error", v => v.Set(nameof(ChatBubble.Color), Color.Error));
     }
 
     private static Task<IEnumerable<string>> SearchFruits(string text, CancellationToken cancellationToken)

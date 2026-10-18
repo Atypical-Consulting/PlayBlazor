@@ -102,6 +102,81 @@
     // daisyUI floats the span once the input is focused or filled; the placeholder fills the empty box.
     public static RenderFragment FloatingInput => @<input type="email" class="input" placeholder="ada@example.com" />;
 
+    // --- Display and feedback (container children and image slots) ---------------------------
+
+    public static RenderFragment CardParts => @<text>
+        <CardContent>
+            <h2 class="card-title">Analytical Engine</h2>
+            <p>The first design for a general-purpose computer.</p>
+        </CardContent>
+        <CardActions Class="justify-end">
+            <Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button>
+        </CardActions>
+    </text>;
+
+    public static RenderFragment CarouselSlides => @<text>
+        <CarouselItem>
+            <div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div>
+        </CarouselItem>
+        <CarouselItem>
+            <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+        </CarouselItem>
+        <CarouselItem>
+            <div class="bg-accent text-accent-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 3</div>
+        </CarouselItem>
+    </text>;
+
+    public static RenderFragment StatCells => @<text>
+        <Stat Title="Downloads" Value="31K" Desc="Jan 1st - Feb 1st" />
+        <Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" DescColor="Color.Success" />
+        <Stat Title="New registers" Value="1,200" Desc="↘︎ 90 (14%)" DescColor="Color.Error" />
+    </text>;
+
+    public static RenderFragment TimelineItems => @<text>
+        <TimelineItem Color="Color.Primary">1815: Ada Lovelace is born</TimelineItem>
+        <TimelineItem Color="Color.Primary">1843: Notes on the Analytical Engine</TimelineItem>
+        <TimelineItem>1953: The notes are republished</TimelineItem>
+    </text>;
+
+    public static RenderFragment ListRows => @<text>
+        <ListRow Icon="person" Title="Ada Lovelace" Subtitle="Analyst" />
+        <ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+        <ListRow Icon="person" Title="Alan Turing" Subtitle="Cryptanalyst" />
+    </text>;
+
+    public static RenderFragment ListItems => @<text>
+        <ListItem Icon="inbox" Text="Inbox" />
+        <ListItem Icon="send" Text="Sent" />
+        <ListItem Icon="drafts" Text="Drafts" />
+    </text>;
+
+    public static RenderFragment Panels => @<text>
+        <ExpansionPanel Text="Shipping" IsExpanded="true">Orders ship within two business days.</ExpansionPanel>
+        <ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+        <ExpansionPanel Text="Warranty">Two years on every order.</ExpansionPanel>
+    </text>;
+
+    public static RenderFragment IndicatorBadge => @<Badge Inline="true" Color="Color.Primary">12</Badge>;
+
+    public static RenderFragment OutlinedButton(string text) => @<Button Variant="Variant.Outlined">@text</Button>;
+
+    public static RenderFragment ChatAvatar => @<Avatar Image="@DaisyPlaygroundConfig.SamplePhoto" Alt="Ana Silva" Size="Size.Small" />;
+
+    // The .mask is inline-block and clips what it wraps: a block image fills it edge to edge.
+    public static RenderFragment MaskedPhoto => @<img class="block w-full" src="@DaisyPlaygroundConfig.SamplePhoto" alt="Mountains at dusk" />;
+
+    // daisyUI sizes and covers the direct child of each .diff-item, so a bare <img> is all a pane needs.
+    public static RenderFragment DiffBefore => @<img src="@DaisyPlaygroundConfig.SamplePhoto" alt="Colour" />;
+
+    public static RenderFragment DiffAfter => @<img src="@DaisyPlaygroundConfig.SamplePhotoMuted" alt="Greyscale" />;
+
+    public static RenderFragment PaperText => @<text>
+        <h3 class="text-lg font-semibold">Analytical Engine</h3>
+        <p class="text-sm">Designed by Charles Babbage in 1837.</p>
+    </text>;
+
+    public static RenderFragment NewProjectButton => @<Button Variant="Variant.Filled" Color="Color.Primary">New project</Button>;
+
     // --- Scaffolds --------------------------------------------------------------------------
 
     // The specimen initialises (so registers) after the sibling wherever it sits in the markup, and

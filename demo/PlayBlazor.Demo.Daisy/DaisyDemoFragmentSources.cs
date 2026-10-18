@@ -67,6 +67,81 @@ public static class DaisyDemoFragmentSources
 
     public const string FloatingInput = """<input type="email" class="input" placeholder="ada@example.com" />""";
 
+    public const string CardParts = """
+<CardContent>
+    <h2 class="card-title">Analytical Engine</h2>
+    <p>The first design for a general-purpose computer.</p>
+</CardContent>
+<CardActions Class="justify-end">
+    <Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button>
+</CardActions>
+""";
+
+    public const string CarouselSlides = """
+<CarouselItem>
+    <div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div>
+</CarouselItem>
+<CarouselItem>
+    <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+</CarouselItem>
+<CarouselItem>
+    <div class="bg-accent text-accent-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 3</div>
+</CarouselItem>
+""";
+
+    public const string StatCells = """
+<Stat Title="Downloads" Value="31K" Desc="Jan 1st - Feb 1st" />
+<Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" DescColor="Color.Success" />
+<Stat Title="New registers" Value="1,200" Desc="↘︎ 90 (14%)" DescColor="Color.Error" />
+""";
+
+    public const string TimelineItems = """
+<TimelineItem Color="Color.Primary">1815: Ada Lovelace is born</TimelineItem>
+<TimelineItem Color="Color.Primary">1843: Notes on the Analytical Engine</TimelineItem>
+<TimelineItem>1953: The notes are republished</TimelineItem>
+""";
+
+    public const string ListRows = """
+<ListRow Icon="person" Title="Ada Lovelace" Subtitle="Analyst" />
+<ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+<ListRow Icon="person" Title="Alan Turing" Subtitle="Cryptanalyst" />
+""";
+
+    public const string ListItems = """
+<ListItem Icon="inbox" Text="Inbox" />
+<ListItem Icon="send" Text="Sent" />
+<ListItem Icon="drafts" Text="Drafts" />
+""";
+
+    public const string Panels = """
+<ExpansionPanel Text="Shipping" IsExpanded="true">Orders ship within two business days.</ExpansionPanel>
+<ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+<ExpansionPanel Text="Warranty">Two years on every order.</ExpansionPanel>
+""";
+
+    public const string IndicatorBadge = """<Badge Inline="true" Color="Color.Primary">12</Badge>""";
+
+    public const string TicketsButton = """<Button Variant="Variant.Outlined">Tickets</Button>""";
+
+    public const string InboxButton = """<Button Variant="Variant.Outlined">Inbox</Button>""";
+
+    public const string HoverButton = """<Button Variant="Variant.Outlined">Save</Button>""";
+
+    public const string ChatAvatar = """<Avatar Image="@_photo" Alt="Ana Silva" Size="Size.Small" />""";
+
+    public const string MaskedPhoto = """<img class="block w-full" src="@_photo" alt="Mountains at dusk" />""";
+
+    public const string DiffBefore = """<img src="@_photo" alt="Colour" />""";
+
+    public const string DiffAfter = """<img src="@_photoMuted" alt="Greyscale" />""";
+
+    public const string PaperText = """
+<h3 class="text-lg font-semibold">Analytical Engine</h3>
+<p class="text-sm">Designed by Charles Babbage in 1837.</p>
+""";
+
+    public const string NewProjectButton = """<Button Variant="Variant.Filled" Color="Color.Primary">New project</Button>""";
+
     public const string InFabFrame = """
 @* The transform keeps even a fixed (default) Fab inside this box. *@
 <div class="relative isolate h-64" style="transform: translateZ(0)">

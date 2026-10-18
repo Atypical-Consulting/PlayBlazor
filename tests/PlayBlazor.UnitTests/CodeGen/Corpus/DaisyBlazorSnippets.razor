@@ -23,10 +23,13 @@
 @* ==> generated snippets begin — see SnippetCorpusTests <== *@
 
 @* AccessDenied *@
-<AccessDenied />
+<AccessDenied Message="You need the Billing admin role to view invoices."
+              ActionText="Back to home"
+              ActionHref="#"
+              MinHeight="16rem" />
 
 @* Alert *@
-<Alert />
+<Alert Severity="Severity.Info">12 unread messages. Tap to see them.</Alert>
 
 @* AppCard *@
 <AppCard />
@@ -38,10 +41,10 @@
               SearchFunc="@((text, _) => Task.FromResult(_fruits.Where(f => f.Contains(text, StringComparison.OrdinalIgnoreCase))))" />
 
 @* Avatar *@
-<Avatar />
+<Avatar Image="@_photo" Alt="Ada Lovelace" />
 
 @* Badge *@
-<Badge />
+<Badge Content="8"><Button Variant="Variant.Outlined">Inbox</Button></Badge>
 
 @* Breadcrumbs *@
 <Breadcrumbs />
@@ -57,7 +60,15 @@
 </ButtonGroup>
 
 @* Card *@
-<Card />
+<Card Class="w-80">
+    <CardContent>
+        <h2 class="card-title">Analytical Engine</h2>
+        <p>The first design for a general-purpose computer.</p>
+    </CardContent>
+    <CardActions Class="justify-end">
+        <Button Variant="Variant.Filled" Color="Color.Primary">Read more</Button>
+    </CardActions>
+</Card>
 
 @* CardActions *@
 <Card Class="w-80">
@@ -85,7 +96,17 @@
 </Card>
 
 @* Carousel *@
-<Carousel />
+<Carousel Class="rounded-box gap-4 w-80">
+    <CarouselItem>
+        <div class="bg-primary text-primary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 1</div>
+    </CarouselItem>
+    <CarouselItem>
+        <div class="bg-secondary text-secondary-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 2</div>
+    </CarouselItem>
+    <CarouselItem>
+        <div class="bg-accent text-accent-content rounded-box flex h-40 w-64 items-center justify-center text-xl">Slide 3</div>
+    </CarouselItem>
+</Carousel>
 
 @* CarouselItem *@
 <Carousel Class="rounded-box gap-4">
@@ -96,13 +117,22 @@
 </Carousel>
 
 @* ChatBubble *@
-<ChatBubble />
+<ChatBubble Header="Ana · 18:02"
+            Footer="Delivered"
+            Class="w-full">
+    <ChildContent>
+        The hotfix is on staging, you can test it.
+    </ChildContent>
+    <Image>
+        <Avatar Image="@_photo" Alt="Ana Silva" Size="Size.Small" />
+    </Image>
+</ChatBubble>
 
 @* Checkbox *@
 <Checkbox Checked="true" Label="Remember me" />
 
 @* Chip *@
-<Chip />
+<Chip Text="Blazor" Color="Color.Primary" />
 
 @* ColorPicker *@
 <ColorPicker Value="#605dff" Label="Brand colour" />
@@ -118,7 +148,7 @@
 <Container />
 
 @* Countdown *@
-<Countdown />
+<Countdown Value="42" Class="font-mono text-5xl" />
 
 @* DataGrid *@
 <DataGrid T="Person" />
@@ -161,10 +191,19 @@
 </Dialog>
 
 @* Diff *@
-<Diff />
+<Diff Item1Label="Colour"
+      Item2Label="Greyscale"
+      Class="w-96 max-w-full rounded-box">
+    <Item1>
+        <img src="@_photo" alt="Colour" />
+    </Item1>
+    <Item2>
+        <img src="@_photoMuted" alt="Greyscale" />
+    </Item2>
+</Diff>
 
 @* Divider *@
-<Divider />
+<Divider Class="w-64">OR</Divider>
 
 @* Dock *@
 <Dock />
@@ -197,10 +236,12 @@
 <Dropdown />
 
 @* EmptyState *@
-<EmptyState />
+<EmptyState Message="No projects yet"
+            Icon="folder_open"
+            Subtitle="Create your first project to get started."><Button Variant="Variant.Filled" Color="Color.Primary">New project</Button></EmptyState>
 
 @* ErrorAlert *@
-<ErrorAlert />
+<ErrorAlert Message="Could not save: the server is unreachable." />
 
 @* ExpansionPanel *@
 <ExpansionPanels>
@@ -209,7 +250,11 @@
 </ExpansionPanels>
 
 @* ExpansionPanels *@
-<ExpansionPanels />
+<ExpansionPanels Class="w-96">
+    <ExpansionPanel Text="Shipping" IsExpanded="true">Orders ship within two business days.</ExpansionPanel>
+    <ExpansionPanel Text="Returns">Free returns within 30 days.</ExpansionPanel>
+    <ExpansionPanel Text="Warranty">Two years on every order.</ExpansionPanel>
+</ExpansionPanels>
 
 @* Fab *@
 @* The transform keeps even a fixed (default) Fab inside this box. *@
@@ -284,16 +329,25 @@
 <Hero />
 
 @* Icon *@
-<Icon />
+<Icon Name="@Icons.Material.Filled.Favorite" />
 
 @* IconButton *@
 <IconButton Icon="favorite" Title="Add to favourites" />
 
 @* Image *@
-<Image />
+<Image Src="@_photo"
+       Alt="Mountains at dusk"
+       Width="192" />
 
 @* Indicator *@
-<Indicator />
+<Indicator>
+    <ChildContent>
+        <Button Variant="Variant.Outlined">Tickets</Button>
+    </ChildContent>
+    <Item>
+        <Badge Inline="true" Color="Color.Primary">12</Badge>
+    </Item>
+</Indicator>
 
 @* Item *@
 <Grid Spacing="4">
@@ -302,16 +356,24 @@
 </Grid>
 
 @* ItemList *@
-<ItemList />
+<ItemList Class="bg-base-200 rounded-box">
+    <ListItem Icon="inbox" Text="Inbox" />
+    <ListItem Icon="send" Text="Sent" />
+    <ListItem Icon="drafts" Text="Drafts" />
+</ItemList>
 
 @* Kbd *@
-<Kbd />
+<Kbd>Ctrl</Kbd>
 
 @* KpiCard *@
 <KpiCard />
 
 @* List *@
-<List />
+<List Class="w-80">
+    <ListRow Icon="person" Title="Ada Lovelace" Subtitle="Analyst" />
+    <ListRow Icon="person" Title="Grace Hopper" Subtitle="Rear Admiral" />
+    <ListRow Icon="person" Title="Alan Turing" Subtitle="Cryptanalyst" />
+</List>
 
 @* ListItem *@
 <ItemList>
@@ -331,7 +393,7 @@
 <Loading />
 
 @* Mask *@
-<Mask />
+<Mask Class="w-24"><img class="block w-full" src="@_photo" alt="Mountains at dusk" /></Mask>
 
 @* Menu *@
 <Menu />
@@ -400,13 +462,20 @@
 <Pagination />
 
 @* Paper *@
-<Paper />
+<Paper Class="p-6 w-64">
+    <h3 class="text-lg font-semibold">Analytical Engine</h3>
+    <p class="text-sm">Designed by Charles Babbage in 1837.</p>
+</Paper>
 
 @* ProgressCircular *@
-<ProgressCircular />
+<ProgressCircular Indeterminate="false"
+                  Value="65"
+                  AriaLabel="Upload progress" />
 
 @* ProgressLinear *@
-<ProgressLinear />
+<ProgressLinear Value="40"
+                AriaLabel="Upload progress"
+                Class="w-56" />
 
 @* PropertyColumn *@
 <DataGrid T="Person" Items="@_people">
@@ -423,7 +492,7 @@
 <QuickAccessButton />
 
 @* RadialProgress *@
-<RadialProgress />
+<RadialProgress Value="70" AriaLabel="Storage used" />
 
 @* Radio *@
 <RadioGroup T="string" Label="Fruit" Value="@("apple")">
@@ -474,7 +543,7 @@
 <SimpleTable />
 
 @* Skeleton *@
-<Skeleton />
+<Skeleton Width="12rem" Height="1rem" />
 
 @* Spacer *@
 <Spacer />
@@ -494,10 +563,14 @@
 </Stats>
 
 @* Stats *@
-<Stats />
+<Stats Shadow="true">
+    <Stat Title="Downloads" Value="31K" Desc="Jan 1st - Feb 1st" />
+    <Stat Title="Users" Value="4,200" Desc="↗︎ 400 (22%)" DescColor="Color.Success" />
+    <Stat Title="New registers" Value="1,200" Desc="↘︎ 90 (14%)" DescColor="Color.Error" />
+</Stats>
 
 @* Status *@
-<Status />
+<Status Color="Color.Success" AriaLabel="Online" />
 
 @* StatusChip *@
 <StatusChip />
@@ -599,7 +672,11 @@
 <ThemeController Value="dark" Class="inline-flex items-center gap-3">Dark theme</ThemeController>
 
 @* Timeline *@
-<Timeline />
+<Timeline>
+    <TimelineItem Color="Color.Primary">1815: Ada Lovelace is born</TimelineItem>
+    <TimelineItem Color="Color.Primary">1843: Notes on the Analytical Engine</TimelineItem>
+    <TimelineItem>1953: The notes are republished</TimelineItem>
+</Timeline>
 
 @* TimelineItem *@
 <Timeline>
@@ -625,7 +702,7 @@
 </ToggleGroup>
 
 @* Tooltip *@
-<Tooltip />
+<Tooltip Text="Saves a draft"><Button Variant="Variant.Outlined">Save</Button></Tooltip>
 
 @* Tr *@
 <SimpleTable>
@@ -642,7 +719,7 @@
 </SimpleTable>
 
 @* Typography *@
-<Typography />
+<Typography>The Analytical Engine weaves algebraic patterns.</Typography>
 
 @* Validator *@
 <Validator Hint="Enter a valid email address."><input type="email" class="input validator" placeholder="ada@example.com" required /></Validator>
@@ -658,4 +735,6 @@
     private readonly IReadOnlyList<Person> _people = DaisyPlaygroundConfig.SampleRows;
     private readonly ServerValidationState _validation = DaisyPlaygroundConfig.SampleValidation;
     private readonly IReadOnlyList<string> _fruits = DaisyPlaygroundConfig.ListOptions;
+    private readonly string _photo = DaisyPlaygroundConfig.SamplePhoto;
+    private readonly string _photoMuted = DaisyPlaygroundConfig.SamplePhotoMuted;
 }
