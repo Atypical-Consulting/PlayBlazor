@@ -5,7 +5,23 @@
              DocsUrl="https://phmatray.github.io/daisyblazor/"
              Current="daisy">
     <Flagships>
-        <section class="demo-section">
+        @* Literal daisyUI badge classes, so Tailwind emits them: the theme's palette, rendered by the
+           same compiled sheet the specimens use. *@
+        <div class="daisy-theme">
+            <p class="daisy-theme-label">Every specimen renders in daisyUI's <code>daisyblazor</code> theme</p>
+            <div class="daisy-theme-swatches">
+                <span class="badge badge-primary">primary</span>
+                <span class="badge badge-secondary">secondary</span>
+                <span class="badge badge-accent">accent</span>
+                <span class="badge badge-neutral">neutral</span>
+                <span class="badge badge-info">info</span>
+                <span class="badge badge-success">success</span>
+                <span class="badge badge-warning">warning</span>
+                <span class="badge badge-error">error</span>
+            </div>
+        </div>
+
+        <section class="demo-section daisy-bench-compact">
             <h2 class="demo-tag">Button</h2>
             <p class="demo-note">The flagship demo — flip Color, Variant and Size, watch the snippet follow. Every class is daisyUI's, compiled by Tailwind at build time.</p>
             <PlaygroundView Component="typeof(Button)" />
@@ -13,7 +29,7 @@
 
         <section class="demo-section">
             <h2 class="demo-tag">DataGrid&lt;Person&gt;</h2>
-            <p class="demo-note">Sample rows, columns and the pager come from host presets — click a header to sort; Striped, Dense, Bordered… stay yours to play with.</p>
+            <p class="demo-note">Sample rows, columns and the pager come from host presets — two rows per page, so the pager is live; click a header to sort; Striped, Dense, Bordered… stay yours to play with.</p>
             <PlaygroundView Component="typeof(DataGrid<Person>)" />
         </section>
 

@@ -29,8 +29,8 @@ public partial class DaisyPresetTests
     [TestCase(typeof(SimpleTable), "div.overflow-x-auto > table.table > tbody > tr > td", "Alan Turing")]
     [TestCase(typeof(DataGrid<Person>), "table.table > thead th[aria-sort=none] > button", "Name")]
     [TestCase(typeof(DataGrid<Person>), "table.table > tbody > tr > td", "Rear Admiral")]
-    [TestCase(typeof(DataGrid<Person>), "div.mt-2 select.select.select-sm > option[selected]", "10")]
-    [TestCase(typeof(DataGrid<Person>), "div.mt-2 span", "1-3 of 3")]
+    [TestCase(typeof(DataGrid<Person>), "div.mt-2 select.select.select-sm > option[selected]", "2")]
+    [TestCase(typeof(DataGrid<Person>), "div.mt-2 span", "1-2 of 3")]
     [TestCase(typeof(DataTable<Person>), "table.table.table-zebra > tbody > tr.row-hover > td", "Ada Lovelace")]
     [TestCase(typeof(DataTable<Person>), "td.text-right button.btn[title='Edit Ada Lovelace']", "edit")]
     [TestCase(typeof(FilterPanel), "div.grid.grid-cols-12 input.input[placeholder='Northwind Traders']", null)]
@@ -45,7 +45,7 @@ public partial class DaisyPresetTests
 
     [TestCase(typeof(Table<Person>), "table.table > tbody > tr", 3)]
     [TestCase(typeof(Table<Person>), "table.table > tbody > tr > td", 9)]
-    [TestCase(typeof(DataGrid<Person>), "table.table > tbody > tr > td", 9)]
+    [TestCase(typeof(DataGrid<Person>), "table.table > tbody > tr > td", 6)]
     [TestCase(typeof(DataTable<Person>), "table.table > thead th", 4)]
     [TestCase(typeof(DataTable<Person>), "table.table > tbody > tr", 2)]
     [TestCase(typeof(FilterPanel), "span.badge", 2)]
@@ -92,12 +92,10 @@ public partial class DaisyPresetTests
     }
 
     [Test]
-    public void DataGridTwoPerPage_PagesThroughThePresetPager()
+    public void DataGrid_OpensOnALivePresetPager()
     {
         using var context = NewContext();
         var cut = Bench(context, typeof(DataGrid<Person>));
-
-        Variant(cut, "Two per page");
 
         cut.FindAll(".pb-specimen table.table > tbody > tr").Should().HaveCount(2);
         cut.Find(".pb-specimen button[aria-label='Next page']").HasAttribute("disabled").Should().BeFalse();

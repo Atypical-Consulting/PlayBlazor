@@ -1,0 +1,138 @@
+/* Daisy-only adjustments to the shared demo chrome (demo.css) and to PlayBlazor's bench
+   (PlaygroundView.razor.css, scoped: its selectors carry one attribute, so these use three
+   classes to win). Everything here stays outside .pb-specimen: the specimen is daisyUI's. */
+
+/* ---- Column alignment: demo.css pads .demo-main inside its 880px but the hero outside it,
+   which puts the content 24px right of the hero at wide viewports. ---- */
+.demo-main,
+.demo-footer {
+    max-width: calc(880px + 3rem);
+    box-sizing: border-box;
+}
+
+/* ---- Theme strip: the first daisyUI-specific thing under the hero ---- */
+.daisy-theme {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0 0 2.25rem;
+}
+
+.daisy-theme-label {
+    margin: 0;
+    color: var(--demo-ink-2);
+    font-size: 0.8125rem;
+}
+
+.daisy-theme-label code {
+    font-family: var(--demo-mono);
+    font-size: 0.875em;
+    color: var(--demo-ink);
+}
+
+.daisy-theme-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.daisy-theme-swatches .badge {
+    font-family: var(--demo-mono);
+    font-size: 0.6875rem;
+}
+
+/* ---- Bench chrome ---- */
+
+/* The Button specimen is one control: a 480px row leaves it floating in dead stage. */
+@media (min-width: 721px) {
+    .daisy-bench-compact .pb-playground .pb-panel {
+        max-height: 22rem;
+    }
+}
+
+/* The parameter panel scrolls; a fade on its bottom edge says so instead of slicing a row. */
+.demo-main .pb-playground .pb-panel {
+    padding-bottom: 1.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: #cfcfdc transparent;
+}
+
+.demo-main .pb-playground .pb-panel::after {
+    content: "";
+    position: sticky;
+    bottom: -1.75rem;
+    flex: none;
+    height: 2rem;
+    margin: -0.25rem -0.75rem -1.75rem;
+    background: linear-gradient(rgba(251, 251, 253, 0), #fbfbfd 85%);
+    pointer-events: none;
+}
+
+/* Keep code clear of the absolutely placed Copy button, and show that long lines scroll. */
+.demo-main .pb-playground .pb-code {
+    padding-right: 5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(179, 161, 255, 0.45) transparent;
+}
+
+/* ---- Tile wall ---- */
+
+/* Child parts (a cell, a tab, a column) only make sense inside their parent: demote them so
+   the real entry points lead the scan. */
+.demo-tile:is(
+    [href="explorer?pb-Td=e30"], [href="explorer?pb-Th=e30"], [href="explorer?pb-Tr=e30"],
+    [href="explorer?pb-CardHeader=e30"], [href="explorer?pb-CardContent=e30"], [href="explorer?pb-CardActions=e30"],
+    [href="explorer?pb-SelectItem=e30"], [href="explorer?pb-TimelineItem=e30"], [href="explorer?pb-CarouselItem=e30"],
+    [href="explorer?pb-DockItem=e30"], [href="explorer?pb-ListItem=e30"], [href="explorer?pb-MenuItem=e30"],
+    [href="explorer?pb-Step=e30"], [href="explorer?pb-Tab=e30"], [href="explorer?pb-ToggleItem=e30"],
+    [href="explorer?pb-FabAction=e30"], [href="explorer?pb-DataGridPager=e30"], [href="explorer?pb-TablePager=e30"],
+    [href="explorer?pb-PropertyColumn=e30"], [href="explorer?pb-TemplateColumn=e30"], [href="explorer?pb-FooterTitle=e30"],
+    [href="explorer?pb-DetailRow=e30"], [href="explorer?pb-Item=e30"], [href="explorer?pb-FieldError=e30"],
+    [href="explorer?pb-ValidatorHint=e30"]) {
+    border-style: dashed;
+    background: transparent;
+    color: var(--demo-ink-2);
+}
+
+.demo-tile:is(
+    [href="explorer?pb-Td=e30"], [href="explorer?pb-Th=e30"], [href="explorer?pb-Tr=e30"],
+    [href="explorer?pb-CardHeader=e30"], [href="explorer?pb-CardContent=e30"], [href="explorer?pb-CardActions=e30"],
+    [href="explorer?pb-SelectItem=e30"], [href="explorer?pb-TimelineItem=e30"], [href="explorer?pb-CarouselItem=e30"],
+    [href="explorer?pb-DockItem=e30"], [href="explorer?pb-ListItem=e30"], [href="explorer?pb-MenuItem=e30"],
+    [href="explorer?pb-Step=e30"], [href="explorer?pb-Tab=e30"], [href="explorer?pb-ToggleItem=e30"],
+    [href="explorer?pb-FabAction=e30"], [href="explorer?pb-DataGridPager=e30"], [href="explorer?pb-TablePager=e30"],
+    [href="explorer?pb-PropertyColumn=e30"], [href="explorer?pb-TemplateColumn=e30"], [href="explorer?pb-FooterTitle=e30"],
+    [href="explorer?pb-DetailRow=e30"], [href="explorer?pb-Item=e30"], [href="explorer?pb-FieldError=e30"],
+    [href="explorer?pb-ValidatorHint=e30"])::after {
+    content: "part";
+    margin-left: auto;
+    padding-left: 0.25rem;
+    color: var(--demo-ink-2);
+    font-size: 0.625rem;
+}
+
+.demo-tile:focus-visible {
+    outline: 2px solid var(--demo-accent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+    .demo-main .pb-playground .pb-panel {
+        padding-bottom: 0.875rem;
+    }
+
+    .demo-main .pb-playground .pb-panel::after {
+        display: none;
+    }
+
+    /* Narrow: the Copy button gets its own row above the code rather than covering it. */
+    .demo-main .pb-playground .pb-code {
+        padding-top: 2.6rem;
+        padding-right: 1rem;
+    }
+
+    .demo-tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
