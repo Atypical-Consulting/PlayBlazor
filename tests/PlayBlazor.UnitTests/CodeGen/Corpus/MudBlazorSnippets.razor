@@ -17,7 +17,7 @@
 @* ==> generated snippets begin — see SnippetCorpusTests <== *@
 
 @* MudAlert *@
-<MudAlert>The reactor is running at optimum temperature.</MudAlert>
+<MudAlert Severity="Severity.Info">The reactor is running at optimum temperature.</MudAlert>
 
 @* MudAppBar *@
 <MudAppBar Fixed="false">My application</MudAppBar>
@@ -46,7 +46,7 @@
 <MudBreadcrumbs Items="@_items" />
 
 @* MudButton *@
-<MudButton>Click me</MudButton>
+<MudButton Color="Color.Primary" Variant="Variant.Filled">Click me</MudButton>
 
 @* MudButtonGroup *@
 <MudButtonGroup>
@@ -105,7 +105,9 @@
 <MudContainer MaxWidth="MaxWidth.Small">A centered, max-width content container.</MudContainer>
 
 @* MudDataGrid *@
-<MudDataGrid T="Person" Items="@_people">
+<MudDataGrid T="Person"
+             Breakpoint="Breakpoint.None"
+             Items="@_people">
     <Columns>
         <PropertyColumn Property="x => x.Name" />
         <PropertyColumn Property="x => x.Role" />
@@ -114,7 +116,9 @@
 </MudDataGrid>
 
 @* MudDatePicker *@
-<MudDatePicker Label="Select a date" />
+<MudDatePicker Label="Select a date"
+               ShowToolbar="false"
+               PickerVariant="PickerVariant.Static" />
 
 @* MudDateRangePicker *@
 <MudDateRangePicker Label="Period" />

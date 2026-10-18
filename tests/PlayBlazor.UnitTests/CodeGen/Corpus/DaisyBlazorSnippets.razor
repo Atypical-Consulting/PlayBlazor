@@ -53,7 +53,7 @@
 <Breadcrumbs Items="@(new List<BreadcrumbItem> { new("Home", "#", Icon: Icons.Material.Filled.Home), new("Projects", "#", Icon: Icons.Material.Filled.Folder), new("Checkout redesign", null) })" />
 
 @* Button *@
-<Button Variant="Variant.Filled">Click me</Button>
+<Button Color="Color.Primary" Variant="Variant.Filled">Click me</Button>
 
 @* ButtonGroup *@
 <ButtonGroup Variant="Variant.Filled">
@@ -156,7 +156,9 @@
 <Countdown Value="42" Class="font-mono text-5xl" />
 
 @* DataGrid *@
-<DataGrid T="Person" Items="@_people">
+<DataGrid T="Person"
+          Items="@_people"
+          RowsPerPage="2">
     <Columns>
         <PropertyColumn T="Person" TProperty="string" Property="p => p.Name" Title="Name" />
         <PropertyColumn T="Person" TProperty="string" Property="p => p.Role" Title="Role" />

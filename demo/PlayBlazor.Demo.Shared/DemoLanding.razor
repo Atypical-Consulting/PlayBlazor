@@ -1,49 +1,206 @@
 @using System.Reflection
+@using Microsoft.JSInterop
 @using PlayBlazor.Discovery
 @inject IComponentCatalogProvider Catalog
 @inject PlayBlazorOptions Options
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<LibrarySwitcher Current="@Current" />
-
-<header class="demo-hero">
-    <div class="demo-wordmark"><span class="demo-mark">▶</span> PlayBlazor</div>
-    <p class="demo-tagline">
-        Auto-generated playgrounds for any Blazor component library.
-        Point it at an assembly — every parameter becomes a control, every
-        <code>EventCallback</code> a log entry, every configuration a shareable link.
-        No story files. Nothing below is hand-written.
-    </p>
-    @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
-       walks past <base href> straight to the domain root. *@
-    <a class="demo-cta" href="explorer">Open the explorer &rarr;</a>
+@* One wrapper, so the shared layout rules below outrank an app sheet's single-class overrides:
+   every library gets the same column, nav, toolbar and tile treatment. *@
+<div class="demo-landing">
+<header class="demo-hero" id="top">
+    <div class="demo-hero-inner">
+        <DemoNav Current="@Current" Page="home" />
+        @* Pitch left, proof right on a wide screen: the hero stays short enough that the first
+           live bench starts inside the first viewport. *@
+        <div class="demo-hero-pitch">
+        @* The nav already carries the PlayBlazor wordmark, so the h1 leads with what the tool does; the
+           library rides in it, so a deep-linked visitor knows which showcase this is. *@
+        <h1 class="demo-headline">
+            Auto-generated playgrounds for any Blazor component library.
+            <span class="demo-headline-lib">Shown on @LibraryName</span>
+        </h1>
+        @* Phones drop this paragraph so the first live bench opens inside the first screen. *@
+        <p class="demo-tagline">
+            Point it at an assembly — every parameter becomes a control, every
+            <code>EventCallback</code> a log entry, every configuration a shareable link.
+            No story files. Nothing below is hand-written.
+        </p>
+        <div class="demo-actions">
+            @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
+               walks past <base href> straight to the domain root. *@
+            <a class="demo-cta" href="explorer">Open the explorer</a>
+            <a class="demo-cta-2" href="#catalog">Browse all @_covered.Count components ↓</a>
+        </div>
+        </div>
+        <div class="demo-hero-proof">
+        @* The proof, computed from discovery at render time: never a hand-typed number. The assembly
+           name holds one line (cut short, full name in the title), so the counts sit at the same
+           height on every library. *@
+        <div class="demo-proof">
+            <p class="demo-proof-src">Read as this page rendered, from <code title="@AssemblyFile">@AssemblyFile</code></p>
+            <dl class="demo-proof-counts">
+                <div><dt>components</dt><dd>@_covered.Count</dd></div>
+                <div><dt>parameters</dt><dd>@_parameterCount.ToString("N0")</dd></div>
+                <div><dt>story files</dt><dd>0</dd></div>
+            </dl>
+        </div>
+        <div class="demo-install">
+            <span class="demo-install-label">Use it on your own library</span>
+            <code class="demo-install-cmd">@InstallCommand</code>
+            <button type="button" class="demo-install-copy" aria-live="polite" @onclick="CopyInstall">@_copyLabel</button>
+            <a class="demo-install-docs" href="@SetupUrl">Setup guide ↗</a>
+        </div>
+        </div>
+    </div>
 </header>
 
 <main class="demo-main">
+    @* One line for every library, owned here: what a bench is, and the library's own docs. The hero
+       already holds the ways to the explorer and the catalog. *@
+    <div class="demo-onpage">
+        <p>Each bench below is a slice of the explorer: change a parameter and the component and its Razor markup update.</p>
+        <a href="@DocsUrl" target="_blank" rel="noopener">@LibraryName docs ↗</a>
+    </div>
+
     @Flagships
 
-    <section class="demo-section">
-        <h2 class="demo-covered-title">The documented surface, discovered</h2>
-        <p class="demo-note">@_covered.Count @LibraryName components were discovered here — each tile opens its playground.</p>
-        <div class="demo-tiles">
-            @foreach (var component in _covered)
+    <section class="demo-section demo-catalog" id="catalog" aria-labelledby="catalog-title">
+        <h2 class="demo-covered-title" id="catalog-title">Every @LibraryName component, discovered</h2>
+        <p class="demo-note">@_covered.Count components found by reflection@(_byFamily ? ", grouped by what they do" : ", A to Z"). Each tile opens its playground; the number is how many parameters it exposes as controls.@if (_parts.Count > 0){<text> Dashed tiles only render inside another component, such as a card's header.</text>}</p>
+        @* Sticky inside the section: the filter stays in reach the whole way down the wall. *@
+        <div class="demo-filter-bar">
+            <input class="demo-filter" type="search" placeholder="Filter by name" aria-label="Filter components by name"
+                   autocomplete="off" spellcheck="false" aria-describedby="catalog-status"
+                   @bind="_filter" @bind:event="oninput" @onkeydown="OpenSingleMatch" />
+            @if (_suggestions.Length > 0)
             {
-                <a class="demo-tile" href="@($"explorer?pb-{component.DisplayName}=e30")">
-                    @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
-                    {
-                        <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
-                    }
-                    <span>@component.DisplayName</span>
-                </a>
+                <span class="demo-try">@Suggestions</span>
             }
+            @if (_byFamily && string.IsNullOrWhiteSpace(_filter) && Groups.Any(Collapsible))
+            {
+                var allOpen = Groups.Where(Collapsible).All(g => _open.Contains(g.Key));
+                <button type="button" class="demo-expand-all" aria-pressed="@(allOpen ? "true" : "false")" @onclick="@(() => ToggleAll(allOpen))">
+                    @(allOpen ? "Collapse families" : "Expand all families")
+                </button>
+            }
+            <p class="demo-filter-status" id="catalog-status" role="status">@Status</p>
         </div>
+        @if (Visible.Count == 0)
+        {
+            <div class="demo-empty">
+                <p>No component name contains “@_filter.Trim()”.</p>
+                @if (_suggestions.Length > 0)
+                {
+                    <p class="demo-empty-try">@Suggestions</p>
+                }
+                <button type="button" class="demo-empty-reset" @onclick="@(() => _filter = "")">Show all @_covered.Count</button>
+            </div>
+        }
+        else
+        {
+            @* Grouped by the host's families (PlayBlazorOptions.CategoryResolver, the same hook the
+               explorer rail uses), A to Z inside each; without one, an A–Z index where each letter's
+               run is one unbreakable block, so a column never opens on a headless continuation. *@
+            <div class="demo-tiles @(_byFamily ? "demo-tiles-families" : null)">
+                @foreach (var group in Groups)
+                {
+                    <div class="demo-letter-group" @key="group.Key">
+                    <h3 class="demo-letter">@group.Key@if (_byFamily){<span class="demo-family-n">@group.Count()</span>}</h3>
+                    @foreach (var component in Shown(group))
+                    {
+                        var name = component.DisplayName;
+                        var stem = Stem(name);
+                        <a class="demo-tile" href="@TileHref(name)" title="@(_parts.Contains(name) ? $"{name} (renders inside another component)" : name)"
+                           data-child="@(_parts.Contains(name) ? "true" : null)" @key="name">
+                            @* <wbr> at each PascalCase seam of the stem: a long name wraps at a word, never mid-word.
+                               None between prefix and stem, so "Mud" never strands on a line of its own. *@
+                            <span>@if (stem.Length < name.Length){<b class="demo-tile-prefix">@_prefix</b>}@foreach (var word in Words(stem)){@word<wbr />}</span>
+                            <small class="demo-tile-n">@component.Parameters.Count<span class="demo-sr"> parameters</span></small>
+                        </a>
+                    }
+                    @if (Collapsible(group))
+                    {
+                        var open = _open.Contains(group.Key);
+                        <button type="button" class="demo-more" aria-expanded="@(open ? "true" : "false")"
+                                @onclick="@(() => { if (!_open.Remove(group.Key)) _open.Add(group.Key); })">
+                            @(open ? "Show fewer" : $"Show {group.Count() - FamilyPreview} more")
+                        </button>
+                    }
+                    </div>
+                }
+            </div>
+        }
     </section>
 </main>
 <footer class="demo-footer">
-    <a href="@DocsUrl">@LibraryName</a> is the library this playground is pointed at, not a dependency of it.
+    <div class="demo-footer-switch">
+        <span>The same page, pointed at another library:</span>
+        <LibrarySwitcher Current="@Current" Label="Switch library" />
+    </div>
+    <p>
+        The PlayBlazor package has no dependency on <a href="@DocsUrl">@LibraryName</a>;
+        this showcase simply points it at that library.
+    </p>
+    <p class="demo-footer-links">
+        <a href="https://github.com/Atypical-Consulting/PlayBlazor">Source on GitHub</a>
+        <a href="#top">Back to top ↑</a>
+    </p>
 </footer>
+</div>
 
 @code {
+    private const string InstallCommand = "dotnet add package PlayBlazor";
+    private const string SetupUrl = "https://github.com/Atypical-Consulting/PlayBlazor/blob/main/src/PlayBlazor/README.md#setup";
+
     private IReadOnlyList<PlayBlazor.Model.ComponentDescriptor> _covered = [];
+    private int _parameterCount;
+    private string? _prefix;
+    private string[] _suggestions = [];
+    private string _filter = "";
+    private string _copyLabel = "Copy";
+    private bool _byFamily;
+    private HashSet<string> _parts = [];
+    private readonly HashSet<string> _open = [];
+
+    // A long family opens on its first rows, components before parts, and one click shows the rest;
+    // a filter always shows every match.
+    // Ten: two full rows of the five-up desktop grid.
+    private const int FamilyPreview = 10;
+
+    private bool Collapsible(IGrouping<string, PlayBlazor.Model.ComponentDescriptor> group) =>
+        _byFamily && string.IsNullOrWhiteSpace(_filter) && group.Count() > FamilyPreview + 2;
+
+    private bool Collapsed(IGrouping<string, PlayBlazor.Model.ComponentDescriptor> group) =>
+        Collapsible(group) && !_open.Contains(group.Key);
+
+    private void ToggleAll(bool allOpen)
+    {
+        _open.Clear();
+        if (!allOpen)
+        {
+            _open.UnionWith(Groups.Where(Collapsible).Select(g => g.Key));
+        }
+    }
+
+    private IEnumerable<PlayBlazor.Model.ComponentDescriptor> Shown(IGrouping<string, PlayBlazor.Model.ComponentDescriptor> group) =>
+        Collapsed(group)
+            ? group.OrderBy(c => _parts.Contains(c.DisplayName) ? 1 : 0).Take(FamilyPreview)
+            : group;
+
+    // The host's families when it names them, else the first letter of the stem.
+    private IEnumerable<IGrouping<string, PlayBlazor.Model.ComponentDescriptor>> Groups => _byFamily
+        ? Visible.GroupBy(c => Options.CategoryOf(c.Type)!)
+            .OrderBy(g => g.Key == PlayBlazorOptions.OtherCategory ? 1 : 0)
+            .ThenBy(g => g.Key, StringComparer.Ordinal)
+        : Visible.GroupBy(c => char.ToUpperInvariant(Stem(c.DisplayName)[0]).ToString());
+
+    // A part is a listed name extended by a part word (CardHeader, SelectItem, TabPanel): it only
+    // renders inside the component it extends, so its tile steps back.
+    // ponytail: name heuristic, misses unrelated names (Td, Tr); a host hook if that matters.
+    private static readonly string[] PartWords =
+        ["Item", "Header", "Content", "Actions", "Action", "Pager", "Title", "Row", "Cell", "Panel", "Pane", "Column", "Subheader", "Footer", "Body", "Hint", "Error"];
 
     /// <summary>The assembly whose components this app explores.</summary>
     [Parameter, EditorRequired] public Assembly Assembly { get; set; } = default!;
@@ -60,9 +217,105 @@
     /// <summary>This app's slug, for the library switcher.</summary>
     [Parameter, EditorRequired] public string Current { get; set; } = default!;
 
+    private static string TileHref(string name) => $"explorer?pb-{name}=e30";
+
+    private static string[] Words(string name) => System.Text.RegularExpressions.Regex.Split(name, "(?<=[a-z0-9])(?=[A-Z])");
+
+    // The name without the library's shared prefix: what the wall sorts, groups and suggests by.
+    private string Stem(string name) =>
+        _prefix is not null && name.Length > _prefix.Length && name.StartsWith(_prefix, StringComparison.Ordinal)
+            ? name[_prefix.Length..]
+            : name;
+
+    private string Status => string.IsNullOrWhiteSpace(_filter)
+        ? ""
+        : Visible.Count switch
+        {
+            0 => "", // the empty state below says it
+            1 => "1 match. Press Enter to open it.",
+            var n => $"{n} of {_covered.Count} match.",
+        };
+
+    // Suggestion chips: the words most stems share, read off the discovered names (never a fixed list).
+    // Clicking the active one clears the filter again.
+    private RenderFragment Suggestions => @<text>
+        <span class="demo-try-label">Try</span>
+        @foreach (var term in _suggestions)
+        {
+            var on = string.Equals(_filter.Trim(), term, StringComparison.OrdinalIgnoreCase);
+            <button type="button" class="demo-chip" aria-pressed="@(on ? "true" : "false")"
+                    @onclick="@(() => _filter = on ? "" : term)">@term</button>
+        }
+    </text>;
+
+    // Enter on a filter that leaves exactly one tile opens it: type, Enter, done.
+    private void OpenSingleMatch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_filter) && Visible.Count == 1)
+        {
+            Navigation.NavigateTo(TileHref(Visible[0].DisplayName));
+        }
+    }
+
+    private async Task CopyInstall()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", InstallCommand);
+            _copyLabel = "Copied";
+        }
+        catch (JSException)
+        {
+            // Clipboard refused (insecure context, permissions): say so; the command is select-all.
+            _copyLabel = "Blocked: select the command";
+        }
+    }
+
+    private string AssemblyFile => $"{Assembly.GetName().Name}.dll";
+
+    private IReadOnlyList<PlayBlazor.Model.ComponentDescriptor> Visible =>
+        string.IsNullOrWhiteSpace(_filter)
+            ? _covered
+            : _covered.Where(c => c.DisplayName.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+
     protected override void OnInitialized()
-        => _covered = Catalog.Discover(Assembly)
+    {
+        var found = Catalog.Discover(Assembly)
             .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
-            .OrderBy(c => c.DisplayName, StringComparer.Ordinal)
             .ToArray();
+        _prefix = SharedPrefix(found.Select(c => c.DisplayName).ToArray());
+        // Sorted by stem, so Fluent's unprefixed names (AddTag, PropertyColumn) file under their own letter.
+        _covered = found
+            .OrderBy(c => Stem(c.DisplayName), StringComparer.OrdinalIgnoreCase)
+            .ThenBy(c => c.DisplayName, StringComparer.Ordinal)
+            .ToArray();
+        _parameterCount = _covered.Sum(c => c.Parameters.Count);
+        _byFamily = Options.CategoryResolver is not null;
+        var names = _covered.Select(c => c.DisplayName).ToHashSet(StringComparer.Ordinal);
+        _parts = names
+            .Where(n => PartWords.Any(w => n.Length > w.Length && n.EndsWith(w, StringComparison.Ordinal) && names.Contains(n[..^w.Length])))
+            .ToHashSet(StringComparer.Ordinal);
+        _suggestions = _covered
+            .SelectMany(c => Words(Stem(c.DisplayName)).Distinct())
+            .Where(w => w.Length > 2)
+            .GroupBy(w => w, StringComparer.Ordinal)
+            .Where(g => g.Count() >= 3)
+            .OrderByDescending(g => g.Count())
+            .ThenBy(g => g.Key, StringComparer.Ordinal)
+            .Take(5)
+            .Select(g => g.Key)
+            .ToArray();
+    }
+
+    // The library's naming prefix ("Mud", "Fluent"): the leading PascalCase word most names share.
+    // Shown dimmed in the tiles, so the wall reads by what differs, never removed from the real name.
+    private static string? SharedPrefix(string[] names)
+    {
+        var top = names
+            .Select(n => new string(n.Take(1).Concat(n.Skip(1).TakeWhile(char.IsLower)).ToArray()))
+            .Where(w => w.Length > 1)
+            .GroupBy(w => w, StringComparer.Ordinal)
+            .MaxBy(g => g.Count());
+        return top is not null && top.Count() * 2 > names.Length ? top.Key : null;
+    }
 }

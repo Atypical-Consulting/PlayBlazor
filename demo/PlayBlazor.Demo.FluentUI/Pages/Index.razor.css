@@ -1,0 +1,12 @@
+/* The jump bar (.fx-benches) is styled by the shared demo.css; only bench geometry lives here. */
+
+.fx-bench {
+    scroll-margin-top: 1.5rem;
+}
+
+/* A data grid in a real app fills its container; centred at intrinsic width it floated in an
+   empty stage. Deliberate reach into the specimen, limited to the two grid benches. */
+.fx-wide ::deep .pb-specimen,
+.fx-wide ::deep .fluent-data-grid {
+    width: 100%;
+}

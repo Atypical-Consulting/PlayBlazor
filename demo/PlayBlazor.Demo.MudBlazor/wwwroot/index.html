@@ -3,8 +3,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PlayBlazor DemoHost</title>
+    <title>PlayBlazor — MudBlazor</title>
     <base href="/" />
+    <script>
+        // Deep links on GitHub Pages: the site-root 404.html sends /<app>/explorer?x back here as
+        // ?pb-redirect=explorer%3Fx. Restore the real URL before Blazor's router reads it.
+        (function () {
+            var r = new URLSearchParams(location.search).get("pb-redirect");
+            if (r !== null) history.replaceState(null, "", document.baseURI + r);
+        })();
+    </script>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -78,6 +86,382 @@
             content: var(--blazor-load-percentage-text, "");
         }
 
+        /* Dark specimen: MudBlazor 9.11's default dark palette (what MudThemeProvider writes to
+           :root with IsDarkMode), re-declared on the specimen wrapper so it applies to that one
+           bench only. Custom properties inherit, so every Mud component inside reads these.
+           ponytail: values copied from MudBlazor 9.11.0; re-capture them if the package's
+           default dark palette changes. Popovers render in the root provider and stay light. */
+        .demo-specimen-dark {
+            --mud-native-html-color-scheme: dark;
+            --mud-palette-action-default-hover: rgba(173,173,177,0.058823529411764705);
+            --mud-palette-action-default: rgba(173,173,177,1);
+            --mud-palette-action-disabled-background: rgba(255,255,255,0.11764705882352941);
+            --mud-palette-action-disabled: rgba(255,255,255,0.25882352941176473);
+            --mud-palette-appbar-background: rgba(39,39,47,1);
+            --mud-palette-appbar-text: rgba(255,255,255,0.6980392156862745);
+            --mud-palette-background-gray: rgba(39,39,47,1);
+            --mud-palette-background: rgba(50,51,61,1);
+            --mud-palette-black: rgba(39,39,47,1);
+            --mud-palette-dark-darken: rgb(23,23,28);
+            --mud-palette-dark-hover: rgba(39,39,47,0.058823529411764705);
+            --mud-palette-dark-lighten: rgb(56,56,67);
+            --mud-palette-dark-rgb: 39,39,47;
+            --mud-palette-dark: rgba(39,39,47,1);
+            --mud-palette-divider-light: rgba(255,255,255,0.058823529411764705);
+            --mud-palette-divider-rgb: 255,255,255;
+            --mud-palette-divider: rgba(255,255,255,0.11764705882352941);
+            --mud-palette-drawer-background: rgba(39,39,47,1);
+            --mud-palette-drawer-icon: rgba(255,255,255,0.4980392156862745);
+            --mud-palette-drawer-text: rgba(255,255,255,0.4980392156862745);
+            --mud-palette-error-darken: rgb(244,47,70);
+            --mud-palette-error-hover: rgba(246,78,98,0.058823529411764705);
+            --mud-palette-error-lighten: rgb(248,119,134);
+            --mud-palette-error-rgb: 246,78,98;
+            --mud-palette-error: rgba(246,78,98,1);
+            --mud-palette-info-darken: rgb(10,133,255);
+            --mud-palette-info-hover: rgba(50,153,255,0.058823529411764705);
+            --mud-palette-info-lighten: rgb(92,173,255);
+            --mud-palette-info-rgb: 50,153,255;
+            --mud-palette-info: rgba(50,153,255,1);
+            --mud-palette-lines-default: rgba(255,255,255,0.11764705882352941);
+            --mud-palette-lines-inputs: rgba(255,255,255,0.2980392156862745);
+            --mud-palette-primary-darken: rgb(90,75,226);
+            --mud-palette-primary-hover: rgba(119,107,231,0.058823529411764705);
+            --mud-palette-primary-lighten: rgb(151,141,236);
+            --mud-palette-primary-rgb: 119,107,231;
+            --mud-palette-primary: rgba(119,107,231,1);
+            --mud-palette-skeleton: rgba(255,255,255,0.10980392156862745);
+            --mud-palette-success-darken: rgb(9,154,108);
+            --mud-palette-success-hover: rgba(11,186,131,0.058823529411764705);
+            --mud-palette-success-lighten: rgb(13,222,156);
+            --mud-palette-success-rgb: 11,186,131;
+            --mud-palette-success: rgba(11,186,131,1);
+            --mud-palette-surface-rgb: 55,55,64;
+            --mud-palette-surface: rgba(55,55,64,1);
+            --mud-palette-table-lines: rgba(255,255,255,0.11764705882352941);
+            --mud-palette-table-striped: rgba(255,255,255,0.2);
+            --mud-palette-text-disabled-rgb: 255,255,255;
+            --mud-palette-text-disabled: rgba(255,255,255,0.2);
+            --mud-palette-text-primary-rgb: 255,255,255;
+            --mud-palette-text-primary: rgba(255,255,255,0.6980392156862745);
+            --mud-palette-text-secondary-rgb: 255,255,255;
+            --mud-palette-text-secondary: rgba(255,255,255,0.4980392156862745);
+            --mud-palette-warning-darken: rgb(214,143,0);
+            --mud-palette-warning-hover: rgba(255,168,0,0.058823529411764705);
+            --mud-palette-warning-lighten: rgb(255,182,36);
+            --mud-palette-warning-rgb: 255,168,0;
+            --mud-palette-warning: rgba(255,168,0,1);
+            color-scheme: dark;
+        }
+
+        /* Stage tool labels match the explorer's wording (Checker, not Grid). */
+        .demo-landing .demo-main .pb-playground .pb-env-checker::after { content: "Checker"; }
+
+        /* The toolbar stays light on a dark stage, so its Width label keeps the light-ground ink. */
+        .demo-landing .demo-main .pb-playground .pb-stage-dark .pb-stage-toolbar::before { color: #5f5f6b; }
+
+        /* The grid benches fill the stage instead of floating in a dotted band. */
+        .demo-main .demo-bench-grid .pb-specimen:not(.pb-specimen-constrained),
+        .demo-main .demo-bench-grid .demo-specimen {
+            width: 100%;
+        }
+
+        /* Copy and Share feedback (see the clipboard script below) and the runtime error bar. */
+        .demo-copy-status {
+            position: fixed;
+            left: 50%;
+            bottom: 1.25rem;
+            z-index: 2000;
+            width: max-content;
+            max-width: min(34rem, calc(100vw - 2rem));
+            padding: 0.6rem 0.9rem;
+            border-radius: 8px;
+            background: #1b1b22;
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(27, 27, 34, 0.25);
+            font: 500 0.8125rem/1.45 var(--demo-sans, system-ui, sans-serif);
+            transform: translate(-50%, 0.5rem);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 160ms ease-out, transform 160ms ease-out;
+        }
+
+        .demo-copy-status.is-shown {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .demo-copy-status.is-error {
+            background: #8a1c2b;
+        }
+
+        .demo-copy-status code {
+            display: block;
+            margin-top: 0.35rem;
+            overflow-wrap: anywhere;
+            font-family: var(--demo-mono, ui-monospace, monospace);
+            font-size: 0.75rem;
+            user-select: all;
+        }
+
+        #blazor-error-ui {
+            display: none;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2001;
+            padding: 0.75rem 1rem;
+            background: #fff4e5;
+            border-top: 1px solid #f0c48a;
+            color: #1b1b22;
+            font: 0.875rem/1.45 var(--demo-sans, system-ui, sans-serif);
+        }
+
+        #blazor-error-ui button {
+            margin-left: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border: 0;
+            background: none;
+            color: #5534e0;
+            font: inherit;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #blazor-error-ui .dismiss {
+            float: right;
+            color: #1b1b22;
+            font-size: 1.125rem;
+            line-height: 1;
+        }
+
+        /* Workspace override: keep the snippet clear of the absolutely positioned Copy button.
+           Wide screens reserve a gutter on the right; narrow ones, where lines run to the edge
+           and scroll, give the button its own row above the code. */
+        .demo-host .pb-playground .pb-code {
+            padding-right: 4.75rem;
+        }
+
+        /* Icon picker on the landing benches: thumbnail inline, left of the name field, the way
+           the explorer's workspace lays it out. */
+        .demo-host .pb-playground .pb-icon-pair {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            min-width: 0;
+        }
+
+        .demo-host .pb-playground .pb-icon-pair > .pb-icon-preview {
+            display: inline-flex;
+            flex: none;
+            width: 20px;
+            height: 20px;
+            color: #1b1b22;
+            opacity: 0.85;
+        }
+
+        /* The field takes whatever the thumbnail leaves, so the icon name stays readable. */
+        .demo-host .pb-playground .pb-icon-pair > .pb-icon-preview + input[type="text"] {
+            flex: 1;
+            width: auto;
+        }
+
+        /* Landing benches only (.demo-main): the explorer keeps its own workspace chrome. */
+
+        /* Hero jump link and the bench docs links. */
+        .demo-jump {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.25rem 0.75rem;
+            margin: 0 0 2rem;
+            color: var(--demo-ink-2);
+            font-size: 0.8125rem;
+        }
+
+        .demo-jump a,
+        .demo-docs {
+            color: #5534e0;
+            font-family: var(--demo-mono);
+            font-weight: 600;
+            text-decoration: none;
+            text-underline-offset: 0.2em;
+        }
+
+        .demo-jump a:hover,
+        .demo-docs:hover,
+        .demo-jump a:focus-visible,
+        .demo-docs:focus-visible {
+            text-decoration: underline;
+        }
+
+        .demo-docs {
+            margin-left: 0.375rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        #all-components {
+            scroll-margin-top: 1.5rem;
+        }
+
+        /* Landing benches: the parameter panel is capped so a one-button stage is not stretched
+           into a tall empty field; long lists scroll inside it. 320px (shared default 300) fits a
+           name beside a 132px field. */
+        .demo-main .pb-playground {
+            grid-template-columns: minmax(0, 1fr) 320px;
+        }
+
+        /* Scroll cue: a soft shade pinned to the panel's bottom edge (scroll) is covered by a
+           panel-coloured cap that rides on the content's end (local), so the shade shows while
+           more parameters sit below and disappears once the list is scrolled to its end. */
+        .demo-main .pb-playground .pb-panel {
+            max-height: 22.5rem;
+            background:
+                linear-gradient(rgba(251, 251, 253, 0), var(--pb-panel) 60%) center bottom / 100% 2.5rem no-repeat local,
+                linear-gradient(rgba(27, 27, 34, 0), rgba(27, 27, 34, 0.09)) center bottom / 100% 1.75rem no-repeat scroll,
+                var(--pb-panel);
+        }
+
+        /* One button needs less room than ninety grid parameters: 15rem matches the stage's own
+           240px minimum, so the panel no longer stretches the button's stage taller than that. */
+        .demo-main .demo-bench-compact .pb-playground .pb-panel {
+            max-height: 15rem;
+        }
+
+        /* Desktop: the panel takes the stage's height instead of setting it (contain: size drops
+           its content from the row's sizing), so every bench's panel ends where its stage ends
+           and longer lists scroll inside. */
+        @media (min-width: 721px) {
+            .demo-main .pb-playground .pb-panel,
+            .demo-main .demo-bench-compact .pb-playground .pb-panel {
+                contain: size;
+                max-height: none;
+                min-height: 15rem;
+            }
+        }
+
+        /* DateTime parameters render a native datetime-local field: give it the bordered look of
+           the text and number fields around it. */
+        .demo-main .pb-playground .pb-panel input[type="datetime-local"] {
+            box-sizing: border-box;
+            width: 100%;
+            height: 28px;
+            padding: 4px 8px;
+            border: 1px solid var(--pb-line);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--pb-ink);
+            font: inherit;
+        }
+
+        /* Inline code in the bench notes (_people, Breakpoint.None). */
+        .demo-main .demo-note code {
+            font-size: 0.9em;
+            padding: 0.05em 0.3em;
+            border-radius: 4px;
+            background: rgba(27, 27, 34, 0.06);
+        }
+
+        /* Grid parameter names (ColumnsPanelReordering, DropNotAllowedClass) are long: put each
+           name above its field, the way the explorer does at phone width, so names stay whole
+           and values are not cut short. Switches keep their one-line row. */
+        .demo-main .demo-bench-long .pb-playground .pb-control {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.25rem;
+        }
+
+        .demo-main .demo-bench-long .pb-playground .pb-control-bool {
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .demo-main .pb-playground .pb-control-label {
+            white-space: normal;
+            overflow-wrap: break-word;
+            line-height: 1.3;
+        }
+
+        /* The events placeholder at body-muted contrast, not the faint tertiary ink. */
+        .demo-main .pb-playground .pb-events-empty {
+            color: #5f5f6b;
+        }
+
+        @media (max-width: 720px) {
+            /* Example chips wrap onto a second line instead of running off the right edge. */
+            .demo-main .pb-playground .pb-variants {
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+
+            /* Snippets keep their aligned attributes: no soft wrap, scroll sideways instead. */
+            .demo-main .pb-playground .pb-code pre {
+                white-space: pre;
+                overflow-x: auto;
+            }
+
+            /* The events summary wraps rather than ending in an ellipsis. */
+            .demo-landing .demo-main .pb-playground .pb-events-empty {
+                white-space: normal;
+            }
+
+            .demo-host .pb-playground .pb-code {
+                padding-top: 2.6rem;
+                padding-right: 1rem;
+            }
+
+            /* Stacked layout: the panel keeps a cap (the shared default lifts it), so ninety
+               DataGrid parameters do not push the tiles seven screens down. */
+            .demo-main .pb-playground {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .demo-main .pb-playground .pb-panel,
+            .demo-main .demo-bench-compact .pb-playground .pb-panel {
+                max-height: 20rem;
+                border-bottom: 1px solid var(--pb-line);
+            }
+
+            /* Toolbar in the flow right under the chip, never over the specimen's first row.
+               The stage is a centred column, so pin it to the top and let the specimen centre in
+               the room that is left instead of the toolbar floating mid-stage. */
+            .demo-main .pb-playground .pb-preview {
+                padding-top: 2.75rem;
+                justify-content: flex-start;
+            }
+
+            .demo-main .pb-playground .pb-stage-toolbar {
+                position: static;
+                align-self: flex-start;
+                margin-bottom: 1rem;
+            }
+
+            .demo-main .pb-playground .pb-preview > .pb-specimen {
+                margin-block: auto;
+            }
+
+            /* Phone-width grid: tighter stage and cell padding so Name, Role and Age fit whole,
+               and an edge shade (local cover over a scroll shade) if a wider value still scrolls. */
+            .demo-main .demo-bench-grid .pb-preview {
+                padding-inline: 0.5rem;
+            }
+
+            .demo-main .demo-bench-grid .mud-table-cell {
+                padding-inline: 6px;
+            }
+
+            .demo-main .demo-bench-grid .mud-table-container {
+                background:
+                    linear-gradient(to left, rgba(255, 255, 255, 0), #fff 70%) left center / 1.5rem 100% no-repeat local,
+                    linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%) right center / 1.5rem 100% no-repeat local,
+                    linear-gradient(to right, rgba(27, 27, 34, 0.12), rgba(27, 27, 34, 0)) left center / 0.75rem 100% no-repeat scroll,
+                    linear-gradient(to left, rgba(27, 27, 34, 0.12), rgba(27, 27, 34, 0)) right center / 0.75rem 100% no-repeat scroll,
+                    #fff;
+            }
+        }
+
         @keyframes boot-blink {
             50% { opacity: 0; }
         }
@@ -85,6 +469,7 @@
         @media (prefers-reduced-motion: reduce) {
             .boot-caret { animation: none; }
             .boot-fill { transition: none; }
+            .demo-copy-status { transition: none; }
         }
     </style>
 </head>
@@ -96,6 +481,74 @@
             <div class="boot-caption">Loading the .NET runtime <span class="boot-pct"></span></div>
         </div>
     </div>
+    <div id="demo-copy-status" class="demo-copy-status" role="status" aria-live="polite"></div>
+    <div id="blazor-error-ui" role="alert">
+        Something went wrong and this page may stop responding.
+        <button type="button" class="reload">Reload</button>
+        <button type="button" class="dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+    <script>
+        // Copy and Share call navigator.clipboard.writeText straight from .NET. When the browser
+        // denies it, the promise rejects inside the component and the user sees nothing. Wrap it:
+        // say "copied" on success, fall back to execCommand, and when both fail say so and show the
+        // text to copy by hand. The call always resolves, so .NET never sees an unhandled error.
+        // ponytail: host-side workaround; the real fix is a try/catch in src/PlayBlazor.
+        (function () {
+            var clip = navigator.clipboard;
+            var native = clip && clip.writeText ? clip.writeText.bind(clip) : null;
+            var timer;
+
+            function say(message, isError, manualText) {
+                var el = document.getElementById("demo-copy-status");
+                el.textContent = message;
+                if (manualText) {
+                    var code = document.createElement("code");
+                    code.textContent = manualText;
+                    el.appendChild(code);
+                }
+                el.classList.toggle("is-error", !!isError);
+                el.classList.add("is-shown");
+                clearTimeout(timer);
+                timer = setTimeout(function () { el.classList.remove("is-shown"); }, isError ? 8000 : 2000);
+            }
+
+            function legacyCopy(text) {
+                var area = document.createElement("textarea");
+                area.value = text;
+                area.setAttribute("readonly", "");
+                area.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+                document.body.appendChild(area);
+                area.select();
+                var ok = false;
+                try { ok = document.execCommand("copy"); } catch (e) { }
+                area.remove();
+                return ok;
+            }
+
+            function writeText(text) {
+                var isLink = /^https?:\/\//.test(text);
+                var done = isLink ? "Link copied" : "Snippet copied";
+                return (native ? native(text) : Promise.reject())
+                    .then(function () { say(done); }, function () {
+                        if (legacyCopy(text)) { say(done); return; }
+                        say(isLink
+                            ? "The browser blocked the clipboard. Select the link and copy it:"
+                            : "The browser blocked the clipboard. Select the snippet and press Ctrl+C (Cmd+C on a Mac).",
+                            true, isLink ? text : null);
+                    });
+            }
+
+            try {
+                if (clip) clip.writeText = writeText;
+                else Object.defineProperty(navigator, "clipboard", { value: { writeText: writeText } });
+            } catch (e) { }
+
+            document.addEventListener("click", function (e) {
+                if (e.target.closest("#blazor-error-ui .reload")) location.reload();
+                if (e.target.closest("#blazor-error-ui .dismiss")) document.getElementById("blazor-error-ui").style.display = "none";
+            });
+        })();
+    </script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>

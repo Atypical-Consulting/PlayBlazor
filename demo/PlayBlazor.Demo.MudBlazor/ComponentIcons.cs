@@ -126,6 +126,35 @@ public static class ComponentIcons
         ["MudDynamicDropItem"] = Icons.Material.Filled.DragIndicator,
     };
 
+    /// <summary>
+    /// The curated surface by family: the same ten families as the DaisyBlazor and Fluent UI
+    /// showcases, so the explorer rail and the home wall group every library alike.
+    /// </summary>
+    private static readonly Dictionary<string, string> Families = new (string Family, string[] Names)[]
+    {
+        ("Actions", ["MudButton", "MudButtonGroup", "MudIconButton", "MudFab", "MudMenu"]),
+        ("Inputs", ["MudAutocomplete", "MudColorPicker", "MudDatePicker", "MudDateRangePicker", "MudField", "MudFileUpload", "MudForm", "MudNumericField", "MudSelect", "MudSlider", "MudTextField", "MudTimePicker"]),
+        ("Choices", ["MudCheckBox", "MudChipSet", "MudRadioGroup", "MudRating", "MudSwitch", "MudToggleGroup"]),
+        ("Data", ["MudChart", "MudDataGrid", "MudList", "MudSimpleTable", "MudTable", "MudTimeline", "MudTreeView"]),
+        ("Feedback", ["MudAlert", "MudBadge", "MudChip", "MudProgressCircular", "MudProgressLinear", "MudSkeleton", "MudTooltip"]),
+        ("Overlays", ["MudDrawer", "MudExpansionPanels", "MudOverlay", "MudPopover"]),
+        ("Layout", ["MudAppBar", "MudCard", "MudContainer", "MudDivider", "MudElement", "MudGrid", "MudHidden", "MudPaper", "MudStack", "MudToolBar"]),
+        ("Navigation", ["MudBreadcrumbs", "MudLink", "MudNavMenu", "MudPagination", "MudScrollToTop", "MudStepper", "MudTabs"]),
+        ("Media", ["MudAvatar", "MudAvatarGroup", "MudCarousel", "MudIcon", "MudImage"]),
+        ("Text", ["MudHighlighter", "MudText"]),
+    }.SelectMany(static f => f.Names.Select(n => (n, f.Family))).ToDictionary(static p => p.n, static p => p.Family, StringComparer.Ordinal);
+
+    /// <summary>The family a component belongs to, for <see cref="PlayBlazor.PlayBlazorOptions.CategoryResolver"/>.</summary>
+    /// <param name="componentType">A discovered component type (open or closed generic).</param>
+    /// <returns>The family label, or null when it belongs to none.</returns>
+    public static string? FamilyOf(Type componentType) => Families.GetValueOrDefault(BaseName(componentType));
+
+    private static string BaseName(Type type)
+    {
+        var backtick = type.Name.IndexOf('`');
+        return backtick < 0 ? type.Name : type.Name[..backtick];
+    }
+
     public static string? Resolve(Type componentType)
     {
         var name = componentType.Name;

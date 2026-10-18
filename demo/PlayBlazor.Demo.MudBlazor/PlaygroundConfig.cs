@@ -45,6 +45,7 @@ public static class PlaygroundConfig
     {
         options.ComponentFilter = type => Curated.Contains(StripArity(type.Name));
         options.IconResolver = ComponentIcons.Resolve;
+        options.CategoryResolver = ComponentIcons.FamilyOf;
 
         // Icon parameters are MudBlazor SVG markup strings. Naming them turns a blob field into
         // a picker — and shortens every permalink that carries an icon.
@@ -52,8 +53,13 @@ public static class PlaygroundConfig
         {
             builder.OpenElement(0, "svg");
             builder.AddAttribute(1, "viewBox", "0 0 24 24");
-            builder.AddAttribute(2, "aria-hidden", "true");
-            builder.AddMarkupContent(3, markup);
+            // Sized here: outside the explorer's workspace nothing sizes the preview box, and an
+            // svg without width/height stretches to its container's width.
+            builder.AddAttribute(2, "width", "20");
+            builder.AddAttribute(3, "height", "20");
+            builder.AddAttribute(4, "fill", "currentColor");
+            builder.AddAttribute(5, "aria-hidden", "true");
+            builder.AddMarkupContent(6, markup);
             builder.CloseElement();
         });
 
@@ -63,16 +69,24 @@ public static class PlaygroundConfig
 
         options.For<MudAlert>()
             .Slot(nameof(MudAlert.ChildContent), b => b.AddContent(0, "The reactor is running at optimum temperature."), "The reactor is running at optimum temperature.")
-            .Variant("Info", v => v.Set(nameof(MudAlert.Severity), Severity.Info))
+            // The explorer opens on MudAlert: Severity.Normal is a flat grey box, so start it Info.
+            .Parameter(nameof(MudAlert.Severity), Severity.Info)
+            .Variant("Normal", v => v.Set(nameof(MudAlert.Severity), Severity.Normal))
             .Variant("Success", v => v.Set(nameof(MudAlert.Severity), Severity.Success))
             .Variant("Warning", v => v.Set(nameof(MudAlert.Severity), Severity.Warning))
             .Variant("Outlined error", v => v.Set(nameof(MudAlert.Severity), Severity.Error).Set(nameof(MudAlert.Variant), Variant.Outlined));
 
         options.For<MudButton>()
             .Slot(nameof(MudButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
-            .Variant("Filled primary", v => v.Set(nameof(MudButton.Variant), Variant.Filled).Set(nameof(MudButton.Color), Color.Primary))
-            .Variant("Outlined", v => v.Set(nameof(MudButton.Variant), Variant.Outlined).Set(nameof(MudButton.Color), Color.Secondary))
+            // The landing page's flagship. MudButton defaults to Variant.Text and Color.Default:
+            // a faint grey label on an empty stage, so start it Filled primary.
+            .Parameter(nameof(MudButton.Variant), Variant.Filled)
+            .Parameter(nameof(MudButton.Color), Color.Primary)
+            .Variant("With icon", v => v.Set(nameof(MudButton.StartIcon), Icons.Material.Filled.Add))
+            .Variant("Secondary", v => v.Set(nameof(MudButton.Color), Color.Secondary))
+            .Variant("Outlined", v => v.Set(nameof(MudButton.Variant), Variant.Outlined))
             .Variant("Text", v => v.Set(nameof(MudButton.Variant), Variant.Text))
+            .Variant("Large", v => v.Set(nameof(MudButton.Size), Size.Large))
             .Variant("Disabled", v => v.Set(nameof(MudButton.Disabled), true));
 
         options.For<MudIconButton>()
@@ -146,7 +160,17 @@ public static class PlaygroundConfig
 
         options.For<MudDatePicker>()
             .Parameter(nameof(MudDatePicker.Label), "Select a date")
-            .Variant("Static calendar", v => v.Set(nameof(MudDatePicker.PickerVariant), PickerVariant.Static));
+            // A landing flagship: the inline variant is only a text field until clicked, so open
+            // the static calendar and let the chips show the other surfaces.
+            .Parameter(nameof(MudDatePicker.PickerVariant), PickerVariant.Static)
+            // With no Date the Material toolbar is a violet block reading only the year. Presetting
+            // Date does not help: the picker raises DateChanged on load, which turns the snippet's
+            // value into a locale string. So the bench opens on the calendar alone.
+            .Parameter(nameof(MudDatePicker.ShowToolbar), false)
+            .Variant("With toolbar", v => v.Set(nameof(MudDatePicker.ShowToolbar), true))
+            .Variant("Inline field", v => v.Set(nameof(MudDatePicker.PickerVariant), PickerVariant.Inline))
+            .Variant("Week numbers", v => v.Set(nameof(MudDatePicker.ShowWeekNumbers), true))
+            .Variant("Open to year", v => v.Set(nameof(MudDatePicker.OpenTo), OpenTo.Year));
 
         options.For<MudDateRangePicker>()
             .Parameter(nameof(MudDateRangePicker.Label), "Period");
@@ -414,6 +438,9 @@ public static class PlaygroundConfig
         // The grid demo: sample data as a parameter preset, columns as a slot preset.
         options.For<MudDataGrid<Person>>()
             .Parameter(nameof(MudDataGrid<Person>.Items), Person.Samples, "@_people")
+            // MudBlazor's default Breakpoint.Xs stacks every row into label/value cards at phone
+            // width; keep the table (the stage scrolls sideways) so the three columns stay visible.
+            .Parameter(nameof(MudDataGrid<Person>.Breakpoint), Breakpoint.None)
             .Slot(nameof(MudDataGrid<Person>.Columns), source: """
 <PropertyColumn Property="x => x.Name" />
 <PropertyColumn Property="x => x.Role" />
@@ -424,31 +451,41 @@ public static class PlaygroundConfig
                 AddColumn<string>(columns, 2, p => p.Role);
                 AddColumn<int>(columns, 4, p => p.Age);
             })
-            .Variant("Dense striped", v => v.Set(nameof(MudDataGrid<Person>.Dense), true).Set(nameof(MudDataGrid<Person>.Striped), true))
-            .Variant("Hover bordered", v => v.Set(nameof(MudDataGrid<Person>.Hover), true).Set(nameof(MudDataGrid<Person>.Bordered), true))
+            // One chip per parameter the landing copy names, so each is one click away instead of
+            // deep in a ninety-row panel.
+            .Variant("Dense", v => v.Set(nameof(MudDataGrid<Person>.Dense), true))
+            .Variant("Striped", v => v.Set(nameof(MudDataGrid<Person>.Striped), true))
+            .Variant("Hover", v => v.Set(nameof(MudDataGrid<Person>.Hover), true))
+            .Variant("Bordered", v => v.Set(nameof(MudDataGrid<Person>.Bordered), true))
             .Related<PropertyColumn<Person, string>>();
 
         options.For<PropertyColumn<Person, string>>()
             .Parameter(nameof(PropertyColumn<Person, string>.Property),
-                (Expression<Func<Person, string>>)(p => p.Name))
+                (Expression<Func<Person, string>>)(p => p.Name), "x => x.Name")
+            // The played column goes LAST in both the stage and the snippet: MudDataGrid
+            // registers columns as they initialise, and the specimen is re-created on every
+            // parameter change, so anywhere but last it would render out of the order shown.
             .Scaffold(specimen => builder =>
             {
                 builder.OpenComponent<MudDataGrid<Person>>(0);
                 builder.AddComponentParameter(1, nameof(MudDataGrid<Person>.Items), Person.Samples);
-                builder.AddComponentParameter(2, nameof(MudDataGrid<Person>.Columns), (RenderFragment)(columns =>
+                builder.AddComponentParameter(2, nameof(MudDataGrid<Person>.Breakpoint), Breakpoint.None);
+                builder.AddComponentParameter(3, nameof(MudDataGrid<Person>.Columns), (RenderFragment)(columns =>
                 {
-                    columns.AddContent(0, specimen);
-                    AddColumn<int>(columns, 1, p => p.Age);
+                    AddColumn<int>(columns, 0, p => p.Age);
+                    columns.AddContent(2, specimen);
                 }));
                 builder.CloseComponent();
             }, source: """
-                <MudDataGrid T="Person" Items="@_people">
+                <MudDataGrid T="Person" Items="@_people" Breakpoint="Breakpoint.None">
                     <Columns>
-                        {specimen}
                         <PropertyColumn Property="x => x.Age" />
+                        {specimen}
                     </Columns>
                 </MudDataGrid>
                 """)
+            .Variant("Custom title", v => v.Set(nameof(PropertyColumn<Person, string>.Title), "Full name"))
+            .Variant("Hidden", v => v.Set(nameof(PropertyColumn<Person, string>.Hidden), true))
             .Related<MudDataGrid<Person>>();
 
         // Providers make no sense as playground specimens (defense in depth next to the filter).
@@ -458,16 +495,16 @@ public static class PlaygroundConfig
             .Exclude<MudSnackbarProvider>();
 
         // Demonstrates the theme hook: the host wraps every specimen and can react to the environment.
-        // The dark toggle must theme the SPECIMEN, not just tint the stage: a real
-        // MudThemeProvider flips MudBlazor's palette with the environment.
+        // The dark toggle must theme the SPECIMEN, not just tint the stage. A nested MudThemeProvider
+        // per specimen does not work: each one writes MudBlazor's palette to :root, so with three
+        // benches the last provider rendered wins and one bench's Dark is undone by the others.
+        // Instead .demo-specimen-dark re-declares the dark palette variables on the wrapper
+        // (index.html), which scopes them to that one specimen.
         options.ThemeWrapper = context => builder =>
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", context.Environment.Dark ? "demo-specimen demo-specimen-dark" : "demo-specimen");
-            builder.OpenComponent<MudThemeProvider>(2);
-            builder.AddComponentParameter(3, nameof(MudThemeProvider.IsDarkMode), context.Environment.Dark);
-            builder.CloseComponent();
-            builder.AddContent(4, context.Content);
+            builder.AddContent(2, context.Content);
             builder.CloseElement();
         };
     }

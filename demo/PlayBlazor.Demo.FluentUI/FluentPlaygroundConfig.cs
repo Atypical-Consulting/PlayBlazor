@@ -94,6 +94,7 @@ public static class FluentPlaygroundConfig
         // parameterised and written by users in their own markup stays listed even if it needs a
         // later preset to demo well — that's a presets question, not a listing one.
         options.ComponentFilter = type => !Infrastructure.Contains(StripArity(type.Name));
+        options.CategoryResolver = FluentComponentFamilies.FamilyOf;
 
         // Discovery closes an open generic with string, then int. All four of these reject string
         // at construction, naming the types they accept — so declare the closing worth playing.
@@ -1059,6 +1060,10 @@ public static class FluentPlaygroundConfig
         // its own chip rather than a combination.
         options.For<FluentButton>()
             .Slot(nameof(FluentButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
+            // Opens on Fluent's own Default appearance, so the opening state is exactly what the
+            // snippet's bare <FluentButton> renders and "Reset all" returns to it; the accent
+            // button is the first example. (An opener preset of Primary left no chip that led
+            // back to it: a "Primary" chip would be a no-op and fail the variant-liveness gate.)
             .Variant("Primary", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Primary))
             .Variant("Outline", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Outline))
             .Variant("Subtle", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Subtle))

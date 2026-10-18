@@ -1,3 +1,7 @@
 @page "/explorer"
+@using PlayBlazor.Demo.Shared
 @using PlayBlazor.Shell.Workspace
-<PlaygroundWorkspace Assemblies="@(new[] { typeof(MudButton).Assembly })" />
+<div class="demo-explorer-page">
+    <DemoNav Current="mud" Page="explorer" />
+    <PlaygroundWorkspace Assemblies="@(new[] { typeof(MudButton).Assembly })" />
+</div>

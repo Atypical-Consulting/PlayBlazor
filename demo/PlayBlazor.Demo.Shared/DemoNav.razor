@@ -1,0 +1,18 @@
+@* The one way around the demo site, on every page of every showcase: back to the portal, across
+   libraries (staying on the same page), and between this library's home and its explorer.
+   All links are base-relative: "../" is the portal, "./" this app's home. *@
+<div class="demo-nav">
+    <a class="demo-nav-home" href="../" title="All libraries"><span class="demo-mark" aria-hidden="true">▶</span> PlayBlazor</a>
+    <LibrarySwitcher Current="@Current" Path="@(Page == "explorer" ? "explorer" : "")" />
+    <nav class="demo-nav-pages" aria-label="Page">
+        <a href="./" aria-current="@(Page == "home" ? "page" : null)">Home</a>
+        <a href="explorer" aria-current="@(Page == "explorer" ? "page" : null)">Explorer</a>
+    </nav>
+</div>
+@code {
+    /// <summary>The slug of the library this app shows: <c>daisy</c>, <c>mud</c> or <c>fluent</c>.</summary>
+    [Parameter, EditorRequired] public string Current { get; set; } = default!;
+
+    /// <summary>The page being shown: <c>home</c> or <c>explorer</c>.</summary>
+    [Parameter, EditorRequired] public string Page { get; set; } = default!;
+}

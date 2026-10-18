@@ -83,7 +83,7 @@ public class WorkspaceTests
     }
 
     [Test]
-    public void CopyRazor_WritesTheSnippetAndToasts()
+    public void CopyRazor_WritesTheSnippetAndConfirmsOnTheButton()
     {
         var cut = RenderWorkspace();
 
@@ -91,7 +91,49 @@ public class WorkspaceTests
 
         _context.JSInterop.Invocations["navigator.clipboard.writeText"].Single()
             .Arguments[0].Should().Be("<BasicFixture />");
-        cut.Find(".pbw-toast").TextContent.Should().Contain("Razor copied");
+        cut.Find("[data-panel=razor] .pbw-ph-copy").TextContent.Should().Contain("Copied");
+        cut.Find(".pbw-toast").TextContent.Should().BeEmpty("success confirms in one place, the button");
+    }
+
+    [Test]
+    public void BlockedClipboard_SaysWhereToCopyFrom()
+    {
+        _context.JSInterop.SetupVoid("navigator.clipboard.writeText", _ => true)
+            .SetException(new Microsoft.JSInterop.JSException("Write permission denied."));
+        var cut = RenderWorkspace();
+
+        cut.Find(".pbw-share").Click();
+
+        cut.Find(".pbw-toast").TextContent.Should().Contain("address bar");
+        cut.Find(".pbw-share").TextContent.Should().Contain("Share");
+    }
+
+    [Test]
+    public void MalformedPermalink_SaysTheBenchFellBackToDefaults()
+    {
+        _context.Services.AddPlayBlazor();
+        var navigation = _context.Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        navigation.NavigateTo(navigation.BaseUri + "explorer?pb-BasicFixture=garbage!!");
+
+        var cut = _context.Render<PlaygroundWorkspace>(ps =>
+            ps.Add(w => w.Assemblies, new[] { typeof(BasicFixture).Assembly }));
+
+        cut.Find(".pbw-toast").TextContent.Should().Contain("couldn't be restored");
+    }
+
+    [Test]
+    public void LeavingPresent_RestoresThePlayBench()
+    {
+        var cut = RenderWorkspace(options => options.For<BasicFixture>()
+            .Variant("One", v => v.Set("Dense", true))
+            .Variant("Two", v => v.Set("Outlined", false)));
+        cut.Find("[data-panel=parameters] input[type=text]").Change("mine");
+
+        cut.FindAll(".pbw-mode").First(m => m.TextContent == "Present").Click();
+        cut.Find(".basic-fixture").TextContent.Should().Contain("Dense=True", "Present autoplays the first example");
+        cut.FindAll(".pbw-mode").First(m => m.TextContent == "Play").Click();
+
+        cut.Find(".basic-fixture").TextContent.Should().Contain("Label=mine").And.Contain("Dense=False");
     }
 
     [Test]
@@ -186,7 +228,7 @@ public class WorkspaceTests
                 PlayBlazor.Model.ControlKind.Enum, IsNullable: true,
                 DefaultValue: null, HasDefault: true, Summary: null)));
 
-        cut.FindAll("option")[0].TextContent.Should().Be("(null)");
+        cut.FindAll("option")[0].TextContent.Should().Be("Default");
         cut.Find("select").GetAttribute("value").Should().BeNullOrEmpty();
     }
 
@@ -208,7 +250,9 @@ public class WorkspaceTests
         var cut = RenderWorkspace();
         cut.Find("[data-panel=signals] .pbw-ph-close").Click();
 
-        cut.Find(".pbw-reset-layout").Click();
+        // Reset layout lives in the help sheet, not the bar.
+        cut.Find(".pbw-help-btn").Click();
+        cut.Find(".pbw-help-reset").Click();
 
         cut.FindAll("[data-panel=signals]").Should().HaveCount(1);
     }

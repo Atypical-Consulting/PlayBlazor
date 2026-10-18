@@ -3,6 +3,19 @@
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
     </Found>
     <NotFound>
-        <p>Page not found.</p>
+        @* Same site nav as every other page, so a mistyped address is a detour, not a dead end. *@
+        <LayoutView Layout="typeof(MainLayout)">
+            <div class="demo-explorer-page daisy-notfound-page">
+                <DemoNav Current="daisy" Page="none" />
+                <main class="daisy-notfound">
+                    <h1>There is no page at this address</h1>
+                    <p>The DaisyBlazor showcase has two pages: the home with three benches and every component, and the explorer.</p>
+                    <p class="daisy-notfound-links">
+                        <a class="btn btn-primary" href="./">Go to the DaisyBlazor home</a>
+                        <a class="btn btn-ghost" href="explorer">Open the explorer</a>
+                    </p>
+                </main>
+            </div>
+        </LayoutView>
     </NotFound>
 </Router>

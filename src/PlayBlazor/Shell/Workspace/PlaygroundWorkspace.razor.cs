@@ -27,10 +27,10 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     internal static readonly PanelDef[] Panels =
     [
-        new(GraphId, "Graph"),
+        new(GraphId, "Tree"),
         new(ParametersId, "Parameters"),
         new(RazorId, "Razor"),
-        new(SignalsId, "Signals"),
+        new(SignalsId, "Events"),
     ];
 
     private readonly PlaygroundState _state = new();
@@ -40,6 +40,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private readonly HashSet<string> _collapsed = new(StringComparer.Ordinal);
     private readonly Dictionary<string, bool> _groupOpen = new(StringComparer.Ordinal);
     private readonly HashSet<PlaygroundEventLog.Entry> _unfolded = [];
+
+    // Demo-filled slots the visitor chose to replace: their text box shows even while still empty.
+    private readonly HashSet<string> _overrides = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _disposeCts = new();
 
     private IReadOnlyList<ComponentDescriptor> _components = [];
@@ -51,11 +54,24 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private bool _allFolded;
     private int _pickerVersion;
     private string? _toast;
+    private Action? _toastUndo;
     private CancellationTokenSource? _toastCts;
     private bool _present;
+    private bool _help;
+    private string _mobileTab = ParametersId;
+    private string _railFilter = string.Empty;
     private bool _autoPlaying;
     private int _autoIndex;
     private CancellationTokenSource? _autoCts;
+    private string? _railPrefix;
+
+    // The Play bench saved on entering Present: autoplay rewrites the state, leaving restores it.
+    private (Type Type, KeyValuePair<string, object?>[] Values, string[] Overrides, string? Variant)? _playSnapshot;
+
+    // Which copy button is flashing its confirmation ("share" or "razor"), and what screen readers hear.
+    private string? _copied;
+    private string? _announce;
+    private CancellationTokenSource? _copiedCts;
     private IJSObjectReference? _module;
     private DotNetObjectReference<PlaygroundWorkspace>? _selfRef;
 
@@ -96,6 +112,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _railPrefix = null;
         _components = Assemblies
             .SelectMany(assembly => Catalog.Discover(assembly))
             .Select(c => Options.ResolvePreferredClosing(c.Type) is var preferred && preferred != c.Type
@@ -106,7 +123,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             .ToArray();
         if (_selected is null && _components.Count > 0)
         {
-            SelectComponent(FindPermalinkTarget() ?? _components[0], restorePermalink: true);
+            SelectComponent(FindPermalinkTarget() ?? DefaultComponent(), restorePermalink: true);
         }
     }
 
@@ -191,7 +208,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     /// <summary>Called by the workspace module for the shortcuts it captures.</summary>
     /// <param name="key">
     /// <c>1</c>–<c>4</c> toggle a panel, <c>/</c> reveals and focuses the parameter filter,
-    /// <c>Escape</c> leaves Present mode, and the arrow keys step through variants while presenting.
+    /// <c>[</c> and <c>]</c> step to the previous or next component, <c>?</c> toggles the shortcut sheet,
+    /// <c>Escape</c> closes that sheet or leaves Present mode, and the arrow keys step through
+    /// variants while presenting.
     /// </param>
     [JSInvokable]
     public Task OnKey(string key)
@@ -210,6 +229,20 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
                     // A collapsed panel hides its body — the filter must be visible to focus.
                     _collapsed.Remove(ParametersId);
+                    StateHasChanged();
+                    break;
+                case "?":
+                    _help = !_help;
+                    StateHasChanged();
+                    break;
+                case "[" or "]" when !_present:
+                    var all = PickerGroups.SelectMany(static g => g).ToList();
+                    var at = all.FindIndex(c => c.Type == _selected!.Type);
+                    SelectComponent(all[(at + (key == "]" ? 1 : all.Count - 1)) % all.Count]);
+                    StateHasChanged();
+                    break;
+                case "Escape" when _help:
+                    _help = false;
                     StateHasChanged();
                     break;
                 case "Escape" when _present:
@@ -271,13 +304,110 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     /* ── Component selection ─────────────────────────── */
 
+    /// <summary>
+    /// One rule for every library: a namespace with at least two components is a category, and
+    /// everything else (the root namespace, one-component namespaces) shares a trailing "Other".
+    /// A library with no categories at all gets an A–Z index instead, keyed on the name after the
+    /// shared prefix, so a 65- or 97-entry list is never one unbroken column.
+    /// </summary>
     private IEnumerable<IGrouping<string, ComponentDescriptor>> PickerGroups
-        => _components
+    {
+        get
+        {
             // A graph link can land on a component the picker curates out (a grid's column
             // type, say) — it still needs an entry while it is the one being played.
-            .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
-            .GroupBy(static c => c.Category)
-            .OrderBy(static g => g.Key, StringComparer.Ordinal);
+            var all = _components
+                .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
+                .ToList();
+
+            // The host's families win over namespaces: the home page groups by the same hook.
+            if (Options.CategoryResolver is not null)
+            {
+                return all.GroupBy(c => Options.CategoryOf(c.Type)!)
+                    .OrderBy(static g => g.Key == OtherCategory ? 1 : 0)
+                    .ThenBy(static g => g.Key, StringComparer.Ordinal);
+            }
+
+            var named = all.GroupBy(static c => c.Category)
+                .Where(g => g.Count() >= 2 && !IsRootCategory(g.Key))
+                .Select(static g => g.Key)
+                .ToHashSet(StringComparer.Ordinal);
+
+            // One category holding everything is no grouping at all: index it instead.
+            if (named.Count == 0 || (named.Count == 1 && all.All(c => named.Contains(c.Category))))
+            {
+                return all.Count <= 24
+                    ? all.GroupBy(static _ => OtherCategory)
+                    : all.OrderBy(Stem, StringComparer.OrdinalIgnoreCase)
+                        .GroupBy(c => Stem(c) is { Length: > 0 } stem && char.IsLetter(stem[0]) ? char.ToUpperInvariant(stem[0]).ToString() : "#");
+            }
+
+            return all.GroupBy(c => named.Contains(c.Category) ? c.Category : OtherCategory)
+                .OrderBy(static g => g.Key == OtherCategory ? 1 : 0)
+                .ThenBy(static g => g.Key, StringComparer.Ordinal);
+        }
+    }
+
+    private const string OtherCategory = PlayBlazorOptions.OtherCategory;
+
+    /// <summary>"Button" from "MudButton": the name the rail sorts and indexes by.</summary>
+    private string Stem(ComponentDescriptor component)
+        => RailPrefix.Length > 0 && component.DisplayName.StartsWith(RailPrefix, StringComparison.Ordinal)
+            ? component.DisplayName[RailPrefix.Length..]
+            : component.DisplayName;
+
+    /// <summary>
+    /// The library's root namespace: the one every other category extends ("DaisyBlazor" under
+    /// "DaisyBlazor.Data"), or the "….Components" namespace. It holds whatever has no category of its own.
+    /// </summary>
+    private bool IsRootCategory(string category)
+        => category.EndsWith(".Components", StringComparison.Ordinal)
+           || _components.Any(c => c.Category.StartsWith(category + ".", StringComparison.Ordinal));
+
+    /// <summary>
+    /// The leading word most listed components share ("Mud", "Fluent"), when at least three in four
+    /// carry it. The rail dims it so the distinguishing part of each name leads.
+    /// </summary>
+    private string RailPrefix
+        => _railPrefix ??= _components
+               .Select(static c => LeadingWord(c.DisplayName))
+               .Where(static w => w.Length > 0)
+               .GroupBy(static w => w, StringComparer.Ordinal)
+               .OrderByDescending(static g => g.Count())
+               .FirstOrDefault(g => g.Count() * 4 >= _components.Count * 3 && _components.Count > 1)?.Key
+           ?? string.Empty;
+
+    /// <summary>"Mud" from "MudButton": the capitalised word before the next capital, if one follows.</summary>
+    private static string LeadingWord(string name)
+    {
+        for (var i = 1; i < name.Length; i++)
+        {
+            if (char.IsUpper(name[i]))
+            {
+                return name[..i];
+            }
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// The first bench a visitor sees: the first component the host curated with examples, since
+    /// those are the ones known to draw something; a bare utility makes an empty first impression.
+    /// </summary>
+    private ComponentDescriptor DefaultComponent()
+        => _components.FirstOrDefault(c => c.CanInstantiate && Options.GetVariants(c.Type).Count > 0) ?? _components[0];
+
+    /// <summary>
+    /// The last namespace segment: "Utilities" reads as a category, the full namespace does not.
+    /// A library's root namespace ("….Components") holds its general-purpose components, so it reads
+    /// as "General" instead of repeating the rail's own "Components" title.
+    /// </summary>
+    private string GroupLabel(string key)
+        => Options.CategoryResolver is null ? ShortCategory(key) : key;
+
+    private static string ShortCategory(string category)
+        => category[(category.LastIndexOf('.') + 1)..] is { Length: > 0 } last and not "Components" ? last : "General";
 
     private void OnPickerChanged(ChangeEventArgs e)
     {
@@ -287,6 +417,12 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         }
         else
         {
+            if (e.Value is string { Length: > 0 } typed)
+            {
+                ShowToast($"No component named “{typed}”");
+            }
+
+
             // Unmatched text must not linger in the input, pretending to be selected —
             // recreating the input snaps it back to the real selection.
             _pickerVersion++;
@@ -298,6 +434,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     {
         _selected = descriptor;
         _state.ResetAll();
+        _overrides.Clear();
         _eventLog.Clear();
         _unfolded.Clear();
         _activeVariant = null;
@@ -374,7 +511,11 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         {
             if (key == PermalinkParameterName && value.Length > 0)
             {
-                PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment, Options);
+                if (!PlaygroundStateSerializer.Decode(value, _selected!, _state, _environment, Options))
+                {
+                    ShowToast("This link couldn't be restored, so the bench shows its defaults", 5000);
+                }
+
                 return;
             }
         }
@@ -408,11 +549,18 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
                or ControlKind.Date or ControlKind.Time or ControlKind.Color or ControlKind.Icon
            || IsTextSlot(parameter);
 
+    private const string EventsGroup = "Events";
+
+    /// <summary>
+    /// The library's own groups first, then every EventCallback in one trailing "Events" group, so
+    /// callbacks never sit between real controls whatever the library's categories say.
+    /// </summary>
     private IEnumerable<IGrouping<string, ParameterDescriptor>> ParameterGroups
         => _selected!.Parameters
-            .OrderBy(static p => p.GroupOrder)
+            .OrderBy(static p => p.Kind is ControlKind.Event ? 1 : 0)
+            .ThenBy(static p => p.GroupOrder)
             .ThenBy(static p => p.Group, StringComparer.Ordinal)
-            .GroupBy(static p => p.Group);
+            .GroupBy(static p => p.Kind is ControlKind.Event ? EventsGroup : p.Group);
 
     private IReadOnlyList<ParameterDescriptor> VisibleRows(IEnumerable<ParameterDescriptor> group)
         => group
@@ -420,6 +568,18 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
                         || p.Name.Contains(_paramFilter, StringComparison.OrdinalIgnoreCase))
             .Where(p => !_modifiedOnly || _state.IsModified(p.Name))
             .ToArray();
+
+    /// <summary>True when the host fills this slot, so an empty text box would misstate the stage.</summary>
+    private bool IsDemoFilled(ParameterDescriptor parameter)
+        => IsTextSlot(parameter)
+           && (Options.TryGetSlotPreset(_selected!.Type, parameter.Name, out _)
+               || Options.TryGetParameterPreset(_selected!.Type, parameter.Name, out _));
+
+    private void RestoreParameter(string name)
+    {
+        _overrides.Remove(name);
+        _state.Reset(name);
+    }
 
     private int ModifiedCount => _selected!.Parameters.Count(p => _state.IsModified(p.Name));
 
@@ -464,50 +624,132 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         _errorBoundary?.Recover();
     }
 
-    private void ResetNode()
+    /// <summary>Nothing edited, no example picked: the stage shows the demo's own setup.</summary>
+    private bool IsDefault => _activeVariant is null && _state.ModifiedValues.Count == 0 && _overrides.Count == 0;
+
+    private void BackToDefault()
     {
         _state.ResetAll();
+        _overrides.Clear();
         _activeVariant = null;
         _errorBoundary?.Recover();
-        ShowToast("Parameters reset ✓");
+    }
+
+    private void ResetNode()
+    {
+        // One click wipes every edit, so it stays one click away from coming back.
+        var type = _selected!.Type;
+        var values = _state.ModifiedValues.ToArray();
+        var overrides = _overrides.ToArray();
+        var variant = _activeVariant;
+        var count = values.Length + overrides.Count(o => values.All(v => v.Key != o));
+        BackToDefault();
+        ShowToast(
+            count == 1 ? "1 parameter reset" : $"{count} parameters reset", 6000,
+            () =>
+            {
+                if (_selected!.Type == type)
+                {
+                    Restore(values, overrides, variant);
+                }
+            });
+    }
+
+    private void Restore(KeyValuePair<string, object?>[] values, string[] overrides, string? variant)
+    {
+        _state.ResetAll();
+        foreach (var (name, value) in values)
+        {
+            _state.Set(name, value);
+        }
+
+        _overrides.Clear();
+        _overrides.UnionWith(overrides);
+        _activeVariant = variant;
+        _errorBoundary?.Recover();
+    }
+
+    private void UndoFromToast()
+    {
+        var undo = _toastUndo;
+        _toastCts?.Cancel();
+        _toast = null;
+        _toastUndo = null;
+        undo?.Invoke();
     }
 
     /* ── Razor / share ───────────────────────────────── */
 
     private MarkupString SnippetMarkup => RazorSnippetGenerator.GenerateMarkup(_selected!, _state, Options);
 
-    private async Task CopyRazor()
-    {
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", RazorSnippetGenerator.Generate(_selected!, _state, Options));
-        ShowToast("Razor copied ✓");
-    }
+    private Task CopyRazor()
+        => CopyToClipboard(
+            RazorSnippetGenerator.Generate(_selected!, _state, Options), "razor", "Razor copied",
+            "Couldn't copy: select the markup in the Razor panel and copy it by hand");
 
-    private async Task CopyShareLink()
+    private Task CopyShareLink()
     {
         // The address bar is already the permalink — copy exactly what the user sees,
         // through the same SyncUrl path, so the two can never drift apart.
         SyncUrl();
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", Navigation.Uri);
-        ShowToast("Link copied ✓");
+        return CopyToClipboard(
+            Navigation.Uri, "share", "Link copied",
+            "Couldn't copy: the link to this bench is in the address bar");
     }
 
-    private void ShowToast(string message)
+    /// <summary>
+    /// Success confirms on the button itself (one place, never over other controls); a blocked
+    /// clipboard (permission denied, insecure origin) says where to copy from instead of failing silently.
+    /// </summary>
+    private async Task CopyToClipboard(string text, string button, string done, string failed)
+    {
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+        catch (JSException)
+        {
+            ShowToast(failed, 5000);
+            return;
+        }
+
+        _copiedCts?.Cancel();
+        var cts = _copiedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token);
+        _copied = button;
+        _announce = done;
+        StateHasChanged();
+        try
+        {
+            await Task.Delay(1600, cts.Token);
+            _copied = null;
+            _announce = null;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer copy, or the workspace is going away.
+        }
+    }
+
+    private void ShowToast(string message, int milliseconds = 1600, Action? undo = null)
     {
         _toastCts?.Cancel();
         var cts = _toastCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token);
         _toast = message;
+        _toastUndo = undo;
         StateHasChanged();
-        _ = HideToastLater(cts.Token);
+        _ = HideToastLater(milliseconds, cts.Token);
     }
 
-    private async Task HideToastLater(CancellationToken token)
+    private async Task HideToastLater(int milliseconds, CancellationToken token)
     {
         try
         {
-            await Task.Delay(1600, token);
+            await Task.Delay(milliseconds, token);
             await InvokeAsync(() =>
             {
                 _toast = null;
+                _toastUndo = null;
                 StateHasChanged();
             });
         }
@@ -529,6 +771,18 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private IEnumerable<ParameterDescriptor> EventParameters
         => _selected!.Parameters.Where(static p => p.Kind is ControlKind.Event);
+
+    /// <summary>A short line instead of a wall: three names, then the count of the rest.</summary>
+    private string EventsSummary
+    {
+        get
+        {
+            var names = EventParameters.Select(static e => e.Name).ToList();
+            return names.Count <= 3
+                ? $"Listening to {string.Join(", ", names)}"
+                : $"Listening to {names.Count} events: {string.Join(", ", names.Take(3))} and {names.Count - 3} more";
+        }
+    }
 
     /* ── Graph panel ─────────────────────────────────── */
 
@@ -598,7 +852,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             {
                 nodes.Add(new GraphNode(
                     GraphNodeKind.Slot, parameter.Name,
-                    filledByHost && !filledByUser ? "host preset" : null, null, false, depth + 1));
+                    filledByHost && !filledByUser ? "set by the demo" : null, null, false, depth + 1));
             }
         }
 
@@ -616,6 +870,25 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private void TogglePanel(string id)
         => _layout.ToggleHidden(id);
+
+    /// <summary>The panel's own close button: says where the panel went, since only the pills bring it back.</summary>
+    private void ClosePanel(string id)
+    {
+        _layout.ToggleHidden(id);
+        var index = Array.FindIndex(Panels, p => p.Id == id);
+        ShowToast($"{Panels[index].Title} closed · its pill or {index + 1} brings it back");
+    }
+
+    /// <summary>Narrow screens show one panel at a time under the stage; this picks it, reopening it if closed.</summary>
+    private void ShowMobileTab(string id)
+    {
+        _mobileTab = id;
+        _collapsed.Remove(id);
+        if (_layout.IsHidden(id))
+        {
+            _layout.ToggleHidden(id);
+        }
+    }
 
     private void ToggleCollapse(string id)
     {
@@ -639,6 +912,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private void ApplyVariant(PlaygroundVariantDefinition variant)
     {
         _state.ResetAll();
+        _overrides.Clear();
         foreach (var (name, value) in variant.Values)
         {
             if (value is not null)
@@ -653,15 +927,31 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private void SetPresent(bool present)
     {
+        if (present == _present)
+        {
+            return;
+        }
+
         _present = present;
-        if (present && Variants.Count > 0)
+        if (present)
         {
-            StartAutoplay();
+            // Present is a slideshow, not an editor: what it plays must not overwrite the Play bench.
+            _playSnapshot = (_selected!.Type, _state.ModifiedValues.ToArray(), _overrides.ToArray(), _activeVariant);
+            if (Variants.Count > 0)
+            {
+                StartAutoplay();
+            }
+
+            return;
         }
-        else
+
+        StopAutoplay();
+        if (_playSnapshot is { } saved && saved.Type == _selected!.Type)
         {
-            StopAutoplay();
+            Restore(saved.Values, saved.Overrides, saved.Variant);
         }
+
+        _playSnapshot = null;
     }
 
     private void StartAutoplay()
@@ -739,6 +1029,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private void RecoverFromError()
     {
         _state.ResetAll();
+        _overrides.Clear();
         _errorBoundary?.Recover();
     }
 
@@ -767,4 +1058,24 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         _environment.Checkerboard = !_environment.Checkerboard;
         SyncUrl();
     }
+
+    /* ── Icons (authored SVG, stroke-drawn on a 16px grid) ── */
+
+    internal const string IconCopy = "M5.5 5.5h7v7h-7z M3.5 10.5v-7h7";
+    internal const string IconReset = "M3 8a5 5 0 1 0 1.5-3.5 M3 2v2.5h2.5";
+    internal const string IconClear = "M3 4.5h10 M6.5 4.5V3h3v1.5 M4.5 4.5l.7 8.5h5.6l.7-8.5";
+    internal const string IconFold = "M4 3l4 3 4-3 M4 13l4-3 4 3";
+    internal const string IconUnfold = "M4 6l4-3 4 3 M4 10l4 3 4-3";
+    internal const string IconChevronDown = "M4 6l4 4 4-4";
+    internal const string IconChevronRight = "M6 4l4 4-4 4";
+    internal const string IconClose = "M4.5 4.5l7 7 M11.5 4.5l-7 7";
+    internal const string IconShare = "M8 10V2.5 M5 5.5l3-3 3 3 M3.5 9v4.5h9V9";
+    internal const string IconCheck = "M3.5 8.5l3 3 6-7";
+
+    /// <summary>
+    /// Inline SVG with presentation attributes, not classes: markup strings never receive the
+    /// scoped-CSS attribute, so a class selector could not reach them.
+    /// </summary>
+    internal static MarkupString Icon(string path)
+        => new($"<svg class=\"pbw-icon\" width=\"14\" height=\"14\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"{path}\"/></svg>");
 }

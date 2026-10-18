@@ -13,7 +13,7 @@ public class WorkspaceLayoutTests
 
         layout.Zone(WorkspaceLayout.RightZone).Should().ContainInOrder("graph", "parameters");
         layout.Zone(WorkspaceLayout.BottomZone).Should().ContainInOrder("razor", "signals");
-        layout.RightWidth.Should().Be(380);
+        layout.RightWidth.Should().Be(420);
         layout.BottomHeight.Should().Be(235);
         layout.IsHidden("graph").Should().BeFalse();
         layout.Float("graph").Should().BeNull();
@@ -97,14 +97,14 @@ public class WorkspaceLayoutTests
         layout.SetFloat("signals", 12, 34);
         layout.SetFloatSize("signals", 500, 250);
         layout.ToggleHidden("graph");
-        layout.Resize(WorkspaceLayout.RightZone, 420);
+        layout.Resize(WorkspaceLayout.RightZone, 450);
 
         var restored = WorkspaceLayout.FromJson(layout.ToJson());
 
         restored.Zone(WorkspaceLayout.RightZone).Should().ContainInOrder("razor", "graph", "parameters");
         restored.Float("signals").Should().Be(new WorkspaceLayout.FloatInfo(12, 34, 500, 250));
         restored.IsHidden("graph").Should().BeTrue();
-        restored.RightWidth.Should().Be(420);
+        restored.RightWidth.Should().Be(450);
     }
 
     [Test]

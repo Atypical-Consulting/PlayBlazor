@@ -74,12 +74,6 @@ jobs:
           grep -q '<base href="/PlayBlazor/${{ matrix.app }}/" />' publish/wwwroot/index.html \
             || { echo "::error::base href was not rewritten — did index.html change shape?"; exit 1; }
 
-      # Pages serves 404.html for any path it holds no file for. Each app routes on the client,
-      # and a PlayBlazor permalink IS a deep link, so an unknown path must return the app shell
-      # and let the Blazor router take it from there.
-      - name: Install the SPA fallback
-        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
-
       - uses: actions/upload-artifact@v7
         with:
           name: app-${{ matrix.app }}
@@ -100,7 +94,7 @@ jobs:
       - name: Lay the site out
         run: |
           mkdir -p site
-          cp demo/landing/index.html demo/landing/favicon.png site/
+          cp -r demo/landing/. site/
           for app in mud fluent daisy; do
             mv "staging/app-$app" "site/$app"
           done

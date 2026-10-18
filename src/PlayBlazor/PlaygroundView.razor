@@ -6,18 +6,23 @@
 <div class="pb-playground">
     <div class="pb-preview @(_environment.Dark ? "pb-stage-dark" : null) @(_environment.Checkerboard ? "pb-stage-checker" : null)">
         <span class="pb-stage-chip">&lt;@_descriptor.DisplayName /&gt;</span>
-        <div class="pb-stage-toolbar">
+        @* Same labels, states and order as the explorer's stage toolbar, so the bench and the
+           explorer read as one tool. *@
+        <div class="pb-stage-toolbar" role="group" aria-label="Stage surface">
             <button type="button" class="pb-env-btn pb-env-dark @(_environment.Dark ? "pb-env-on" : null)"
-                    title="Dark surface" @onclick="() => _environment.Dark = !_environment.Dark">&#9681;</button>
+                    title="Render the component on a dark surface" aria-pressed="@(_environment.Dark ? "true" : "false")"
+                    @onclick="() => _environment.Dark = !_environment.Dark">Dark</button>
             <button type="button" class="pb-env-btn pb-env-rtl @(_environment.Rtl ? "pb-env-on" : null)"
-                    title="Right-to-left" @onclick="() => _environment.Rtl = !_environment.Rtl">&#8646;</button>
+                    title="Render the component right-to-left" aria-pressed="@(_environment.Rtl ? "true" : "false")"
+                    @onclick="() => _environment.Rtl = !_environment.Rtl">RTL</button>
             <button type="button" class="pb-env-btn pb-env-checker @(_environment.Checkerboard ? "pb-env-on" : null)"
-                    title="Checkerboard surface" @onclick="() => _environment.Checkerboard = !_environment.Checkerboard">&#9638;</button>
-            <select class="pb-env-width" title="Viewport width" value="@(_environment.ViewportWidth?.ToString() ?? "")" @onchange="OnViewportChanged">
-                <option value="">Auto</option>
-                <option value="360">360</option>
-                <option value="768">768</option>
-                <option value="1200">1200</option>
+                    title="Checkerboard surface, to reveal transparency" aria-pressed="@(_environment.Checkerboard ? "true" : "false")"
+                    @onclick="() => _environment.Checkerboard = !_environment.Checkerboard">Checker</button>
+            <select class="pb-env-width" title="Viewport width" aria-label="Viewport width" value="@(_environment.ViewportWidth?.ToString() ?? "")" @onchange="OnViewportChanged">
+                <option value="">Auto width</option>
+                <option value="360">360 px</option>
+                <option value="768">768 px</option>
+                <option value="1200">1200 px</option>
             </select>
         </div>
         @if (!_descriptor.CanInstantiate)
@@ -60,7 +65,7 @@
                                 <summary>Stack trace</summary>
                                 <pre>@exception.ToString()</pre>
                             </details>
-                            <button type="button" @onclick="RecoverFromError">Reset</button>
+                            <button type="button" @onclick="RecoverFromError">Reset the component</button>
                         </div>
                     </ErrorContent>
                 </ErrorBoundary>
@@ -74,20 +79,24 @@
             {
                 <span class="pb-warning" title="@_descriptor.Warning">&#9888;</span>
             }
-            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">Share</button>
-            @if (_state.ModifiedValues.Count > 0)
-            {
-                <button type="button" class="pb-reset" @onclick="ResetAll">Reset all</button>
-            }
+            <button type="button" class="pb-share" title="Copy a link to this exact configuration" @onclick="CopyShareLink">@PlayBlazor.Shell.Workspace.PlaygroundWorkspace.Icon(_copied == "share" ? PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconCheck : PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconShare) @(_copied == "share" ? "Copied" : "Share")</button>
+            @* Always present, so copy that points at it is never wrong; disabled until there is something to undo. *@
+            <button type="button" class="pb-reset" title="Reset every parameter to its default"
+                    disabled="@(_state.ModifiedValues.Count == 0)" @onclick="ResetAll">Reset all</button>
         </div>
         @if (VariantDefinitions.Count > 0)
         {
-            <span class="pb-eyebrow">Examples</span>
-            <div class="pb-variants">
+            <span class="pb-eyebrow" id="@($"{_idPrefix}-examples")">Examples</span>
+            <div class="pb-variants" role="group" aria-labelledby="@($"{_idPrefix}-examples")">
+                @* Same chip as the explorer: what the stage shows before any example is picked. *@
+                <button type="button" class="pb-variant-default @(IsDefault ? "pb-variant-active" : null)"
+                        aria-pressed="@(IsDefault ? "true" : "false")" title="The demo's own setup, before any example"
+                        @onclick="ResetAll">Default</button>
                 @foreach (var variant in VariantDefinitions)
                 {
                     <button type="button" @key="variant.Name"
                             class="pb-variant @(_activeVariant == variant.Name ? "pb-variant-active" : null)"
+                            aria-pressed="@(_activeVariant == variant.Name ? "true" : "false")"
                             @onclick="() => ApplyVariant(variant)">@variant.Name</button>
                 }
             </div>
@@ -96,13 +105,30 @@
         @foreach (var parameter in Controllable)
         {
             <div class="pb-row @(_state.IsModified(parameter.Name) ? "pb-row-modified" : null)" @key="parameter.Name">
-                <ControlHost Parameter="parameter"
-                             Value="EffectiveValue(parameter)"
-                             ValueChanged="value => OnControlChanged(parameter, value)" />
-                @if (_state.IsModified(parameter.Name))
+                @if (IsDemoFilled(parameter) && !_overrides.Contains(parameter.Name) && !_state.IsModified(parameter.Name))
                 {
-                    <button type="button" class="pb-row-reset" title="Restore default"
-                            @onclick="() => _state.Reset(parameter.Name)">&times;</button>
+                    @* An empty box here would misstate what the stage shows: the demo fills this slot. *@
+                    <span class="pb-control">
+                        <span class="pb-control-label" title="@parameter.Summary">@parameter.Name</span>
+                        <span class="pb-demo-filled">
+                            <span class="pb-demo-badge" title="The demo fills this in; the snippet shows it">set by the demo</span>
+                            <button type="button" class="pb-override" aria-label="@($"Override {parameter.Name} with your own text")"
+                                    @onclick="() => _overrides.Add(parameter.Name)">Override</button>
+                        </span>
+                    </span>
+                }
+                else
+                {
+                    <ControlHost Parameter="parameter"
+                                 Value="EffectiveValue(parameter)"
+                                 ValueChanged="value => OnControlChanged(parameter, value)" />
+                    @if (_state.IsModified(parameter.Name) || _overrides.Contains(parameter.Name))
+                    {
+                        <button type="button" class="pb-row-reset"
+                                title="@(IsDemoFilled(parameter) ? "Back to the demo's content" : "Restore default")"
+                                aria-label="@($"Restore the default {parameter.Name}")"
+                                @onclick="() => RestoreParameter(parameter.Name)">@PlayBlazor.Shell.Workspace.PlaygroundWorkspace.Icon(PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconReset)</button>
+                    }
                 }
             </div>
         }
@@ -113,9 +139,17 @@
                 <ul>
                     @foreach (var parameter in Uncontrollable)
                     {
+                        @* Same wording as the explorer's parameters panel: never an empty box. *@
                         <li @key="parameter.Name" title="@parameter.Summary">
                             <span>@parameter.Name</span>
-                            <span class="pb-kind">@parameter.Kind</span>
+                            @if (IsHostFilled(parameter))
+                            {
+                                <span class="pb-kind" title="The demo fills this in; the snippet shows it">set by the demo</span>
+                            }
+                            else
+                            {
+                                <span class="pb-kind" title="@($"Set it from code: {PlayBlazor.Shell.Workspace.ParameterSignature.TypeName(parameter.Type)}")">@PlayBlazor.Shell.Workspace.ParameterSignature.FriendlyTypeName(parameter.Type) · code only</span>
+                            }
                         </li>
                     }
                 </ul>
@@ -124,8 +158,13 @@
     </div>
     <div class="pb-code">
         <pre><code>@SnippetMarkup</code></pre>
-        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">Copy</button>
+        <button type="button" class="pb-copy" title="Copy to clipboard" @onclick="CopySnippet">@PlayBlazor.Shell.Workspace.PlaygroundWorkspace.Icon(_copied == "snippet" ? PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconCheck : PlayBlazor.Shell.Workspace.PlaygroundWorkspace.IconCopy) @(_copied == "snippet" ? "Copied" : "Copy")</button>
     </div>
+    @if (_copyFailed is not null)
+    {
+        <p class="pb-copy-failed" role="alert">@_copyFailed</p>
+    }
+    <span class="pb-sr" role="status" aria-live="polite">@(_copied is null ? null : "Copied to the clipboard")</span>
     @if (Events.Any())
     {
         <div class="pb-events">
@@ -133,7 +172,7 @@
             @if (_eventLog.Entries.Count == 0)
             {
                 <div class="pb-events-empty">
-                    Listening to @string.Join(", ", Events.Select(e => e.Name)) — interactions will show up here.
+                    @EventsSummary — interactions will show up here.
                 </div>
             }
             else

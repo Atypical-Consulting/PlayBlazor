@@ -1,4 +1,5 @@
 :root {
+    --demo-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --demo-accent: #6d4aff;
     --demo-ink: #1b1b22;
     --demo-ink-2: #6e6e7a;
@@ -10,52 +11,114 @@ html {
     background: var(--demo-bg);
 }
 
-body {
+/* `html body`, not `body`: Fluent's reboot paints body white after this sheet loads,
+   which left a hard seam where the white body ended over the grey html. */
+html body {
     margin: 0;
+    background: var(--demo-bg);
     color: var(--demo-ink);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    /* Fluent's reboot sets an absolute 20px body line-height, which collapsed the wordmark and
+       headings into the lines below them and made its hero 40px shorter than the other two. */
+    line-height: 1.5;
 }
 
-.demo-switcher {
-    display: flex;
-    justify-content: center;
-    gap: 1.25rem;
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 0.75rem 1.5rem 0;
-    font-family: var(--demo-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
+::selection {
+    background: rgba(109, 74, 255, 0.22);
 }
 
-.demo-switch {
-    color: var(--demo-ink-2);
-    text-decoration: none;
-    transition: color 120ms ease;
+html {
+    scroll-behavior: smooth;
 }
 
-.demo-switch:hover {
-    color: var(--demo-accent);
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
 }
 
-.demo-switch-current {
-    color: var(--demo-ink);
-}
+/* ---- Hero ------------------------------------------------------------- */
 
 .demo-hero {
-    padding: 3.5rem 1.5rem 2.5rem;
+    padding: 1.25rem 0 2.5rem;
     background: #16161e;
     color: #f0f0f6;
 }
 
-.demo-wordmark {
-    max-width: 880px;
+/* Same max-width + padding formula as .demo-main, so the hero and the sections share one left edge.
+   Two classes deep, so an app's older ".demo-hero > *" width cap cannot pull it off that edge. */
+.demo-hero > .demo-hero-inner {
+    max-width: 1080px;
     margin: 0 auto;
-    font-family: var(--demo-mono);
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    padding: 0 1.5rem;
+}
+
+/* Wide screens: pitch left, proof and install right, so the hero is ~200px shorter and the first
+   live bench opens inside the first viewport instead of below it. */
+@media (min-width: 960px) {
+    .demo-hero > .demo-hero-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        column-gap: 3.5rem;
+        align-items: end;
+    }
+
+    .demo-hero-inner > .demo-switcher {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+
+    .demo-hero-proof {
+        padding-left: 2rem;
+        border-left: 1px solid rgba(240, 240, 246, 0.12);
+    }
+
+}
+
+.demo-switcher {
+    display: inline-flex;
+    gap: 2px;
+    margin: 0 0 2rem;
+    padding: 3px;
+    border-radius: 10px;
+    background: rgba(240, 240, 246, 0.07);
+    font-family: var(--demo-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.demo-switch {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 0.875rem;
+    border-radius: 7px;
+    color: #a4a4b8;
+    text-decoration: none;
+    transition: color 120ms ease, background-color 120ms ease;
+}
+
+a.demo-switch:hover {
+    color: #ffffff;
+    background: rgba(240, 240, 246, 0.08);
+}
+
+.demo-switch-current {
+    background: #f0f0f6;
+    color: #16161e;
+}
+
+/* The h1 says what the tool does, in the page's sans: mono stays for code and counts. */
+.demo-headline {
+    max-width: 22ch;
+    margin: 0;
+    color: #ffffff;
+    font-family: var(--demo-sans);
+    font-size: clamp(1.75rem, 3.6vw, 2.625rem);
+    font-weight: 750;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
 }
 
 .demo-mark {
@@ -63,44 +126,255 @@ body {
     margin-right: 0.25rem;
 }
 
-.demo-tagline {
-    max-width: 880px;
-    margin: 0.875rem auto 0;
-    color: #b9b9c9;
-    font-size: 0.9375rem;
-    line-height: 1.6;
+/* The library takes its own line, a shade back and in mono like every name on the page: every
+   library gets the same hero height, however long its name. */
+.demo-hero .demo-headline .demo-headline-lib {
+    display: block;
+    margin-top: 0.625rem;
+    color: #a4a4b8;
+    font-family: var(--demo-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
-.demo-tagline code {
+.demo-tagline {
+    max-width: 64ch;
+    margin: 1rem 0 0;
+    color: #c4c4d4;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+}
+
+.demo-tagline code,
+.demo-proof-src code {
     font-family: var(--demo-mono);
     font-size: 0.875em;
-    color: #d6d6e7;
+    color: #e0e0ee;
     background: rgba(214, 214, 231, 0.1);
     padding: 0.1em 0.35em;
     border-radius: 4px;
 }
 
+/* The proof: a caption naming the assembly, then three counts in one row, number over label,
+   all on one left edge. Computed at render time, so the row is the evidence, not decoration. */
+.demo-proof {
+    margin: 1.75rem 0 0;
+    padding: 0.875rem 0 0;
+    border-top: 1px solid rgba(240, 240, 246, 0.12);
+}
+
+.demo-hero-proof .demo-proof {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.demo-proof-src {
+    margin: 0 0 0.625rem;
+    color: #a4a4b8;
+    font-size: 0.8125rem;
+}
+
+/* The assembly name holds one line on every library (full name in its title), so the counts
+   below never shift with its length. */
+.demo-hero .demo-proof-src code {
+    display: block;
+    max-width: max-content;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.demo-proof-counts {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    gap: 0 2rem;
+    margin: 0;
+}
+
+.demo-proof-counts > div {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.demo-proof-counts dt {
+    color: #a4a4b8;
+    font-size: 0.8125rem;
+}
+
+.demo-proof-counts dd {
+    margin: 0;
+    color: #ffffff;
+    font-family: var(--demo-mono);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: 1.75rem;
+}
+
+.demo-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 1.25rem;
+    border-radius: 10px;
+    background: var(--demo-accent);
+    color: #ffffff;
+    font-family: var(--demo-sans);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.demo-cta::after {
+    content: "→";
+    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.demo-cta:hover {
+    background: #5a36f0;
+}
+
+.demo-cta:hover::after {
+    transform: translateX(3px);
+}
+
+.demo-cta-2 {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #cdbfff;
+    font-family: var(--demo-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(205, 191, 255, 0.35);
+    text-underline-offset: 4px;
+}
+
+.demo-cta-2:hover {
+    color: #ffffff;
+    text-decoration-color: currentColor;
+}
+
+/* Adoption path: the one command that puts this on the visitor's own library. */
+.demo-install {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    color: #a4a4b8;
+    font-size: 0.875rem;
+}
+
+.demo-install-label,
+.demo-install-docs {
+    grid-column: 1 / -1;
+}
+
+.demo-install-cmd {
+    padding: 0.4rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(214, 214, 231, 0.1);
+    color: #f0f0f6;
+    font-family: var(--demo-mono);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    user-select: all;
+}
+
+.demo-install-cmd::before {
+    content: "$ ";
+    color: #8f8fa6;
+    user-select: none;
+}
+
+.demo-install-copy {
+    min-height: 36px;
+    padding: 0 0.875rem;
+    border: 1px solid rgba(240, 240, 246, 0.22);
+    border-radius: 8px;
+    background: transparent;
+    color: #f0f0f6;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.demo-install-copy:hover {
+    border-color: rgba(240, 240, 246, 0.45);
+    background: rgba(240, 240, 246, 0.08);
+}
+
+.demo-install-docs {
+    justify-self: start;
+    color: #cdbfff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(205, 191, 255, 0.35);
+    text-underline-offset: 4px;
+}
+
+.demo-install-docs:hover {
+    color: #ffffff;
+    text-decoration-color: currentColor;
+}
+
+.demo-hero :focus-visible {
+    outline: 2px solid #cdbfff;
+    outline-offset: 2px;
+}
+
+/* ---- Main ------------------------------------------------------------- */
+
 .demo-main {
-    max-width: 880px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 2rem 1.5rem 3rem;
+    padding: 2.5rem 1.5rem 3rem;
+}
+
+.demo-main :focus-visible,
+.demo-footer :focus-visible {
+    outline: 2px solid var(--demo-accent);
+    outline-offset: 2px;
 }
 
 .demo-section {
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
+    scroll-margin-top: 1.5rem;
 }
 
 .demo-note {
     margin: -0.25rem 0 0.75rem;
     color: var(--demo-ink-2);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
 }
 
 .demo-tag {
     margin: 0 0 0.75rem;
     font-family: var(--demo-mono);
-    font-size: 1rem;
+    font-size: 1.0625rem;
     font-weight: 600;
+    line-height: 1.4;
     letter-spacing: -0.01em;
 }
 
@@ -114,47 +388,348 @@ body {
     color: var(--demo-accent);
 }
 
-.demo-cta {
-    display: block;
-    max-width: 880px;
-    margin: 1.25rem auto 0;
-    color: #cdbfff;
+/* On a phone the playground stacks and its parameter panel loses its height cap, so a
+   40-parameter component became a 2,000px wall before the catalog. Re-cap it on the landing only. */
+@media (max-width: 720px) {
+    .demo-main .demo-section .pb-panel {
+        max-height: 360px;
+    }
+
+    /* The stage hugs its specimen under the toolbar instead of holding 240px of dotted canvas. */
+    .demo-landing .demo-main .pb-playground .pb-preview {
+        min-height: 0;
+    }
+
+    /* The benches stay in source order, as every page's copy promises ("benches first"); the
+       hero's "Browse all" link is the shortcut to the catalog. */
+}
+
+/* Landing-only tuning of the playground chrome (each selector outranks its scoped [b-*] rule). */
+@media (min-width: 721px) {
+    .demo-main .demo-section .pb-playground {
+        grid-template-columns: minmax(0, 1fr) 340px;
+    }
+
+    /* The parameter panel sets the row height: kept short so a lone button does not float in a
+       tall empty canvas. It scrolls for the rest. */
+    .demo-main .demo-section .pb-panel {
+        max-height: 320px;
+    }
+
+    .demo-landing .demo-main .pb-playground .pb-preview {
+        min-height: 200px;
+    }
+}
+
+/* The Copy button sits over the snippet's right edge. A snippet that scrolled sideways slid
+   under it on a phone; wrap it instead and keep the text clear of the button. */
+.demo-main .demo-section .pb-code {
+    padding-right: 5rem;
+}
+
+/* Wrapped at attribute spaces, never mid-token; `code` too, since a library reboot can set its
+   own white-space on it. A single token longer than the line breaks as a last resort. */
+.demo-landing .demo-main .pb-code :is(pre, code) {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.demo-main .demo-section .pb-events {
+    font-size: 0.75rem;
+}
+
+.demo-main .demo-section .pb-events-empty {
+    color: var(--pb-ink-2);
+}
+
+/* An unsized inline svg defaults to 300x150: a MudBlazor icon preview rendered as six huge dots. */
+.demo-main .demo-section .pb-icon-preview {
+    display: inline-flex;
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.demo-main .demo-section .pb-icon-preview svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ---- Catalog ---------------------------------------------------------- */
+
+.demo-catalog {
+    margin-bottom: 0;
+    padding-top: 2.5rem;
+    border-top: 1px solid #e2e2ea;
+}
+
+/* Sticky inside the catalog section only: it follows the wall down and leaves with it. */
+.demo-filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0 0 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e2e2ea;
+    background: var(--demo-bg);
+}
+
+.demo-filter-status {
+    margin: 0;
+    color: var(--demo-ink-2);
     font-family: var(--demo-mono);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    text-decoration: none;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
 }
 
-.demo-cta:hover {
-    color: #ffffff;
+.demo-filter-status:empty {
+    display: none;
 }
 
-.demo-covered-title {
-    margin: 0 0 0.25rem;
-    font-size: 1.125rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-}
-
-.demo-tiles {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+.demo-try {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 0.375rem;
 }
 
+.demo-try-label {
+    color: var(--demo-ink-2);
+    font-size: 0.8125rem;
+}
+
+.demo-chip {
+    min-height: 32px;
+    padding: 0 0.75rem;
+    border: 1px solid #d4d4de;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--demo-ink);
+    font-family: var(--demo-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease;
+}
+
+.demo-chip:hover {
+    border-color: var(--demo-accent);
+    color: var(--demo-accent);
+}
+
+.demo-chip[aria-pressed="true"] {
+    border-color: var(--demo-accent);
+    background: color-mix(in srgb, var(--demo-accent) 12%, #ffffff);
+    color: var(--demo-accent);
+    font-weight: 600;
+}
+
+.demo-empty-try {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+/* On a phone the suggestions stay, as one row that scrolls sideways under the input. */
+@media (max-width: 600px) {
+    .demo-filter-bar .demo-try {
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .demo-filter-bar .demo-chip {
+        flex: none;
+    }
+
+    .demo-filter {
+        flex: 1 1 100%;
+        font-size: 1rem; /* 16px: iOS does not zoom into the field */
+    }
+}
+
+.demo-covered-title {
+    margin: 0 0 0.375rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+.demo-filter {
+    box-sizing: border-box;
+    width: 15rem;
+    max-width: 100%;
+    min-height: 40px;
+    padding: 0 0.75rem;
+    border: 1px solid #d4d4de;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--demo-ink);
+    font: inherit;
+    font-size: 0.9375rem;
+    caret-color: var(--demo-accent);
+}
+
+.demo-filter::placeholder {
+    color: #767684;
+}
+
+.demo-filter:focus-visible {
+    border-color: var(--demo-accent);
+    outline: 2px solid rgba(109, 74, 255, 0.25);
+    outline-offset: 0;
+}
+
+.demo-empty {
+    padding: 2rem 1rem;
+    border: 1px dashed #d4d4de;
+    border-radius: 12px;
+    color: var(--demo-ink-2);
+    text-align: center;
+}
+
+.demo-empty p {
+    margin: 0 0 0.875rem;
+}
+
+.demo-empty-reset {
+    min-height: 40px;
+    padding: 0 1rem;
+    border: 1px solid var(--demo-accent);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--demo-accent);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.demo-empty-reset:hover {
+    background: rgba(109, 74, 255, 0.08);
+}
+
+/* An A-Z index: tiles flow down the columns and each letter heads its run, so a 127-name wall
+   reads like a directory instead of a flat grid. */
+.demo-tiles {
+    columns: 4 200px;
+    column-gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .demo-tiles {
+        columns: 2;
+    }
+}
+
+.demo-letter {
+    margin: 0;
+    padding: 0.75rem 0 0.375rem 0.125rem;
+    color: var(--demo-accent);
+    font-family: var(--demo-mono);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+    break-after: avoid;
+}
+
+.demo-letter-group {
+    break-inside: avoid;
+}
+
+.demo-letter-group:first-child .demo-letter {
+    padding-top: 0;
+}
+
 .demo-tile {
+    box-sizing: border-box;
+    margin-bottom: 0.5rem;
+    break-inside: avoid;
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.6rem;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.375rem 0.625rem;
     border: 1px solid #e6e6ee;
     border-radius: 8px;
     background: #ffffff;
     color: var(--demo-ink);
     font-family: var(--demo-mono);
-    font-size: 0.71875rem;
+    font-size: 0.8125rem;
     text-decoration: none;
     transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* The parameter count: how much of the component the playground turns into controls. */
+.demo-tile-n {
+    margin-left: auto;
+    padding-left: 0.25rem;
+    color: var(--demo-ink-2);
+    font-family: var(--demo-mono);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* "Show all N": the tile-shaped way into a family's remaining rows. */
+.demo-more {
+    box-sizing: border-box;
+    min-height: 44px;
+    margin-bottom: 0.5rem;
+    padding: 0.375rem 0.625rem;
+    border: 1px dashed #c9c9d6;
+    border-radius: 8px;
+    background: transparent;
+    color: #5534e0;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.demo-more:hover {
+    border-color: #5534e0;
+    border-style: solid;
+}
+
+.demo-more[aria-expanded="true"] {
+    color: var(--demo-ink-2);
+}
+
+/* Every family open, or every family back to its first rows, in one press. */
+.demo-expand-all {
+    min-height: 32px;
+    margin-left: auto;
+    padding: 0 0.75rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #5534e0;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.demo-expand-all:hover {
+    background: rgba(109, 74, 255, 0.08);
 }
 
 .demo-tile:hover {
@@ -162,18 +737,30 @@ body {
     box-shadow: 0 2px 10px -4px rgba(109, 74, 255, 0.35);
 }
 
-.demo-tile svg {
-    flex: none;
-    width: 15px;
-    height: 15px;
-    fill: var(--demo-accent);
-    opacity: 0.8;
+/* Names wrap at their <wbr> word seams (two lines at most in practice), never into an ellipsis. */
+.demo-tile span {
+    min-width: 0;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
 }
 
+/* The prefix is part of the real name, so it keeps AA contrast (ink-2, ~5:1); it steps back by
+   weight instead, under a stem set one step heavier. */
 .demo-tile span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-weight: 600;
+}
+
+.demo-tile .demo-tile-prefix {
+    color: var(--demo-ink-2);
+    font-weight: 400;
+}
+
+/* Two columns on a phone leave ~15 characters a tile: the dimmed prefix steps out (the full name
+   stays in the tile's title) so "Autocomplete" fits whole instead of breaking mid-word. */
+@media (max-width: 480px) {
+    .demo-tile-prefix {
+        display: none;
+    }
 }
 
 .demo-explorer {
@@ -212,9 +799,490 @@ body {
 }
 
 .demo-footer {
-    max-width: 880px;
+    max-width: 1080px;
     margin: 0 auto;
     padding: 0 1.5rem 2.5rem;
     color: var(--demo-ink-2);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.demo-footer p {
+    margin: 0 0 0.5rem;
+}
+
+.demo-footer a {
+    color: var(--demo-ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: #c9c9d6;
+    text-underline-offset: 3px;
+}
+
+.demo-footer a:hover {
+    color: var(--demo-accent);
+    text-decoration-color: currentColor;
+}
+
+.demo-footer-switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0 0 1.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e2ea;
+}
+
+.demo-footer .demo-switcher {
+    margin: 0;
+    background: #e9e9f0;
+}
+
+.demo-footer a.demo-switch {
+    color: var(--demo-ink);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.demo-footer a.demo-switch:hover {
+    background: #ffffff;
+    color: var(--demo-accent);
+}
+
+.demo-footer .demo-switch-current {
+    background: var(--demo-ink);
+    color: #ffffff;
+}
+
+.demo-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+}
+
+/* ---- One page, three libraries -----------------------------------------
+   Each app's own sheet loads after this one and used to fork the shared page: a narrower main
+   column, three different "on this page" bars, glyph-only or worded stage tools, a different phone
+   bench order, tinted or tagged tiles. Rooted at .demo-landing (two classes deep and more), these
+   rules outrank those single-class overrides so switching library changes the specimens, not
+   the page. Stopgap until each Index.razor stops styling its own copy of the chrome. */
+
+.demo-landing > .demo-main,
+.demo-landing > .demo-footer {
+    box-sizing: border-box;
+    max-width: 1080px;
+}
+
+/* One accent for the one page: PlayBlazor's violet runs the chrome on every library, and each
+   library's own colour lives in its specimens. Four classes deep, past an app sheet's retint. */
+.demo-landing {
+    --demo-accent: #6d4aff;
+}
+
+.demo-landing .demo-main .demo-section .pb-playground {
+    --pb-accent: #6d4aff;
+    --pb-accent-soft: rgba(109, 74, 255, 0.14);
+}
+
+.demo-landing .demo-hero .demo-actions .demo-cta-2 {
+    color: #cdbfff;
+    text-decoration-color: rgba(205, 191, 255, 0.35);
+}
+
+.demo-landing .demo-hero .demo-actions .demo-cta-2:hover {
+    color: #ffffff;
+    text-decoration-color: currentColor;
+}
+
+/* A flat button: the action is clear by colour and weight, no halo (outranks an app sheet's glow). */
+.demo-landing .demo-hero .demo-actions a.demo-cta {
+    box-shadow: none;
+}
+
+/* DemoLanding owns the "on this page" line and the ways out (explorer, docs). The apps' older
+   copies of that chrome, their extra intro and their per-bench links step aside, so Flagships
+   reads as benches only. Stopgap until each Index.razor deletes them. */
+.demo-landing .demo-main :is(.demo-jump, .fx-benches, .daisy-jump, .daisy-lead, .daisy-top, .demo-docs, .fx-open),
+.demo-landing .demo-main > h2.daisy-h2,
+.demo-landing .demo-main > .daisy-benches-note {
+    display: none;
+}
+
+.demo-onpage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.375rem 1.25rem;
+    margin: 0 0 2rem;
+    color: var(--demo-ink-2);
+    font-size: 0.875rem;
+}
+
+.demo-onpage p {
+    margin: 0;
+    color: var(--demo-ink);
+    font-size: 0.9375rem;
+}
+
+.demo-onpage a {
+    color: #5534e0;
+    font-weight: 600;
+    text-decoration: none;
+    text-underline-offset: 3px;
+}
+
+.demo-onpage a:hover {
+    text-decoration: underline;
+}
+
+/* Footer links: one colour rule on every library, outranking an app sheet's link colour. */
+.demo-landing > .demo-footer a:not(.demo-switch) {
+    color: var(--demo-ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: #c9c9d6;
+    text-underline-offset: 3px;
+}
+
+.demo-landing > .demo-footer a:not(.demo-switch):hover {
+    color: #5534e0;
+    text-decoration-color: currentColor;
+}
+
+/* Example chips wrap on the landing instead of scrolling out of sight behind the edge. */
+.demo-landing .demo-main .pb-playground .pb-variants {
+    flex-wrap: wrap;
+    overflow: visible;
+}
+
+/* Stage tools: words on every library, never bare glyphs whose meaning lives in a hover title. */
+.demo-landing .demo-main .pb-playground .pb-env-btn {
+    width: auto;
+    padding: 0 0.45rem;
+    font-size: 0;
+}
+
+.demo-landing .demo-main .pb-playground .pb-env-btn::after {
+    font-family: var(--demo-sans);
+    font-size: 0.6875rem;
+    font-weight: 500;
+}
+
+.demo-landing .demo-main .pb-playground .pb-env-dark::after { content: "Dark"; }
+.demo-landing .demo-main .pb-playground .pb-env-rtl::after { content: "RTL"; }
+.demo-landing .demo-main .pb-playground .pb-env-checker::after { content: "Checker"; } /* the explorer's word */
+
+.demo-landing .demo-main .pb-playground .pb-stage-toolbar::before {
+    content: "Width";
+    order: 1;
+    margin-left: 0.25rem;
+    color: #5f5f6b;
+    font-family: var(--demo-sans);
+    font-size: 0.6875rem;
+}
+
+.demo-landing .demo-main .pb-playground .pb-env-width {
+    order: 2;
+}
+
+.demo-landing .demo-main .pb-playground .pb-stage-dark .pb-stage-toolbar::before {
+    color: #b9b9c9;
+}
+
+/* The event list names every callback; on the landing it is one line, the rest in the explorer. */
+.demo-landing .demo-main .pb-playground .pb-events-empty {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Tiles look the same everywhere: no per-app tint or tag the wall never explains. */
+.demo-landing .demo-tiles .demo-tile {
+    border: 1px solid #e6e6ee;
+    background: #ffffff;
+    color: var(--demo-ink);
+}
+
+.demo-landing .demo-tiles .demo-tile::after {
+    content: none;
+}
+
+/* Families (PlayBlazorOptions.CategoryResolver): one full-width band per family, its tiles in a
+   grid in reading order, so no column ends 600px short of its neighbour. */
+.demo-landing .demo-main .demo-tiles.demo-tiles-families {
+    columns: auto;
+}
+
+.demo-landing .demo-main .demo-tiles-families .demo-letter-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    column-gap: 0.5rem;
+}
+
+.demo-landing .demo-main .demo-tiles-families .demo-letter-group + .demo-letter-group {
+    margin-top: 1.5rem;
+}
+
+.demo-landing .demo-main .demo-tiles-families .demo-letter {
+    grid-column: 1 / -1;
+    padding: 0 0 0.625rem 0.125rem;
+    color: var(--demo-ink);
+    font-family: var(--demo-sans);
+    font-size: 1.0625rem;
+    font-weight: 700;
+}
+
+.demo-family-n {
+    margin-left: 0.5rem;
+    color: var(--demo-ink-2);
+    font-family: var(--demo-mono);
     font-size: 0.8125rem;
+    font-weight: 400;
+}
+
+@media (max-width: 480px) {
+    .demo-landing .demo-main .demo-tiles-families .demo-letter-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Parts (CardHeader, SelectItem) only render inside a parent: one step quieter than the
+   components a visitor reaches for first. */
+.demo-landing .demo-tiles .demo-tile[data-child] {
+    border-style: dashed;
+    background: transparent;
+    color: var(--demo-ink-2);
+}
+
+.demo-landing .demo-tiles .demo-tile[data-child] span {
+    font-weight: 400;
+}
+
+/* Phones: every bench stacks stage, parameters, snippet, events, in source order. */
+@media (max-width: 720px) {
+    .demo-landing .demo-main .pb-playground :is(.pb-panel, .pb-code, .pb-events) {
+        order: 0;
+    }
+}
+
+/* ---- Site nav (DemoNav): portal, library switcher, Home / Explorer ---- */
+.demo-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+    margin: 0 0 2rem;
+    font-family: var(--demo-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.demo-hero-inner > .demo-nav {
+    grid-column: 1 / -1;
+}
+
+.demo-nav .demo-switcher {
+    margin: 0;
+}
+
+.demo-nav-home {
+    color: #f0f0f6;
+    font-family: var(--demo-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.demo-nav-home:hover {
+    color: #ffffff;
+}
+
+.demo-nav-home .demo-mark {
+    color: var(--demo-accent);
+}
+
+.demo-nav-pages {
+    display: inline-flex;
+    gap: 0.25rem;
+    margin-left: auto;
+}
+
+.demo-nav-pages a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 0.75rem;
+    border-radius: 7px;
+    color: #a4a4b8;
+    text-decoration: none;
+}
+
+.demo-nav-pages a:hover {
+    color: #ffffff;
+    background: rgba(240, 240, 246, 0.08);
+}
+
+.demo-nav-pages a[aria-current="page"] {
+    color: #ffffff;
+    box-shadow: inset 0 -2px 0 var(--demo-accent);
+    border-radius: 0;
+}
+
+.demo-nav a:focus-visible {
+    outline: 2px solid var(--demo-accent);
+    outline-offset: 2px;
+}
+
+/* The explorer page: the nav as a thin bar, the workspace filling the rest of the viewport. */
+.demo-explorer-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+}
+
+.demo-explorer-page > .demo-nav {
+    flex: none;
+    margin: 0;
+    padding: 0.375rem 1rem;
+    background: #16161e;
+    border-bottom: 1px solid rgba(240, 240, 246, 0.08);
+}
+
+/* DemoNav already carries the wordmark and the way home. */
+div.demo-explorer-page .pbw-wordmark {
+    display: none;
+}
+
+div.demo-explorer-page .pbw {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+@media (max-width: 860px) {
+    .demo-explorer-page {
+        height: auto;
+    }
+
+    div.demo-explorer-page .pbw {
+        min-height: 100dvh;
+    }
+}
+
+/* Phones: wordmark and Home / Explorer on one row, the library switcher across the next. */
+@media (max-width: 600px) {
+    .demo-nav {
+        gap: 0.5rem 0.75rem;
+    }
+
+    .demo-nav-home {
+        order: 1;
+    }
+
+    .demo-nav-pages {
+        order: 2;
+    }
+
+    .demo-nav .demo-switcher {
+        order: 3;
+        flex: 1 0 100%;
+        display: flex;
+    }
+
+    .demo-nav .demo-switch {
+        flex: 1 1 auto;
+        justify-content: center;
+        padding: 0 0.5rem;
+        white-space: nowrap;
+    }
+}
+
+/* ---- Phones: a live component inside the first screen and a bit ----
+   The hero was ~910px at 390 wide, so the first specimen opened below the second screen. Keep
+   the pitch to its lede, the counts to one line and the install to one row. */
+@media (max-width: 600px) {
+    .demo-hero {
+        padding: 1rem 0 1.25rem;
+    }
+
+    .demo-hero .demo-nav {
+        margin-bottom: 1rem;
+    }
+
+    .demo-hero .demo-headline {
+        margin-top: 0.75rem;
+        font-size: 1.625rem;
+    }
+
+    .demo-hero .demo-headline .demo-headline-lib {
+        margin-top: 0.375rem;
+    }
+
+    /* Nobody runs dotnet on a phone: the install command waits for a desktop, the setup guide
+       link stays. */
+    .demo-hero .demo-install-cmd,
+    .demo-hero .demo-install-copy {
+        display: none;
+    }
+
+    .demo-landing .demo-onpage {
+        margin-bottom: 1.25rem;
+    }
+
+    .demo-landing .demo-onpage p {
+        font-size: 0.875rem;
+    }
+
+    /* The Copy button takes its own row above the snippet on a phone, so the text gets the width. */
+    .demo-landing .demo-main .pb-code {
+        padding-right: 1rem;
+    }
+
+    /* 11px mono: a typical attribute run ("Appearance=…Primary\">Click") fits a phone line whole. */
+    .demo-landing .demo-main .pb-code pre {
+        font-size: 0.6875rem;
+    }
+
+    .demo-hero .demo-tagline,
+    .demo-hero .demo-install-label {
+        display: none;
+    }
+
+    .demo-hero .demo-actions {
+        margin-top: 1rem;
+        gap: 0.25rem 1.25rem;
+    }
+
+    /* Command and Copy share a row; the setup link takes the next one, never truncating the command. */
+    .demo-hero .demo-install {
+        margin-top: 0.75rem;
+    }
+
+    .demo-hero .demo-proof {
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+    }
+
+    .demo-hero .demo-proof-src {
+        margin-bottom: 0.375rem;
+    }
+
+    .demo-hero .demo-proof-counts {
+        gap: 0 1.5rem;
+    }
+
+    .demo-hero .demo-proof-counts dd {
+        font-size: 1.25rem;
+    }
+
+    .demo-hero .demo-install-cmd {
+        font-size: 0.8125rem;
+    }
+
+    .demo-hero .demo-install-copy {
+        min-height: 44px;
+    }
 }

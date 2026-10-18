@@ -1,4 +1,4 @@
-<nav class="demo-switcher" aria-label="Component library">
+<nav class="demo-switcher" aria-label="@Label">
     @foreach (var (slug, label) in Libraries)
     {
         @if (slug == Current)
@@ -9,7 +9,7 @@
         {
             @* Relative, never rooted: under a project subpath a leading slash walks past
                <base href> straight to the domain root. *@
-            <a class="demo-switch" href="@($"../{slug}/")">@label</a>
+            <a class="demo-switch" href="@($"../{slug}/{Path}")">@label</a>
         }
     }
 </nav>
@@ -17,11 +17,17 @@
     // One entry per showcase app; the slug is the app's folder on the published site.
     private static readonly (string Slug, string Label)[] Libraries =
     [
-        ("mud", "MudBlazor"),
-        ("fluent", "Fluent UI"),
         ("daisy", "DaisyBlazor"),
+        ("mud", "MudBlazor"),
+        ("fluent", "Fluent UI Blazor"), // the same name the Fluent showcase's h1 and docs links use
     ];
 
     /// <summary>The slug of the library this app shows: <c>mud</c>, <c>fluent</c> or <c>daisy</c>.</summary>
     [Parameter, EditorRequired] public string Current { get; set; } = default!;
+
+    /// <summary>The page to open in the other library, relative to its root: empty for its home, <c>explorer</c> to stay in the explorer.</summary>
+    [Parameter] public string Path { get; set; } = "";
+
+    /// <summary>The nav's accessible name; a page with two switchers tells them apart.</summary>
+    [Parameter] public string Label { get; set; } = "Component library";
 }

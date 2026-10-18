@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlayBlazor — Fluent UI</title>
     <base href="/" />
+    <script>
+        // Deep links on GitHub Pages: the site-root 404.html sends /<app>/explorer?x back here as
+        // ?pb-redirect=explorer%3Fx. Restore the real URL before Blazor's router reads it.
+        (function () {
+            var r = new URLSearchParams(location.search).get("pb-redirect");
+            if (r !== null) history.replaceState(null, "", document.baseURI + r);
+        })();
+    </script>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link href="_content/PlayBlazor.Demo.Shared/css/demo.css" rel="stylesheet" />
@@ -76,6 +84,204 @@
             content: var(--blazor-load-percentage-text, "");
         }
 
+        /* ---- Page overrides (after the shared demo.css, so equal specificity wins) ---- */
+
+        /* Fluent's web components adopt a stylesheet that paints <body> white at 100% height:
+           one viewport of white over demo.css's grey html, with a seam through the first bench.
+           "html body" outranks that adopted "body" rule. */
+        html body {
+            background: transparent;
+        }
+
+        ::selection {
+            background: rgba(109, 74, 255, 0.2);
+        }
+
+        .demo-footer a {
+            color: var(--demo-accent);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .demo-footer a:hover,
+        .demo-footer a:focus-visible {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+
+        /* Hero lines start on the same left edge as the content column below (880px minus its
+           1.5rem gutters), not 24px left of it. */
+        .demo-hero > * {
+            max-width: calc(880px - 3rem);
+        }
+
+        /* Scroll cue for capped parameter lists: shadows appear at an edge only while rows hide
+           past it (the "local" covers scroll with the content and mask the "scroll" shadows). */
+        .pb-playground .pb-panel {
+            overscroll-behavior: contain;
+            background:
+                linear-gradient(var(--pb-panel) 30%, rgba(251, 251, 253, 0)) center top / 100% 2.5rem no-repeat local,
+                linear-gradient(rgba(251, 251, 253, 0), var(--pb-panel) 70%) center bottom / 100% 2.5rem no-repeat local,
+                radial-gradient(farthest-side at 50% 0, rgba(27, 27, 34, 0.16), transparent) center top / 100% 0.75rem no-repeat scroll,
+                radial-gradient(farthest-side at 50% 100%, rgba(27, 27, 34, 0.16), transparent) center bottom / 100% 0.75rem no-repeat scroll,
+                var(--pb-panel);
+        }
+
+        /* Each bench leads with the parameters its examples set, by name (data-param is tagged by the
+           script at the end of <body>; PlaygroundView rows carry no name of their own). Nothing is
+           hidden: every row the Explorer lists is here too, just in example-first order. A renamed
+           parameter only falls back to reflection order; it never makes the wrong row vanish. */
+        .fx-bench .pb-panel > :is(.pb-panel-header, .pb-eyebrow, .pb-variants) { order: -10; }
+        #bench-button [data-param=Appearance], #bench-grid [data-param=StripedRows], #bench-column [data-param=Sortable] { order: -6; }
+        #bench-button [data-param=IconStart], #bench-grid [data-param=ResizableColumns], #bench-column [data-param=Align] { order: -5; }
+        #bench-button [data-param=Loading], #bench-grid [data-param=AutoFit], #bench-column [data-param=Tooltip] { order: -4; }
+        #bench-button [data-param=Disabled], #bench-grid [data-param=DisplayMode] { order: -3; }
+
+        /* Per-bench jump into the full Explorer, and the docs link set apart from the in-page
+           anchors (it leaves the site). */
+        .demo-note .fx-open {
+            color: #5534e0;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            /* Its own trailing line on every bench, whatever the note's length. */
+            display: block;
+            width: fit-content;
+            margin-top: 0.375rem;
+        }
+
+        .demo-note .fx-open:is(:hover, :focus-visible) {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .demo-landing .demo-main .fx-benches a.fx-docs {
+            margin-left: auto;
+        }
+
+        /* The stage's Dark tool paints a dark surface, but Fluent's tokens live on <html> and stay
+           light, so grid text (#242424) vanished on it. Re-declare every colour token that differs
+           in Fluent 5.0.1's own dark theme on the dark stage (bench and Explorer), so the specimen
+           switches theme with its surface. Values captured from Fluent's generated dark sheet;
+           regenerate them if the package's theme changes. */
+        .pb-stage-dark, .pbw-stage-dark {
+            color-scheme: dark;
+            --colorNeutralForeground1: #ffffff; --colorNeutralForeground1Hover: #ffffff; --colorNeutralForeground1Pressed: #ffffff; --colorNeutralForeground1Selected: #ffffff; --colorNeutralForeground2: #d6d6d6; --colorNeutralForeground2Hover: #ffffff; --colorNeutralForeground2Pressed: #ffffff; --colorNeutralForeground2Selected: #ffffff; --colorNeutralForeground2BrandHover: #479ef5; --colorNeutralForeground2BrandPressed: #2886de; --colorNeutralForeground2BrandSelected: #479ef5; --colorNeutralForeground3: #adadad; --colorNeutralForeground3Hover: #d6d6d6; --colorNeutralForeground3Pressed: #d6d6d6; --colorNeutralForeground3Selected: #d6d6d6; --colorNeutralForeground3BrandHover: #479ef5; --colorNeutralForeground3BrandPressed: #2886de; --colorNeutralForeground3BrandSelected: #479ef5; --colorNeutralForeground4: #999999; --colorNeutralForeground5: #adadad; --colorNeutralForeground5Hover: #ffffff; --colorNeutralForeground5Pressed: #ffffff; --colorNeutralForeground5Selected: #ffffff; --colorNeutralForegroundDisabled: #5c5c5c; --colorBrandForegroundLink: #479ef5; --colorBrandForegroundLinkHover: #62abf5; --colorBrandForegroundLinkPressed: #2886de; --colorBrandForegroundLinkSelected: #479ef5; --colorNeutralForeground2Link: #d6d6d6; --colorNeutralForeground2LinkHover: #ffffff; --colorNeutralForeground2LinkPressed: #ffffff; --colorNeutralForeground2LinkSelected: #ffffff; --colorCompoundBrandForeground1: #479ef5; --colorCompoundBrandForeground1Hover: #62abf5; --colorCompoundBrandForeground1Pressed: #2886de; --colorBrandForeground1: #479ef5; --colorBrandForeground2: #62abf5; --colorBrandForeground2Hover: #96c6fa; --colorBrandForeground2Pressed: #ebf3fc; --colorNeutralForegroundInverted: #242424; --colorNeutralForegroundInvertedHover: #242424; --colorNeutralForegroundInvertedPressed: #242424; --colorNeutralForegroundInvertedSelected: #242424; --colorNeutralForegroundInverted2: #242424; --colorBrandForegroundInverted: #0f6cbd; --colorBrandForegroundInvertedHover: #115ea3; --colorBrandForegroundInvertedPressed: #0f548c; --colorNeutralBackground1: #292929; --colorNeutralBackground1Hover: #3d3d3d; --colorNeutralBackground1Pressed: #1f1f1f; --colorNeutralBackground1Selected: #383838; --colorNeutralBackground2: #1f1f1f; --colorNeutralBackground2Hover: #333333; --colorNeutralBackground2Pressed: #141414; --colorNeutralBackground2Selected: #2e2e2e; --colorNeutralBackground3: #141414; --colorNeutralBackground3Hover: #292929; --colorNeutralBackground3Pressed: #0a0a0a; --colorNeutralBackground3Selected: #242424; --colorNeutralBackground4: #0a0a0a; --colorNeutralBackground4Hover: #1f1f1f; --colorNeutralBackground4Pressed: #000000; --colorNeutralBackground4Selected: #1a1a1a; --colorNeutralBackground5: #000000; --colorNeutralBackground5Hover: #141414; --colorNeutralBackground5Pressed: #050505; --colorNeutralBackground5Selected: #0f0f0f; --colorNeutralBackground6: #333333; --colorNeutralBackground7Hover: #1a1a1a; --colorNeutralBackground7Pressed: #0a0a0a; --colorNeutralBackground8: #292929; --colorNeutralBackgroundInverted: #ffffff; --colorNeutralBackgroundInvertedHover: #f5f5f5; --colorNeutralBackgroundInvertedPressed: #e0e0e0; --colorNeutralBackgroundInvertedSelected: #ebebeb; --colorNeutralBackgroundStatic: #3d3d3d; --colorNeutralBackgroundAlpha: rgba(26, 26, 26, 0.5); --colorNeutralBackgroundAlpha2: rgba(31, 31, 31, 0.7); --colorSubtleBackgroundHover: #383838; --colorSubtleBackgroundPressed: #2e2e2e; --colorSubtleBackgroundSelected: #333333; --colorSubtleBackgroundLightAlphaHover: rgba(36, 36, 36, 0.8); --colorSubtleBackgroundLightAlphaPressed: rgba(36, 36, 36, 0.5); --colorNeutralBackgroundDisabled: #141414; --colorNeutralBackgroundDisabled2: #292929; --colorNeutralStencil1: #575757; --colorNeutralStencil2: #333333; --colorNeutralStencil1Alpha: rgba(255, 255, 255, 0.1); --colorNeutralStencil2Alpha: rgba(255, 255, 255, 0.05); --colorBackgroundOverlay: rgba(0, 0, 0, 0.5); --colorScrollbarOverlay: rgba(255, 255, 255, 0.6); --colorBrandBackground: #115ea3; --colorBrandBackgroundHover: #0f6cbd; --colorCompoundBrandBackground: #479ef5; --colorCompoundBrandBackgroundHover: #62abf5; --colorCompoundBrandBackgroundPressed: #2886de; --colorBrandBackground2: #082338; --colorBrandBackground2Hover: #0c3b5e; --colorBrandBackground2Pressed: #061724; --colorNeutralCardBackground: #333333; --colorNeutralCardBackgroundHover: #3d3d3d; --colorNeutralCardBackgroundPressed: #2e2e2e; --colorNeutralCardBackgroundSelected: #383838; --colorNeutralCardBackgroundDisabled: #141414; --colorNeutralStrokeAccessible: #adadad; --colorNeutralStrokeAccessibleHover: #bdbdbd; --colorNeutralStrokeAccessiblePressed: #b3b3b3; --colorNeutralStrokeAccessibleSelected: #479ef5; --colorNeutralStroke1: #666666; --colorNeutralStroke1Hover: #757575; --colorNeutralStroke1Pressed: #6b6b6b; --colorNeutralStroke1Selected: #707070; --colorNeutralStroke2: #525252; --colorNeutralStroke3: #3d3d3d; --colorNeutralStroke4: #3d3d3d; --colorNeutralStroke4Hover: #2e2e2e; --colorNeutralStroke4Pressed: #242424; --colorNeutralStroke4Selected: #3d3d3d; --colorNeutralStrokeSubtle: #0a0a0a; --colorNeutralStrokeOnBrand: #292929; --colorBrandStroke1: #479ef5; --colorBrandStroke2: #0e4775; --colorBrandStroke2Hover: #0e4775; --colorBrandStroke2Pressed: #0a2e4a; --colorBrandStroke2Contrast: #0e4775; --colorCompoundBrandStroke: #479ef5; --colorCompoundBrandStrokeHover: #62abf5; --colorCompoundBrandStrokePressed: #2886de; --colorNeutralStrokeDisabled: #424242; --colorNeutralStrokeDisabled2: #3d3d3d; --colorNeutralStrokeAlpha: rgba(255, 255, 255, 0.1); --colorStrokeFocus1: #000000; --colorStrokeFocus2: #ffffff; --colorNeutralShadowAmbient: rgba(0,0,0,0.24); --colorNeutralShadowKey: rgba(0,0,0,0.28); --colorNeutralShadowAmbientLighter: rgba(0,0,0,0.12); --colorNeutralShadowKeyLighter: rgba(0,0,0,0.14); --colorNeutralShadowAmbientDarker: rgba(0,0,0,0.40); --colorNeutralShadowKeyDarker: rgba(0,0,0,0.48); --colorPaletteRedBackground1: #3f1011; --colorPaletteRedBackground2: #751d1f; --colorPaletteRedForeground1: #e37d80; --colorPaletteRedForeground2: #f1bbbc; --colorPaletteRedForeground3: #e37d80; --colorPaletteRedBorderActive: #e37d80; --colorPaletteRedBorder1: #d13438; --colorPaletteRedBorder2: #e37d80; --colorPaletteGreenBackground1: #052505; --colorPaletteGreenBackground2: #094509; --colorPaletteGreenForeground1: #54b054; --colorPaletteGreenForeground2: #9fd89f; --colorPaletteGreenForeground3: #9fd89f; --colorPaletteGreenBorderActive: #54b054; --colorPaletteGreenBorder1: #107c10; --colorPaletteGreenBorder2: #9fd89f; --colorPaletteDarkOrangeBackground1: #411200; --colorPaletteDarkOrangeBackground2: #7a2101; --colorPaletteDarkOrangeForeground1: #e9835e; --colorPaletteDarkOrangeForeground2: #f4bfab; --colorPaletteDarkOrangeForeground3: #e9835e; --colorPaletteDarkOrangeBorderActive: #e9835e; --colorPaletteDarkOrangeBorder1: #da3b01; --colorPaletteDarkOrangeBorder2: #e9835e; --colorPaletteYellowBackground1: #4c4400; --colorPaletteYellowBackground2: #817400; --colorPaletteYellowForeground1: #feee66; --colorPaletteYellowForeground2: #fef7b2; --colorPaletteYellowForeground3: #fdea3d; --colorPaletteYellowBorderActive: #feee66; --colorPaletteYellowBorder1: #fde300; --colorPaletteYellowBorder2: #fdea3d; --colorPaletteBerryBackground1: #3a1136; --colorPaletteBerryBackground2: #6d2064; --colorPaletteBerryForeground1: #da7ed0; --colorPaletteBerryForeground2: #edbbe7; --colorPaletteBerryForeground3: #d161c4; --colorPaletteBerryBorderActive: #da7ed0; --colorPaletteBerryBorder1: #c239b3; --colorPaletteBerryBorder2: #d161c4; --colorPaletteLightGreenBackground1: #063004; --colorPaletteLightGreenBackground2: #0b5a08; --colorPaletteLightGreenForeground1: #5ec75a; --colorPaletteLightGreenForeground2: #a7e3a5; --colorPaletteLightGreenForeground3: #3db838; --colorPaletteLightGreenBorderActive: #5ec75a; --colorPaletteLightGreenBorder1: #13a10e; --colorPaletteLightGreenBorder2: #3db838; --colorPaletteMarigoldBackground1: #463100; --colorPaletteMarigoldBackground2: #835b00; --colorPaletteMarigoldForeground1: #f2c661; --colorPaletteMarigoldForeground2: #f9e2ae; --colorPaletteMarigoldForeground3: #efb839; --colorPaletteMarigoldBorderActive: #f2c661; --colorPaletteMarigoldBorder1: #eaa300; --colorPaletteMarigoldBorder2: #efb839; --colorPaletteRedForegroundInverted: #d13438; --colorPaletteGreenForegroundInverted: #107c10; --colorPaletteYellowForegroundInverted: #817400; --colorPaletteDarkRedBackground2: #590815; --colorPaletteDarkRedForeground2: #d69ca5; --colorPaletteDarkRedBorderActive: #ac4f5e; --colorPaletteCranberryBackground2: #6e0811; --colorPaletteCranberryForeground2: #eeacb2; --colorPaletteCranberryBorderActive: #dc626d; --colorPalettePumpkinBackground2: #712d09; --colorPalettePumpkinForeground2: #efc4ad; --colorPalettePumpkinBorderActive: #df8e64; --colorPalettePeachBackground2: #8f4e00; --colorPalettePeachForeground2: #ffddb3; --colorPalettePeachBorderActive: #ffba66; --colorPaletteGoldBackground2: #6c5700; --colorPaletteGoldForeground2: #ecdfa5; --colorPaletteGoldBorderActive: #dac157; --colorPaletteBrassBackground2: #553e06; --colorPaletteBrassForeground2: #e0cea2; --colorPaletteBrassBorderActive: #c1a256; --colorPaletteBrownBackground2: #50301a; --colorPaletteBrownForeground2: #ddc3b0; --colorPaletteBrownBorderActive: #bb8f6f; --colorPaletteForestBackground2: #294903; --colorPaletteForestForeground2: #bdd99b; --colorPaletteForestBorderActive: #85b44c; --colorPaletteSeafoamBackground2: #00723b; --colorPaletteSeafoamForeground2: #a8f0cd; --colorPaletteSeafoamBorderActive: #5ae0a0; --colorPaletteDarkGreenBackground2: #063b06; --colorPaletteDarkGreenForeground2: #9ad29a; --colorPaletteDarkGreenBorderActive: #4da64d; --colorPaletteLightTealBackground2: #00666d; --colorPaletteLightTealForeground2: #a6e9ed; --colorPaletteLightTealBorderActive: #58d3db; --colorPaletteTealBackground2: #02494c; --colorPaletteTealForeground2: #9bd9db; --colorPaletteTealBorderActive: #4cb4b7; --colorPaletteSteelBackground2: #00333f; --colorPaletteSteelForeground2: #94c8d4; --colorPaletteSteelBorderActive: #4496a9; --colorPaletteBlueBackground2: #004377; --colorPaletteBlueForeground2: #a9d3f2; --colorPaletteBlueBorderActive: #5caae5; --colorPaletteRoyalBlueBackground2: #002c4e; --colorPaletteRoyalBlueForeground2: #9abfdc; --colorPaletteRoyalBlueBorderActive: #4a89ba; --colorPaletteCornflowerBackground2: #2c3c85; --colorPaletteCornflowerForeground2: #c8d1fa; --colorPaletteCornflowerBorderActive: #93a4f4; --colorPaletteNavyBackground2: #001665; --colorPaletteNavyForeground2: #a3b2e8; --colorPaletteNavyBorderActive: #546fd2; --colorPaletteLavenderBackground2: #3f3682; --colorPaletteLavenderForeground2: #d2ccf8; --colorPaletteLavenderBorderActive: #a79cf1; --colorPalettePurpleBackground2: #341a51; --colorPalettePurpleForeground2: #c6b1de; --colorPalettePurpleBorderActive: #9470bd; --colorPaletteGrapeBackground2: #4c0d55; --colorPaletteGrapeForeground2: #d9a7e0; --colorPaletteGrapeBorderActive: #b55fc1; --colorPaletteLilacBackground2: #63276d; --colorPaletteLilacForeground2: #e6bfed; --colorPaletteLilacBorderActive: #cf87da; --colorPalettePinkBackground2: #80215d; --colorPalettePinkForeground2: #f7c0e3; --colorPalettePinkBorderActive: #ef85c8; --colorPaletteMagentaBackground2: #6b0043; --colorPaletteMagentaForeground2: #eca5d1; --colorPaletteMagentaBorderActive: #d957a8; --colorPalettePlumBackground2: #5a003b; --colorPalettePlumForeground2: #d696c0; --colorPalettePlumBorderActive: #ad4589; --colorPaletteBeigeBackground2: #444241; --colorPaletteBeigeForeground2: #d7d4d4; --colorPaletteBeigeBorderActive: #afabaa; --colorPaletteMinkBackground2: #343231; --colorPaletteMinkForeground2: #cecccb; --colorPaletteMinkBorderActive: #9e9b99; --colorPalettePlatinumBackground2: #3b4447; --colorPalettePlatinumForeground2: #cdd6d8; --colorPalettePlatinumBorderActive: #a0adb2; --colorPaletteAnchorBackground2: #202427; --colorPaletteAnchorForeground2: #bcc3c7; --colorPaletteAnchorBorderActive: #808a90; --colorStatusSuccessBackground1: #052505; --colorStatusSuccessBackground2: #094509; --colorStatusSuccessForeground1: #54b054; --colorStatusSuccessForeground2: #9fd89f; --colorStatusSuccessForeground3: #9fd89f; --colorStatusSuccessBorderActive: #54b054; --colorStatusSuccessForegroundInverted: #0e700e; --colorStatusSuccessBorder1: #107c10; --colorStatusSuccessBorder2: #9fd89f; --colorStatusWarningBackground1: #4a1e04; --colorStatusWarningBackground2: #8a3707; --colorStatusWarningForeground1: #faa06b; --colorStatusWarningForeground2: #fdcfb4; --colorStatusWarningForeground3: #f98845; --colorStatusWarningBorderActive: #faa06b; --colorStatusWarningForegroundInverted: #bc4b09; --colorStatusWarningBorder1: #f7630c; --colorStatusWarningBorder2: #f98845; --colorStatusDangerBackground1: #3b0509; --colorStatusDangerBackground2: #6e0811; --colorStatusDangerForeground1: #dc626d; --colorStatusDangerForeground2: #eeacb2; --colorStatusDangerForeground3: #eeacb2; --colorStatusDangerBorderActive: #dc626d; --colorStatusDangerForegroundInverted: #b10e1c; --colorStatusDangerBorder1: #c50f1f; --colorStatusDangerBorder2: #dc626d; --shadow2: 0 0 2px rgba(0,0,0,0.24), 0 1px 2px rgba(0,0,0,0.28); --shadow4: 0 0 2px rgba(0,0,0,0.24), 0 2px 4px rgba(0,0,0,0.28); --shadow8: 0 0 2px rgba(0,0,0,0.24), 0 4px 8px rgba(0,0,0,0.28); --shadow16: 0 0 2px rgba(0,0,0,0.24), 0 8px 16px rgba(0,0,0,0.28); --shadow28: 0 0 8px rgba(0,0,0,0.24), 0 14px 28px rgba(0,0,0,0.28); --shadow64: 0 0 8px rgba(0,0,0,0.24), 0 32px 64px rgba(0,0,0,0.28);
+        }
+
+        /* Fluent sets body text colour once, on <body>, so the specimen inherits a light-theme
+           colour already resolved there; re-resolve it inside the dark stage. */
+        .pb-stage-dark .pb-specimen,
+        .pbw-stage-dark .pbw-specimen-box {
+            color: var(--colorNeutralForeground1);
+        }
+
+        /* A-Z catalogue: every column's first letter starts on the same line. The shared rule
+           drops the top padding only for the very first group, so column 1 sat 12px above the
+           rest; a margin is truncated at each column break instead. */
+        .demo-tiles .demo-letter {
+            padding-top: 0;
+        }
+
+        .demo-tiles .demo-letter-group + .demo-letter-group {
+            margin-top: 0.75rem;
+        }
+
+        @media (min-width: 721px) {
+            /* One button or a three-row grid does not need a 480px stage; the shorter list
+               scrolls with a cue, and the examples above it carry each bench's main axis. */
+            .fx-bench .pb-playground .pb-panel {
+                max-height: 340px;
+            }
+
+            .fx-bench .pb-playground .pb-preview {
+                min-height: 0;
+            }
+
+            /* One button: the list stops just after its four example rows (Disabled is the last),
+               so the stage around the button stays short and no lead row is cut. */
+            #bench-button .pb-playground .pb-panel {
+                max-height: 320px;
+            }
+
+            /* One column of three cells: a shorter list keeps its stage from standing half empty. */
+            #bench-column .pb-playground .pb-panel {
+                max-height: 280px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            /* Narrow grid benches: less stage gutter and cell padding, and cells wrap instead of
+               cutting "Ada Lovelace" to "Ada Lov…". */
+            .fx-wide .pb-playground .pb-preview {
+                padding-inline: 0.75rem;
+            }
+
+            .fx-wide .fluent-data-grid :is(td, th) {
+                padding-inline: 8px !important;
+                white-space: normal !important;
+            }
+
+            /* Fluent pads the header label twice more inside the cell (6px + 12px); without this
+               the headers sat 18px right of their column's values. */
+            .fx-wide .fluent-data-grid th > div,
+            .fx-wide .fluent-data-grid th [col-title] {
+                padding-inline: 0 !important;
+            }
+
+            /* A wrapped jump bar keeps the docs link on the left edge with the anchors. */
+            .demo-landing .demo-main .fx-benches a.fx-docs {
+                margin-left: 0;
+            }
+
+            /* The button bench needs less stage than a grid. */
+            #bench-button .pb-playground .pb-preview {
+                min-height: 160px;
+            }
+
+            /* Example chips wrap onto a second line: a sideways-scrolling row hid "Disabled" and
+               "Loading" off-screen with no cue. */
+            .fx-bench .pb-playground .pb-variants {
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+
+            /* The snippet keeps its Razor line breaks and scrolls sideways (wrapping split
+               "p => p.Name" and orphaned indented attributes). Edge shadows say there is more.
+               Overrides the shared wrap rule; the Copy button already has its own row above. */
+            .demo-main .fx-bench .pb-code pre {
+                white-space: pre;
+                overflow-wrap: normal;
+            }
+
+            .demo-main .fx-bench .pb-playground .pb-code {
+                padding-right: 1rem;
+                background:
+                    linear-gradient(to right, var(--pb-terminal) 30%, rgba(22, 22, 30, 0)) left center / 2.5rem 100% no-repeat local,
+                    linear-gradient(to left, var(--pb-terminal) 30%, rgba(22, 22, 30, 0)) right center / 2.5rem 100% no-repeat local,
+                    radial-gradient(farthest-side at 0 50%, rgba(214, 214, 231, 0.28), transparent) left center / 0.875rem 100% no-repeat scroll,
+                    radial-gradient(farthest-side at 100% 50%, rgba(214, 214, 231, 0.28), transparent) right center / 0.875rem 100% no-repeat scroll,
+                    var(--pb-terminal);
+            }
+
+            /* Two tile columns instead of one ~4000px column. */
+            .demo-tiles {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+
+            /* PlaygroundView uncaps its parameter list on phones, which put ~1500px of rows
+               between the stage and the snippet. Keep a capped, scrolling list instead. */
+            .pb-playground .pb-panel {
+                max-height: 380px;
+            }
+
+            /* The Copy button is absolutely placed over the first code line; give it its own row. */
+            .pb-playground .pb-code {
+                padding-top: 2.5rem;
+            }
+        }
+
         @keyframes boot-blink {
             50% { opacity: 0; }
         }
@@ -94,6 +300,15 @@
             <div class="boot-caption">Loading the .NET runtime <span class="boot-pct"></span></div>
         </div>
     </div>
+    <script>
+        // Name hook for the home benches' parameter rows (see the bench CSS above).
+        new MutationObserver(function () {
+            document.querySelectorAll(".fx-bench .pb-row:not([data-param])").forEach(function (row) {
+                var label = row.querySelector(".pb-control-label");
+                if (label) row.setAttribute("data-param", label.textContent.trim());
+            });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>
