@@ -1,0 +1,102 @@
+/* Fluent showcase chrome. Colours come from the shared demo tokens (demo.css :root). */
+
+.fx-benches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.375rem 1rem;
+    margin: 0 0 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e6e6ee;
+    font-family: var(--demo-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fx-benches-label {
+    flex-basis: 100%;
+    color: var(--demo-ink-2);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-weight: 400;
+    font-size: 0.8125rem;
+}
+
+.fx-benches a {
+    color: var(--demo-ink);
+    text-decoration: none;
+    transition: color 120ms ease;
+}
+
+.fx-benches a:hover,
+.fx-benches a:focus-visible {
+    color: var(--demo-accent);
+}
+
+.fx-benches .fx-docs {
+    margin-left: auto;
+    color: var(--demo-accent);
+}
+
+.fx-bench,
+.fx-find {
+    scroll-margin-top: 1.5rem;
+}
+
+/* A data grid in a real app fills its container; centred at intrinsic width it floated in an
+   empty stage. Deliberate reach into the specimen, limited to the two grid benches. */
+.fx-wide ::deep .pb-specimen,
+.fx-wide ::deep .fluent-data-grid {
+    width: 100%;
+}
+
+.fx-find {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin: 0 0 1.75rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e6e6ee;
+}
+
+.fx-find-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.fx-find-input {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 360px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4de;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--demo-ink);
+    font-family: var(--demo-mono);
+    font-size: 0.8125rem;
+}
+
+.fx-find-input::placeholder {
+    color: #767682;
+}
+
+.fx-find-input:focus-visible {
+    outline: none;
+    border-color: var(--demo-accent);
+    box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.18);
+}
+
+@media (max-width: 720px) {
+    .fx-benches .fx-docs {
+        margin-left: 0;
+    }
+
+    .fx-find-input {
+        max-width: none;
+        font-size: 1rem; /* 16px stops iOS zooming into the field */
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fx-benches a { transition: none; }
+}

@@ -1059,7 +1059,10 @@ public static class FluentPlaygroundConfig
         // its own chip rather than a combination.
         options.For<FluentButton>()
             .Slot(nameof(FluentButton.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
-            .Variant("Primary", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Primary))
+            // Opens on Fluent's accent button: the library's own default is a neutral outline that
+            // could belong to any design system, so the flagship bench would not read as Fluent.
+            .Parameter(nameof(FluentButton.Appearance), ButtonAppearance.Primary)
+            .Variant("Default", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Default))
             .Variant("Outline", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Outline))
             .Variant("Subtle", v => v.Set(nameof(FluentButton.Appearance), ButtonAppearance.Subtle))
             .Variant("With icon", v => v.Set(nameof(FluentButton.IconStart), FluentIconCatalogue.All["Checkmark"]))

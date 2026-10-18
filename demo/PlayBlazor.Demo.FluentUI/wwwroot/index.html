@@ -76,6 +76,57 @@
             content: var(--blazor-load-percentage-text, "");
         }
 
+        /* ---- Page overrides (after the shared demo.css, so equal specificity wins) ---- */
+
+        /* Fluent's web components adopt a stylesheet that paints <body> white at 100% height:
+           one viewport of white over demo.css's grey html, with a seam through the first bench.
+           "html body" outranks that adopted "body" rule. */
+        html body {
+            background: transparent;
+        }
+
+        ::selection {
+            background: rgba(109, 74, 255, 0.2);
+        }
+
+        .demo-footer a {
+            color: var(--demo-accent);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .demo-footer a:hover,
+        .demo-footer a:focus-visible {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* The three curated benches above get a marker on their tiles in the wall below. */
+        .demo-tile[href$="pb-FluentButton=e30"],
+        .demo-tile[href$="pb-FluentDataGrid=e30"],
+        .demo-tile[href$="pb-PropertyColumn=e30"] {
+            border-color: rgba(109, 74, 255, 0.45);
+            background: #f6f3ff;
+        }
+
+        @media (max-width: 720px) {
+            /* Two tile columns instead of one ~4000px column. */
+            .demo-tiles {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+
+            /* PlaygroundView uncaps its parameter list on phones, which put ~1500px of rows
+               between the stage and the snippet. Keep a capped, scrolling list instead. */
+            .pb-playground .pb-panel {
+                max-height: 360px;
+            }
+
+            /* The Copy button is absolutely placed over the first code line; give it its own row. */
+            .pb-playground .pb-code {
+                padding-top: 2.5rem;
+            }
+        }
+
         @keyframes boot-blink {
             50% { opacity: 0; }
         }
