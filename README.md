@@ -99,8 +99,8 @@ dotnet build -c Release
 dotnet test -c Release
 ```
 
-Requires the .NET SDK pinned in `global.json`. Versions come from git tags via MinVer: tag `v0.1.0`
-and the package builds as `0.1.0`; untagged builds are `-preview`.
+Requires the .NET SDK pinned in `global.json`. Versions are owned by release-please: merging its
+release PR bumps `Directory.Build.props`, tags `vX.Y.Z` and publishes the package to NuGet.
 
 ## Status
 

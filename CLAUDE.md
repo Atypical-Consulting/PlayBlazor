@@ -85,6 +85,8 @@ run that measured nothing.
 ## Conventions
 
 - Central Package Management: versions live in `Directory.Packages.props`, never in a `.csproj`.
-- Versioning is MinVer over `v`-prefixed git tags; do not hand-edit a `<Version>`.
+- Versioning is release-please: it bumps the one `<Version>` in `Directory.Build.props` from the
+  Conventional Commit PR titles (squash-merged, so the PR title decides the bump); never hand-edit it.
+  The `PR title` check enforces the format.
 - `TreatWarningsAsErrors` is on, and `GenerateDocumentationFile` is on for the package, so
   `CS1591` makes an undocumented public member a build error. Document what you expose.
