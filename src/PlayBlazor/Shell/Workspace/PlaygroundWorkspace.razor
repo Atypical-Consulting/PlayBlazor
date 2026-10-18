@@ -11,7 +11,7 @@
     return;
 }
 
-<div class="pbw @(_present ? "pbw-present" : null)"
+<div class="pbw @(_present ? "pbw-present" : null)" data-mtab="@_mobileTab"
      style="--pbw-right:@(_layout.RightWidth.ToString(System.Globalization.CultureInfo.InvariantCulture))px;--pbw-bottom:@(_layout.BottomHeight.ToString(System.Globalization.CultureInfo.InvariantCulture))px">
 
     <header class="pbw-bar">
@@ -61,7 +61,7 @@
                 <span class="pbw-rail-title">Components</span>
                 <span class="pbw-rail-count">@PickerGroups.Sum(static g => g.Count())</span>
             </div>
-            <input class="pbw-rail-filter" type="search" placeholder="Filter components" aria-label="Filter components"
+            <input class="pbw-rail-filter" type="search" placeholder="Filter components (Ctrl+K)" aria-label="Filter components"
                    aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K or ⌘K to focus"
                    value="@_railFilter" @oninput="e => _railFilter = (string?)e.Value ?? string.Empty" />
             <div class="pbw-rail-list">
@@ -191,6 +191,17 @@
             <div class="pbw-stage-name">&#8249;@_selected.DisplayName /&#8250; &#183; @_selected.Parameters.Count parameters &#183; @ShortCategory(_selected.Category)</div>
         </section>
 
+        @* Narrow screens: the panels become tabs right under the stage, one shown at a time. *@
+        <div class="pbw-mtabs" role="tablist" aria-label="Panels">
+            @foreach (var panel in Panels)
+            {
+                var on = _mobileTab == panel.Id;
+                <button type="button" role="tab" @key="panel.Id" class="pbw-mtab @(on ? "pbw-mtab-on" : null)"
+                        aria-selected="@(on ? "true" : "false")" @onclick="() => ShowMobileTab(panel.Id)">@panel.Title@if (panel.Id == SignalsId && _eventLog.Entries.Count > 0)
+                        {<span class="pbw-mtab-count">@_eventLog.Entries.Count</span>}</button>
+            }
+        </div>
+
         <div class="pbw-zone pbw-zone-bottom" data-empty="@(ZoneEmpty(WorkspaceLayout.BottomZone) ? "true" : "false")">
             <div class="pbw-zgrip pbw-zgrip-bottom" title="Drag to resize"></div>
             @foreach (var id in _layout.Zone(WorkspaceLayout.BottomZone))
@@ -273,10 +284,8 @@
         </div>
     }
 
-    @if (_toast is not null)
-    {
-        <div class="pbw-toast">@_toast</div>
-    }
+    @* Always in the DOM, so screen readers hear each message the moment it lands. *@
+    <div class="pbw-toast" role="status" aria-live="polite">@_toast</div>
 </div>
 
 @code {
@@ -294,7 +303,7 @@
                                     Badge="@(Options.TryGetScaffold(_selected!.Type, out _) ? "wrapped" : null)"
                                     Collapsed="_collapsed.Contains(GraphId)" FloatInfo="_layout.Float(GraphId)"
                                     OnToggleCollapse="() => ToggleCollapse(GraphId)"
-                                    OnClose="() => TogglePanel(GraphId)"
+                                    OnClose="() => ClosePanel(GraphId)"
                                     OnRedock="() => _layout.Redock(GraphId)">
             <Body>
                 @foreach (var node in GraphNodes())
@@ -345,7 +354,7 @@
         ParametersId => @<WorkspacePanel @key="ParametersId" Id="@ParametersId" Title="Parameters"
                                          Collapsed="_collapsed.Contains(ParametersId)" FloatInfo="_layout.Float(ParametersId)"
                                          OnToggleCollapse="() => ToggleCollapse(ParametersId)"
-                                         OnClose="() => TogglePanel(ParametersId)"
+                                         OnClose="() => ClosePanel(ParametersId)"
                                          OnRedock="() => _layout.Redock(ParametersId)">
             <Actions>
                 <button type="button" class="pbw-foldall" title="@(_allFolded ? "Unfold every group" : "Fold every group")"
@@ -354,7 +363,7 @@
             </Actions>
             <Body>
                 <div class="pbw-ptoolbar">
-                    <input class="pbw-pfilter" type="search" placeholder="Filter parameters" title="Press / to focus" aria-label="Filter parameters" aria-keyshortcuts="/"
+                    <input class="pbw-pfilter" type="search" placeholder="Filter parameters (/)" title="Press / to focus" aria-label="Filter parameters" aria-keyshortcuts="/"
                            value="@_paramFilter" @oninput="e => _paramFilter = (string?)e.Value ?? string.Empty" />
                     <button type="button" class="pbw-modchip @(_modifiedOnly ? "pbw-modchip-on" : null)"
                             title="Show only modified parameters"
@@ -432,7 +441,7 @@
         RazorId => @<WorkspacePanel @key="RazorId" Id="@RazorId" Title="Razor" Badge="generated"
                                     Collapsed="_collapsed.Contains(RazorId)" FloatInfo="_layout.Float(RazorId)"
                                     OnToggleCollapse="() => ToggleCollapse(RazorId)"
-                                    OnClose="() => TogglePanel(RazorId)"
+                                    OnClose="() => ClosePanel(RazorId)"
                                     OnRedock="() => _layout.Redock(RazorId)">
             <Actions>
                 <button type="button" class="pbw-ph-copy pbw-ph-labeled" title="Copy the Razor markup to the clipboard" @onclick="CopyRazor">@Icon(IconCopy) Copy</button>
@@ -444,7 +453,7 @@
         SignalsId => @<WorkspacePanel @key="SignalsId" Id="@SignalsId" Title="Events" Badge="@_eventLog.Entries.Count.ToString()"
                                       Collapsed="_collapsed.Contains(SignalsId)" FloatInfo="_layout.Float(SignalsId)"
                                       OnToggleCollapse="() => ToggleCollapse(SignalsId)"
-                                      OnClose="() => TogglePanel(SignalsId)"
+                                      OnClose="() => ClosePanel(SignalsId)"
                                       OnRedock="() => _layout.Redock(SignalsId)">
             <Actions>
                 <button type="button" class="pbw-ph-clear pbw-ph-labeled" title="Clear the event log" @onclick="() => _eventLog.Clear()">@Icon(IconClear) Clear</button>

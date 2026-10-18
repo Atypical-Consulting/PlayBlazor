@@ -57,6 +57,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _toastCts;
     private bool _present;
     private bool _help;
+    private string _mobileTab = ParametersId;
     private string _railFilter = string.Empty;
     private bool _autoPlaying;
     private int _autoIndex;
@@ -294,15 +295,48 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     /* ── Component selection ─────────────────────────── */
 
+    /// <summary>
+    /// One rule for every library: a namespace with at least two components is a category, and
+    /// everything else (the root namespace, one-component namespaces) shares a trailing "Other".
+    /// A library with no categories at all gets an A–Z index instead, keyed on the name after the
+    /// shared prefix, so a 65- or 97-entry list is never one unbroken column.
+    /// </summary>
     private IEnumerable<IGrouping<string, ComponentDescriptor>> PickerGroups
-        => _components
+    {
+        get
+        {
             // A graph link can land on a component the picker curates out (a grid's column
             // type, say) — it still needs an entry while it is the one being played.
-            .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
-            .GroupBy(static c => c.Category)
-            // Named categories first; the library's root namespace is the catch-all and goes last.
-            .OrderBy(g => IsRootCategory(g.Key) ? 1 : 0)
-            .ThenBy(static g => g.Key, StringComparer.Ordinal);
+            var all = _components
+                .Concat(_selected is { } s && _components.All(c => c.Type != s.Type) ? [s] : Array.Empty<ComponentDescriptor>())
+                .ToList();
+            var named = all.GroupBy(static c => c.Category)
+                .Where(g => g.Count() >= 2 && !IsRootCategory(g.Key))
+                .Select(static g => g.Key)
+                .ToHashSet(StringComparer.Ordinal);
+
+            // One category holding everything is no grouping at all: index it instead.
+            if (named.Count == 0 || (named.Count == 1 && all.All(c => named.Contains(c.Category))))
+            {
+                return all.Count <= 24
+                    ? all.GroupBy(static _ => OtherCategory)
+                    : all.OrderBy(Stem, StringComparer.OrdinalIgnoreCase)
+                        .GroupBy(c => Stem(c) is { Length: > 0 } stem && char.IsLetter(stem[0]) ? char.ToUpperInvariant(stem[0]).ToString() : "#");
+            }
+
+            return all.GroupBy(c => named.Contains(c.Category) ? c.Category : OtherCategory)
+                .OrderBy(static g => g.Key == OtherCategory ? 1 : 0)
+                .ThenBy(static g => g.Key, StringComparer.Ordinal);
+        }
+    }
+
+    private const string OtherCategory = "Other";
+
+    /// <summary>"Button" from "MudButton": the name the rail sorts and indexes by.</summary>
+    private string Stem(ComponentDescriptor component)
+        => RailPrefix.Length > 0 && component.DisplayName.StartsWith(RailPrefix, StringComparison.Ordinal)
+            ? component.DisplayName[RailPrefix.Length..]
+            : component.DisplayName;
 
     /// <summary>
     /// The library's root namespace: the one every other category extends ("DaisyBlazor" under
@@ -723,6 +757,25 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     private void TogglePanel(string id)
         => _layout.ToggleHidden(id);
+
+    /// <summary>The panel's own close button: says where the panel went, since only the pills bring it back.</summary>
+    private void ClosePanel(string id)
+    {
+        _layout.ToggleHidden(id);
+        var index = Array.FindIndex(Panels, p => p.Id == id);
+        ShowToast($"{Panels[index].Title} closed · its pill or {index + 1} brings it back");
+    }
+
+    /// <summary>Narrow screens show one panel at a time under the stage; this picks it, reopening it if closed.</summary>
+    private void ShowMobileTab(string id)
+    {
+        _mobileTab = id;
+        _collapsed.Remove(id);
+        if (_layout.IsHidden(id))
+        {
+            _layout.ToggleHidden(id);
+        }
+    }
 
     private void ToggleCollapse(string id)
     {
