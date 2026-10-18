@@ -109,13 +109,6 @@
             text-underline-offset: 3px;
         }
 
-        /* The three curated benches above get a marker on their tiles in the wall below. */
-        .demo-tile[href$="pb-FluentButton=e30"],
-        .demo-tile[href$="pb-FluentDataGrid=e30"],
-        .demo-tile[href$="pb-PropertyColumn=e30"] {
-            border-color: rgba(109, 74, 255, 0.45);
-            background: #f6f3ff;
-        }
 
         /* Hero lines start on the same left edge as the content column below (880px minus its
            1.5rem gutters), not 24px left of it. */
@@ -147,15 +140,17 @@
             color: var(--pb-accent);
             font-size: 0.6875rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         @media (min-width: 721px) {
-            /* A three-row grid does not need a 480px stage; the shorter list scrolls with a cue. */
-            .fx-wide .pb-playground .pb-panel {
+            /* One button or a three-row grid does not need a 480px stage; the shorter list
+               scrolls with a cue, and the examples above it carry each bench's main axis. */
+            .fx-bench .pb-playground .pb-panel {
                 max-height: 340px;
             }
 
-            .fx-wide .pb-playground .pb-preview {
+            .fx-bench .pb-playground .pb-preview {
                 min-height: 0;
             }
         }
@@ -172,10 +167,29 @@
                 white-space: normal !important;
             }
 
-            /* The snippet wraps instead of scrolling sideways off the screen. */
-            .pb-playground .pb-code pre {
-                white-space: pre-wrap;
-                overflow-wrap: break-word;
+            /* Example chips wrap onto a second line: a sideways-scrolling row hid "Disabled" and
+               "Loading" off-screen with no cue. */
+            .fx-bench .pb-playground .pb-variants {
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+
+            /* The snippet keeps its Razor line breaks and scrolls sideways (wrapping split
+               "p => p.Name" and orphaned indented attributes). Edge shadows say there is more.
+               Overrides the shared wrap rule; the Copy button already has its own row above. */
+            .demo-main .fx-bench .pb-code pre {
+                white-space: pre;
+                overflow-wrap: normal;
+            }
+
+            .demo-main .fx-bench .pb-playground .pb-code {
+                padding-right: 1rem;
+                background:
+                    linear-gradient(to right, var(--pb-terminal) 30%, rgba(22, 22, 30, 0)) left center / 2.5rem 100% no-repeat local,
+                    linear-gradient(to left, var(--pb-terminal) 30%, rgba(22, 22, 30, 0)) right center / 2.5rem 100% no-repeat local,
+                    radial-gradient(farthest-side at 0 50%, rgba(214, 214, 231, 0.28), transparent) left center / 0.875rem 100% no-repeat scroll,
+                    radial-gradient(farthest-side at 100% 50%, rgba(214, 214, 231, 0.28), transparent) right center / 0.875rem 100% no-repeat scroll,
+                    var(--pb-terminal);
             }
 
             /* Two tile columns instead of one ~4000px column. */
