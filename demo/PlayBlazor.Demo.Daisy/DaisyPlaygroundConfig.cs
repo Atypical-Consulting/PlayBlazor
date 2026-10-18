@@ -128,6 +128,8 @@ public static class DaisyPlaygroundConfig
     {
         // A deny-list, as for Fluent: most of DaisyBlazor's public surface is meant to be played.
         options.ComponentFilter = type => !Infrastructure.Contains(StripArity(type.Name));
+        // Tile and explorer glyphs: one authored SVG per family (actions, inputs, data...).
+        options.IconResolver = DaisyComponentIcons.Resolve;
 
         // Discovery closes every open generic with string. These declare the closing only where
         // string teaches nonsense; their presets live with the section that curates them.
@@ -162,11 +164,13 @@ public static class DaisyPlaygroundConfig
         });
 
         // The landing page's flagship. Button defaults to Variant.Text (btn-ghost) and
-        // Color.Default (no color class): a near-invisible bench, so start it Filled.
+        // Color.Default (no color class): a near-invisible bench, so start it Filled and in the
+        // theme's primary colour (btn-primary), the first thing daisyUI is recognised by.
         options.For<Button>()
             .Slot(nameof(Button.ChildContent), b => b.AddContent(0, "Click me"), "Click me")
             .Parameter(nameof(Button.Variant), Variant.Filled)
-            .Variant("Primary", v => v.Set(nameof(Button.Color), Color.Primary))
+            .Parameter(nameof(Button.Color), Color.Primary)
+            .Variant("Success", v => v.Set(nameof(Button.Color), Color.Success))
             .Variant("Outlined", v => v.Set(nameof(Button.Variant), Variant.Outlined).Set(nameof(Button.Color), Color.Secondary))
             .Variant("Ghost", v => v.Set(nameof(Button.Variant), Variant.Text))
             .Variant("With icon", v => v.Set(nameof(Button.StartIcon), Icons.Material.Filled.Check))
@@ -1644,15 +1648,17 @@ public static class DaisyPlaygroundConfig
         // page" really pages. ServerData and ServerDataFunc stay undriven: they are loaders
         // (Func<GridState<T>, ..., Task<GridData<T>>>), mutually exclusive with Items, and Items
         // already demonstrates every visual the grid has.
+        // Two rows of three per page, so the flagship's pager opens live instead of disabled.
         options.For<DataGrid<Person>>()
             .Parameter(nameof(DataGrid<Person>.Items), SampleRows, "@_people")
+            .Parameter(nameof(DataGrid<Person>.RowsPerPage), 2)
             .Slot(nameof(DataGrid<Person>.Columns), DaisyDemoFragments.PeopleColumns, DaisyDemoFragmentSources.PeopleColumns)
             .Slot(nameof(DataGrid<Person>.PagerContent), DaisyDemoFragments.PeoplePager, DaisyDemoFragmentSources.PeoplePager)
             .Related<PropertyColumn<Person, string>>()
             .Related<DataGridPager<Person>>()
             .Variant("Striped hover", v => v.Set(nameof(DataGrid<Person>.Striped), true).Set(nameof(DataGrid<Person>.Hover), true))
             .Variant("Dense bordered", v => v.Set(nameof(DataGrid<Person>.Dense), true).Set(nameof(DataGrid<Person>.Bordered), true))
-            .Variant("Two per page", v => v.Set(nameof(DataGrid<Person>.RowsPerPage), 2))
+            .Variant("Ten per page", v => v.Set(nameof(DataGrid<Person>.RowsPerPage), 10))
             .Variant("Loading", v => v.Set(nameof(DataGrid<Person>.Loading), true).Set(nameof(DataGrid<Person>.SkeletonRows), 3))
             .Variant("Elevated", v => v.Set(nameof(DataGrid<Person>.Elevation), 2));
 

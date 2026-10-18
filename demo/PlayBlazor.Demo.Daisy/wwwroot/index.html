@@ -21,6 +21,8 @@
     <link href="css/app.css" rel="stylesheet" />
     <link href="_content/PlayBlazor.Demo.Shared/css/demo.css" rel="stylesheet" />
     <link href="PlayBlazor.Demo.Daisy.styles.css" rel="stylesheet" />
+    <!-- Daisy-only adjustments to the shared demo chrome; last, so it wins over demo.css and the scoped bundle. -->
+    <link href="css/daisy-demo.css" rel="stylesheet" />
     <style>
         /* Boot screen — an empty specimen stage waiting for its component.
            The fill width tracks Blazor's real load progress via --blazor-load-percentage. */
@@ -54,7 +56,7 @@
             height: 0.9em;
             margin-left: 0.4rem;
             vertical-align: text-bottom;
-            background: #6d4aff;
+            background: var(--color-primary, #6d4aff);
             animation: boot-blink 1.1s steps(2, start) infinite;
         }
 
@@ -70,7 +72,7 @@
             height: 100%;
             width: var(--blazor-load-percentage, 0%);
             border-radius: 999px;
-            background: #6d4aff;
+            background: var(--color-primary, #6d4aff);
             transition: width 200ms ease;
         }
 
@@ -86,6 +88,104 @@
 
         .boot-pct::after {
             content: var(--blazor-load-percentage-text, "");
+        }
+
+        /* Boot failure: the runtime or a framework file did not load. Same palette, one way out. */
+        .boot-error {
+            display: none;
+            max-width: 22rem;
+            text-align: center;
+            color: #1b1b22;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .boot-error p {
+            margin: 0 0 0.875rem;
+        }
+
+        /* Two triggers: Blazor.start() rejecting or its script 404ing (.boot-failed), and the runtime
+           failing a download, where Blazor shows #blazor-error-ui but never rejects. While the boot
+           screen is up, it carries the message and the banner stays hidden. */
+        .boot-failed .boot-track,
+        .boot-failed .boot-caption,
+        body:has(#blazor-error-ui[style*="block"]) .boot-track,
+        body:has(#blazor-error-ui[style*="block"]) .boot-caption {
+            display: none;
+        }
+
+        .boot-failed .boot-caret,
+        body:has(#blazor-error-ui[style*="block"]) .boot-caret {
+            animation: none;
+            background: #b42318;
+        }
+
+        .boot-failed .boot-error,
+        body:has(#blazor-error-ui[style*="block"]) .boot-error {
+            display: block;
+        }
+
+        body:has(.boot) #blazor-error-ui {
+            display: none !important;
+        }
+
+        .boot-error button,
+        #blazor-error-ui .reload {
+            padding: 0.5rem 1.125rem;
+            border: 0;
+            border-radius: 8px;
+            background: var(--color-primary, #6d4aff);
+            color: var(--color-primary-content, #ffffff);
+            font: inherit;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .boot-error button:focus-visible,
+        #blazor-error-ui .reload:focus-visible,
+        #blazor-error-ui .dismiss:focus-visible {
+            outline: 2px solid var(--color-primary, #6d4aff);
+            outline-offset: 2px;
+        }
+
+        /* Runtime failure after boot: Blazor sets display:block on this element itself. */
+        #blazor-error-ui {
+            display: none;
+            position: fixed;
+            left: 50%;
+            bottom: 1rem;
+            z-index: 1000;
+            width: min(36rem, calc(100% - 2rem));
+            box-sizing: border-box;
+            transform: translateX(-50%);
+            padding: 0.875rem 1rem;
+            border: 1px solid #f0c8c8;
+            border-radius: 10px;
+            background: #fff7f7;
+            color: #7a1c24;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            box-shadow: 0 8px 24px -12px rgba(27, 27, 34, 0.25);
+        }
+
+        #blazor-error-ui p {
+            margin: 0 2rem 0.625rem 0;
+        }
+
+        #blazor-error-ui .dismiss {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 2rem;
+            height: 2rem;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: inherit;
+            font-size: 1.125rem;
+            cursor: pointer;
         }
 
         @keyframes boot-blink {
@@ -104,8 +204,53 @@
             <div class="boot-chip">&lt;PlayBlazor /&gt;<span class="boot-caret"></span></div>
             <div class="boot-track"><div class="boot-fill"></div></div>
             <div class="boot-caption">Loading the .NET runtime <span class="boot-pct"></span></div>
+            <div class="boot-error" role="alert">
+                <p>The playground could not load. Check your connection, then reload the page.</p>
+                <button type="button" onclick="location.reload()">Reload</button>
+            </div>
         </div>
     </div>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <div id="blazor-error-ui" role="alert">
+        <p>Something went wrong in the playground. Reloading starts it again from the top.</p>
+        <a href="" class="reload">Reload</a>
+        <button type="button" class="dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+    <script>
+        function pbBootFailed(error) {
+            if (error) console.error(error);
+            var boot = document.querySelector(".boot");
+            if (boot) boot.classList.add("boot-failed");
+        }
+
+        // The tile filter on the home page. The tiles belong to the shared DemoLanding, so this
+        // only toggles their hidden attribute; Enter opens the first match.
+        function pbVisibleTiles() {
+            return Array.prototype.filter.call(document.querySelectorAll(".demo-tile"), function (t) { return !t.hidden; });
+        }
+
+        document.addEventListener("input", function (e) {
+            if (e.target.id !== "daisy-filter") return;
+            var query = e.target.value.trim().toLowerCase();
+            var shown = 0;
+            document.querySelectorAll(".demo-tile").forEach(function (tile) {
+                var hit = tile.textContent.toLowerCase().indexOf(query) !== -1;
+                tile.hidden = !hit;
+                if (hit) shown++;
+            });
+            document.getElementById("daisy-filter-status").textContent = !query ? ""
+                : shown === 0 ? "No component matches \u201c" + e.target.value.trim() + "\u201d. Try a shorter name."
+                : shown + (shown === 1 ? " match. Press Enter to open it." : " matches. Press Enter to open the first.");
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.target.id !== "daisy-filter" || e.key !== "Enter") return;
+            var first = pbVisibleTiles()[0];
+            if (first && e.target.value.trim()) { e.preventDefault(); first.click(); }
+        });
+    </script>
+    <script src="_framework/blazor.webassembly.js" autostart="false" onerror="pbBootFailed()"></script>
+    <script>
+        if (window.Blazor) Blazor.start().catch(pbBootFailed);
+    </script>
 </body>
 </html>
