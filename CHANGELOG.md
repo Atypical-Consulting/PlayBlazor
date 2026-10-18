@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Atypical-Consulting/PlayBlazor/compare/v0.2.0...v0.3.0) (2026-10-18)
+
+
+### Features
+
+* rework the demo site UX — shared nav, DaisyBlazor first, families, working deep links ([#16](https://github.com/Atypical-Consulting/PlayBlazor/issues/16)) ([37a37b5](https://github.com/Atypical-Consulting/PlayBlazor/commit/37a37b51dff8ef7743dd1282c096cf1cc6a180e8))
+
 ## [0.2.0](https://github.com/Atypical-Consulting/PlayBlazor/compare/v0.1.0...v0.2.0) (2026-10-18)
 
 
