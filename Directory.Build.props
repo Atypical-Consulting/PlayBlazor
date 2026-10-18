@@ -29,7 +29,7 @@
   <!-- One version for the package, bumped by the release-please PR (see release-please-config.json).
        Do not hand-edit it. -->
   <PropertyGroup>
-    <Version>0.1.0</Version> <!-- x-release-please-version -->
+    <Version>0.2.0</Version> <!-- x-release-please-version -->
   </PropertyGroup>
 
   <!-- Source Link -->
