@@ -24,7 +24,7 @@ public static class FluentPlaygroundConfig
     /// </summary>
     private static readonly HashSet<string> Infrastructure =
     [
-        "ColumnReorderOptions", "ColumnResizeOptions", "Defer", "FluentDialogProvider",
+        "ColumnReorderOptions", "ColumnResizeOptions", "ColumnSortMenuItems", "ColumnSortOptions", "Defer", "FluentDialogProvider",
         "FluentKeyCodeProvider", "FluentMessageBarProvider", "FluentOptionString", "FluentProviders",
         "FluentToastProvider", "FluentTooltipProvider", "FreeOptionOutput",
     ];
@@ -520,10 +520,10 @@ public static class FluentPlaygroundConfig
             .Variant("Drop target only", v => v.Set(nameof(FluentDropZone<string>.Droppable), true).Set(nameof(FluentDropZone<string>.Draggable), false))
             .Variant("Draggable only", v => v.Set(nameof(FluentDropZone<string>.Draggable), true).Set(nameof(FluentDropZone<string>.Droppable), false));
 
-        options.For<FluentOverflow>()
-            .Slot(nameof(FluentOverflow.ChildContent), FluentDemoFragments.OverflowItems, FluentDemoFragmentSources.OverflowItems)
-            .Variant("Vertical", v => v.Set(nameof(FluentOverflow.Orientation), Orientation.Vertical))
-            .Variant("Hidden until loaded", v => v.Set(nameof(FluentOverflow.VisibleOnLoad), false));
+        options.For<FluentOverflow<string>>()
+            .Slot(nameof(FluentOverflow<string>.ChildContent), FluentDemoFragments.OverflowItems, FluentDemoFragmentSources.OverflowItems)
+            .Variant("Vertical", v => v.Set(nameof(FluentOverflow<string>.Orientation), Orientation.Vertical))
+            .Variant("Hidden until loaded", v => v.Set(nameof(FluentOverflow<string>.VisibleOnLoad), false));
 
         options.For<FluentPullToRefresh>()
             .Slot(nameof(FluentPullToRefresh.ChildContent), b => b.AddContent(0, "Pull down to refresh the feed."), "Pull down to refresh the feed.")

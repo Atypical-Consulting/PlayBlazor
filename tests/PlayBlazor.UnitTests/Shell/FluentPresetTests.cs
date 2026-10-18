@@ -121,7 +121,7 @@ public class FluentPresetTests
     [TestCase(typeof(FluentSortableList<string>))]
     [TestCase(typeof(FluentDragContainer<string>))]
     [TestCase(typeof(FluentDropZone<string>))]
-    [TestCase(typeof(FluentOverflow))]
+    [TestCase(typeof(FluentOverflow<string>))]
     [TestCase(typeof(FluentPullToRefresh))]
     [TestCase(typeof(FluentKeyCode))]
     public void ComponentHasCuration(Type component)
