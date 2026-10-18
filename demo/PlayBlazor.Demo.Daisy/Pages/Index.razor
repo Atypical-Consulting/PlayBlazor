@@ -9,32 +9,49 @@
              Current="daisy">
     <Flagships>
         @* The library's own lead: the shared hero names PlayBlazor, this names what it is pointed at.
-           Literal daisyUI badge classes, so Tailwind emits them: the theme's palette, rendered by the
-           same compiled sheet the specimens use. *@
+           Literal daisyUI classes (btn, badge, bg-*), so Tailwind emits them from the same compiled
+           sheet the specimens use. *@
         <section class="daisy-lead" aria-labelledby="daisy-lead-title">
-            <h2 id="daisy-lead-title" class="daisy-lead-title">DaisyBlazor, played live</h2>
-            <p class="daisy-lead-text">
-                Three benches to try first, then every component in the library. Each specimen renders
-                in daisyUI's <code>daisyblazor</code> theme, compiled by Tailwind at build time.
-            </p>
-            <div class="daisy-theme-swatches" aria-label="The daisyblazor theme palette">
-                <span class="badge badge-primary">primary</span>
-                <span class="badge badge-secondary">secondary</span>
-                <span class="badge badge-accent">accent</span>
-                <span class="badge badge-neutral">neutral</span>
-                <span class="badge badge-info">info</span>
-                <span class="badge badge-success">success</span>
-                <span class="badge badge-warning">warning</span>
-                <span class="badge badge-error">error</span>
+            <div class="daisy-lead-copy">
+                <h2 id="daisy-lead-title" class="daisy-lead-title">DaisyBlazor, played live</h2>
+                <p class="daisy-lead-text">
+                    Start with these three components, then open any of the @_count. Every specimen is a real
+                    DaisyBlazor component in daisyUI's <code>daisyblazor</code> theme: change a parameter and
+                    the component and its Razor snippet update together.
+                </p>
+                <a class="btn btn-primary daisy-docs" href="@DocsUrl">Read the DaisyBlazor docs</a>
+                @* Fragment links stay base-relative: under <base href> "#x" resolves to this page. *@
+                <nav class="daisy-jump" aria-label="On this page">
+                    <a href="#bench-button">Button</a>
+                    <a href="#bench-datagrid">DataGrid</a>
+                    <a href="#bench-column">PropertyColumn</a>
+                    <a href="#catalog">All @_count components</a>
+                </nav>
             </div>
-            @* Fragment links stay base-relative: under <base href> "#x" resolves to this page. *@
-            <nav class="daisy-jump" aria-label="On this page">
-                <a href="#bench-button">Button</a>
-                <a href="#bench-datagrid">DataGrid</a>
-                <a href="#bench-column">PropertyColumn</a>
-                <a href="#catalog">All @_count components</a>
-                <a class="daisy-docs" href="@DocsUrl">Read the DaisyBlazor docs <span aria-hidden="true">&#8599;</span></a>
-            </nav>
+            @* A small composition, live: DaisyBlazor's Card and Button with daisyUI badges, so the
+               library's character shows before the first bench. The button really toggles. *@
+            <figure class="daisy-lead-proof">
+                <Card Class="bg-base-100 shadow-sm">
+                    <CardContent>
+                        <h3 class="card-title">Ada Lovelace</h3>
+                        <p>Wrote the first published algorithm.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="badge badge-primary badge-soft">Analyst</span>
+                            <span class="badge badge-secondary badge-soft">Analytical Engine</span>
+                        </div>
+                    </CardContent>
+                    <CardActions Class="justify-end">
+                        <Button Variant="@(_following ? Variant.Outlined : Variant.Filled)" Color="Color.Primary"
+                                OnClick="@(() => _following = !_following)">@(_following ? "Following" : "Follow")</Button>
+                    </CardActions>
+                </Card>
+                <figcaption>
+                    <span class="daisy-palette" aria-hidden="true">
+                        <i class="bg-primary"></i><i class="bg-secondary"></i><i class="bg-accent"></i><i class="bg-neutral"></i><i class="bg-info"></i><i class="bg-success"></i><i class="bg-warning"></i><i class="bg-error"></i>
+                    </span>
+                    Card and Button, composed in the <code>daisyblazor</code> palette.
+                </figcaption>
+            </figure>
         </section>
 
         <section class="demo-section daisy-bench-compact" id="bench-button">
@@ -44,23 +61,26 @@
         </section>
 
         <section class="demo-section" id="bench-datagrid">
-            <h2 class="demo-tag">DataGrid&lt;Person&gt;</h2>
+            <h2 class="demo-tag">DataGrid<span class="daisy-tparam">&lt;Person&gt;</span></h2>
             <p class="demo-note">Click a header to sort, page through two rows at a time, then try Striped, Dense or Bordered. The sample people and columns are already filled in.</p>
             <PlaygroundView Component="typeof(DataGrid<Person>)" />
         </section>
 
         <section class="demo-section" id="bench-column">
-            <h2 class="demo-tag">PropertyColumn&lt;Person, string&gt;</h2>
+            <h2 class="demo-tag">PropertyColumn<span class="daisy-tparam">&lt;Person, string&gt;</span></h2>
             <p class="demo-note">A column only renders inside a grid, so this one is shown in a real DataGrid. Rename its Title or turn off Sortable and only that column changes.</p>
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 
+        @* Long page, long phone scroll: a way back up that appears once the hero is gone. *@
+        <a class="daisy-top" href="#top">Back to top</a>
     </Flagships>
 </DemoLanding>
 
 @code {
     private const string DocsUrl = "https://phmatray.github.io/daisyblazor/";
     private int _count;
+    private bool _following;
 
     /// <inheritdoc />
     protected override void OnInitialized()
