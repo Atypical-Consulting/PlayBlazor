@@ -71,7 +71,7 @@ jobs:
       - name: Install the SPA fallback
         run: cp publish/wwwroot/index.html publish/wwwroot/404.html
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: app-${{ matrix.app }}
           path: publish/wwwroot
@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           pattern: app-*
           path: staging
