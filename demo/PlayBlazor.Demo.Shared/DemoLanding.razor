@@ -6,9 +6,15 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
+@* One wrapper, so the shared layout rules below outrank an app sheet's single-class overrides:
+   every library gets the same column, nav, toolbar and tile treatment. *@
+<div class="demo-landing">
 <header class="demo-hero" id="top">
     <div class="demo-hero-inner">
         <LibrarySwitcher Current="@Current" />
+        @* Pitch left, proof right on a wide screen: the hero stays short enough that the first
+           live bench starts inside the first viewport. *@
+        <div class="demo-hero-pitch">
         @* The library rides in the h1: a deep-linked visitor knows which showcase this is. *@
         <h1 class="demo-wordmark">
             <span class="demo-mark" aria-hidden="true">▶</span> PlayBlazor
@@ -20,6 +26,14 @@
             <code>EventCallback</code> a log entry, every configuration a shareable link.
             No story files. Nothing below is hand-written.
         </p>
+        <div class="demo-actions">
+            @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
+               walks past <base href> straight to the domain root. *@
+            <a class="demo-cta" href="explorer">Open the explorer</a>
+            <a class="demo-cta-2" href="#catalog">Browse all @_covered.Count components ↓</a>
+        </div>
+        </div>
+        <div class="demo-hero-proof">
         @* The proof, computed from discovery at render time: never a hand-typed number. The counts
            are one unit, so a long assembly name pushes all three to the next line, never one. *@
         <p class="demo-proof">
@@ -32,17 +46,12 @@
             </span>
             <span class="demo-proof-note">Counted by reflection as this page rendered.</span>
         </p>
-        <div class="demo-actions">
-            @* Base-relative, never "/explorer": under a project subpath (GitHub Pages) a leading slash
-               walks past <base href> straight to the domain root. *@
-            <a class="demo-cta" href="explorer">Open the explorer</a>
-            <a class="demo-cta-2" href="#catalog">Browse all @_covered.Count components ↓</a>
-        </div>
         <div class="demo-install">
             <span class="demo-install-label">Use it on your own library</span>
             <code class="demo-install-cmd">@InstallCommand</code>
-            <button type="button" class="demo-install-copy" @onclick="CopyInstall">@(_copied ? "Copied" : "Copy")</button>
+            <button type="button" class="demo-install-copy" aria-live="polite" @onclick="CopyInstall">@_copyLabel</button>
             <a class="demo-install-docs" href="@SetupUrl">Setup guide ↗</a>
+        </div>
         </div>
     </div>
 </header>
@@ -77,25 +86,25 @@
         }
         else
         {
-            @* An A–Z index: tiles flow down the columns, each letter heading its run. *@
+            @* An A–Z index: each letter's run is one unbreakable block, so a column never opens on a
+               headless continuation. No tile icons: a category glyph repeated across unrelated
+               components is noise, and the letter already does the grouping. *@
             <div class="demo-tiles">
                 @foreach (var group in Visible.GroupBy(c => char.ToUpperInvariant(Stem(c.DisplayName)[0])))
                 {
-                    <h3 class="demo-letter" @key="group.Key">@group.Key</h3>
+                    <div class="demo-letter-group" @key="group.Key">
+                    <h3 class="demo-letter">@group.Key</h3>
                     @foreach (var component in group)
                     {
                         var name = component.DisplayName;
                         var stem = Stem(name);
                         <a class="demo-tile" href="@TileHref(name)" title="@name" @key="name">
-                            @if (Options.IconResolver?.Invoke(component.Type) is { } icon)
-                            {
-                                <svg viewBox="0 0 24 24" aria-hidden="true">@((MarkupString)icon)</svg>
-                            }
                             @* <wbr> at each PascalCase seam of the stem: a long name wraps at a word, never mid-word.
                                None between prefix and stem, so "Mud" never strands on a line of its own. *@
                             <span>@if (stem.Length < name.Length){<b class="demo-tile-prefix">@_prefix</b>}@foreach (var word in Words(stem)){@word<wbr />}</span>
                         </a>
                     }
+                    </div>
                 }
             </div>
         }
@@ -115,6 +124,7 @@
         <a href="#top">Back to top ↑</a>
     </p>
 </footer>
+</div>
 
 @code {
     private const string InstallCommand = "dotnet add package PlayBlazor";
@@ -125,7 +135,7 @@
     private string? _prefix;
     private string[] _suggestions = [];
     private string _filter = "";
-    private bool _copied;
+    private string _copyLabel = "Copy";
 
     /// <summary>The assembly whose components this app explores.</summary>
     [Parameter, EditorRequired] public Assembly Assembly { get; set; } = default!;
@@ -187,11 +197,12 @@
         try
         {
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", InstallCommand);
-            _copied = true;
+            _copyLabel = "Copied";
         }
         catch (JSException)
         {
-            // Clipboard refused (insecure context, permissions): the command stays selectable.
+            // Clipboard refused (insecure context, permissions): say so; the command is select-all.
+            _copyLabel = "Blocked: select the command";
         }
     }
 

@@ -1,4 +1,5 @@
 :root {
+    --demo-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --demo-accent: #6d4aff;
     --demo-ink: #1b1b22;
     --demo-ink-2: #6e6e7a;
@@ -39,7 +40,7 @@ html {
 /* ---- Hero ------------------------------------------------------------- */
 
 .demo-hero {
-    padding: 1.25rem 0 3rem;
+    padding: 1.25rem 0 2.5rem;
     background: #16161e;
     color: #f0f0f6;
 }
@@ -52,14 +53,64 @@ html {
     padding: 0 1.5rem;
 }
 
+/* Wide screens: pitch left, proof and install right, so the hero is ~200px shorter and the first
+   live bench opens inside the first viewport instead of below it. */
+@media (min-width: 960px) {
+    .demo-hero > .demo-hero-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        column-gap: 3.5rem;
+        align-items: end;
+    }
+
+    .demo-hero-inner > .demo-switcher {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+
+    .demo-hero-proof {
+        padding-left: 2rem;
+        border-left: 1px solid rgba(240, 240, 246, 0.12);
+    }
+
+    /* A column of command output: file name, then the three counts right-aligned on their numbers. */
+    .demo-hero-proof .demo-proof {
+        margin: 0;
+        padding: 0;
+        border-top: none;
+    }
+
+    .demo-hero-proof .demo-proof-src {
+        flex-basis: 100%;
+    }
+
+    .demo-hero-proof .demo-proof-arrow {
+        display: none;
+    }
+
+    .demo-hero-proof .demo-proof-counts {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.125rem 0.625rem;
+    }
+
+    .demo-hero-proof .demo-proof-counts > span:not(.demo-proof-arrow) {
+        display: contents;
+    }
+
+    .demo-hero-proof .demo-proof-counts strong {
+        text-align: right;
+    }
+}
+
 .demo-switcher {
     display: inline-flex;
     gap: 2px;
-    margin: 0 0 2.5rem;
+    margin: 0 0 2rem;
     padding: 3px;
     border-radius: 10px;
     background: rgba(240, 240, 246, 0.07);
-    font-family: var(--demo-mono);
+    font-family: var(--demo-sans);
     font-size: 0.8125rem;
     font-weight: 600;
 }
@@ -221,7 +272,7 @@ a.demo-switch:hover {
     border-radius: 10px;
     background: var(--demo-accent);
     color: #ffffff;
-    font-family: var(--demo-mono);
+    font-family: var(--demo-sans);
     font-size: 0.9375rem;
     font-weight: 700;
     text-decoration: none;
@@ -247,7 +298,7 @@ a.demo-switch:hover {
     align-items: center;
     min-height: 44px;
     color: #cdbfff;
-    font-family: var(--demo-mono);
+    font-family: var(--demo-sans);
     font-size: 0.875rem;
     font-weight: 600;
     text-decoration: underline;
@@ -299,7 +350,6 @@ a.demo-switch:hover {
     background: transparent;
     color: #f0f0f6;
     font: inherit;
-    font-family: var(--demo-mono);
     font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
@@ -432,6 +482,7 @@ a.demo-switch:hover {
 /* ---- Catalog ---------------------------------------------------------- */
 
 .demo-catalog {
+    margin-bottom: 0;
     padding-top: 2.5rem;
     border-top: 1px solid #e2e2ea;
 }
@@ -572,7 +623,7 @@ a.demo-switch:hover {
     border-radius: 8px;
     background: #ffffff;
     color: var(--demo-accent);
-    font-family: var(--demo-mono);
+    font: inherit;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -606,7 +657,11 @@ a.demo-switch:hover {
     break-after: avoid;
 }
 
-.demo-letter:first-child {
+.demo-letter-group {
+    break-inside: avoid;
+}
+
+.demo-letter-group:first-child .demo-letter {
     padding-top: 0;
 }
 
@@ -634,20 +689,6 @@ a.demo-switch:hover {
     box-shadow: 0 2px 10px -4px rgba(109, 74, 255, 0.35);
 }
 
-.demo-tile svg {
-    flex: none;
-    box-sizing: border-box;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: rgba(109, 74, 255, 0.09);
-}
-
-.demo-tile svg {
-    padding: 3px;
-    fill: var(--demo-accent);
-}
-
 /* Names wrap at their <wbr> word seams (two lines at most in practice), never into an ellipsis. */
 .demo-tile span {
     min-width: 0;
@@ -655,8 +696,14 @@ a.demo-switch:hover {
     overflow-wrap: anywhere;
 }
 
-.demo-tile-prefix {
-    color: #9a9aa8;
+/* The prefix is part of the real name, so it keeps AA contrast (ink-2, ~5:1); it steps back by
+   weight instead, under a stem set one step heavier. */
+.demo-tile span {
+    font-weight: 600;
+}
+
+.demo-tile .demo-tile-prefix {
+    color: var(--demo-ink-2);
     font-weight: 400;
 }
 
@@ -764,4 +811,125 @@ a.demo-switch:hover {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem 1.5rem;
+}
+
+/* ---- One page, three libraries -----------------------------------------
+   Each app's own sheet loads after this one and used to fork the shared page: a narrower main
+   column, three different "on this page" bars, glyph-only or worded stage tools, a different phone
+   bench order, tinted or tagged tiles. Rooted at .demo-landing (two classes deep and more), these
+   rules outrank those single-class overrides so switching library changes the specimens, not
+   the page. Stopgap until each Index.razor stops styling its own copy of the chrome. */
+
+.demo-landing > .demo-main,
+.demo-landing > .demo-footer {
+    box-sizing: border-box;
+    max-width: 1080px;
+}
+
+/* The "on this page" bar, whichever markup the app supplies: a muted line, plain links. */
+.demo-landing .demo-main :is(.demo-jump, .fx-benches, .daisy-jump) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.375rem 1.25rem;
+    margin: 0 0 2rem;
+    padding: 0;
+    border: none;
+    color: var(--demo-ink-2);
+    font-family: var(--demo-sans);
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.demo-landing .demo-main .daisy-jump {
+    margin-top: 1rem;
+}
+
+.demo-landing .demo-main .fx-benches .fx-benches-label {
+    flex-basis: auto;
+    font-size: inherit;
+}
+
+.demo-landing .demo-main :is(.demo-jump, .fx-benches, .daisy-jump) a {
+    display: inline;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #5534e0;
+    font-family: var(--demo-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-underline-offset: 3px;
+}
+
+.demo-landing .demo-main :is(.demo-jump, .fx-benches, .daisy-jump) a:is(:hover, :focus-visible) {
+    background: none;
+    color: #5534e0;
+    text-decoration: underline;
+}
+
+/* Stage tools: words on every library, never bare glyphs whose meaning lives in a hover title. */
+.demo-landing .demo-main .pb-playground .pb-env-btn {
+    width: auto;
+    padding: 0 0.45rem;
+    font-size: 0;
+}
+
+.demo-landing .demo-main .pb-playground .pb-env-btn::after {
+    font-family: var(--demo-sans);
+    font-size: 0.6875rem;
+    font-weight: 500;
+}
+
+.demo-landing .demo-main .pb-playground .pb-env-dark::after { content: "Dark"; }
+.demo-landing .demo-main .pb-playground .pb-env-rtl::after { content: "RTL"; }
+.demo-landing .demo-main .pb-playground .pb-env-checker::after { content: "Grid"; }
+
+.demo-landing .demo-main .pb-playground .pb-stage-toolbar::before {
+    content: "Width";
+    order: 1;
+    margin-left: 0.25rem;
+    color: #5f5f6b;
+    font-family: var(--demo-sans);
+    font-size: 0.6875rem;
+}
+
+.demo-landing .demo-main .pb-playground .pb-env-width {
+    order: 2;
+}
+
+.demo-landing .demo-main .pb-playground .pb-stage-dark .pb-stage-toolbar::before {
+    color: #b9b9c9;
+}
+
+/* The event list names every callback; on the landing it is one line, the rest in the explorer. */
+.demo-landing .demo-main .pb-playground .pb-events-empty {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Tiles look the same everywhere: no per-app tint or tag the wall never explains. */
+.demo-landing .demo-tiles .demo-tile {
+    border: 1px solid #e6e6ee;
+    background: #ffffff;
+    color: var(--demo-ink);
+}
+
+.demo-landing .demo-tiles .demo-tile:hover {
+    border-color: var(--demo-accent);
+}
+
+.demo-landing .demo-tiles .demo-tile::after {
+    content: none;
+}
+
+/* Phones: every bench stacks stage, parameters, snippet, events, in source order. */
+@media (max-width: 720px) {
+    .demo-landing .demo-main .pb-playground :is(.pb-panel, .pb-code, .pb-events) {
+        order: 0;
+    }
 }
