@@ -109,7 +109,73 @@
             background: #f6f3ff;
         }
 
+        /* The page restates the wall's heading and note above its find field (Pages/Index.razor),
+           so the shared copies would read twice. */
+        .demo-section:has(> .demo-tiles) > :is(.demo-covered-title, .demo-note) {
+            display: none;
+        }
+
+        /* Hero lines start on the same left edge as the content column below (880px minus its
+           1.5rem gutters), not 24px left of it. */
+        .demo-hero > * {
+            max-width: calc(880px - 3rem);
+        }
+
+        /* Scroll cue for capped parameter lists: shadows appear at an edge only while rows hide
+           past it (the "local" covers scroll with the content and mask the "scroll" shadows). */
+        .pb-playground .pb-panel {
+            overscroll-behavior: contain;
+            background:
+                linear-gradient(var(--pb-panel) 30%, rgba(251, 251, 253, 0)) center top / 100% 2.5rem no-repeat local,
+                linear-gradient(rgba(251, 251, 253, 0), var(--pb-panel) 70%) center bottom / 100% 2.5rem no-repeat local,
+                radial-gradient(farthest-side at 50% 0, rgba(27, 27, 34, 0.16), transparent) center top / 100% 0.75rem no-repeat scroll,
+                radial-gradient(farthest-side at 50% 100%, rgba(27, 27, 34, 0.16), transparent) center bottom / 100% 0.75rem no-repeat scroll,
+                var(--pb-panel);
+        }
+
+        /* FluentButton opens on Primary, which no chip reproduces (a no-op chip would fail the
+           variant-liveness gate). Name that opening state as a current, non-clickable pill until a
+           chip or any parameter changes it; Reset all then brings it back. */
+        #bench-button .pb-panel:not(:has(.pb-variant-active, .pb-row-modified)) .pb-variants::before {
+            content: "Primary \00b7  opening state";
+            padding: 0.2rem 0.55rem;
+            border: 1px solid var(--pb-accent);
+            border-radius: 999px;
+            background: var(--pb-accent-soft);
+            color: var(--pb-accent);
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+
+        @media (min-width: 721px) {
+            /* A three-row grid does not need a 480px stage; the shorter list scrolls with a cue. */
+            .fx-wide .pb-playground .pb-panel {
+                max-height: 340px;
+            }
+
+            .fx-wide .pb-playground .pb-preview {
+                min-height: 0;
+            }
+        }
+
         @media (max-width: 720px) {
+            /* Narrow grid benches: less stage gutter and cell padding, and cells wrap instead of
+               cutting "Ada Lovelace" to "Ada Lov…". */
+            .fx-wide .pb-playground .pb-preview {
+                padding-inline: 0.75rem;
+            }
+
+            .fx-wide .fluent-data-grid :is(td, th) {
+                padding-inline: 8px !important;
+                white-space: normal !important;
+            }
+
+            /* The snippet wraps instead of scrolling sideways off the screen. */
+            .pb-playground .pb-code pre {
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
+            }
+
             /* Two tile columns instead of one ~4000px column. */
             .demo-tiles {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -118,7 +184,7 @@
             /* PlaygroundView uncaps its parameter list on phones, which put ~1500px of rows
                between the stage and the snippet. Keep a capped, scrolling list instead. */
             .pb-playground .pb-panel {
-                max-height: 360px;
+                max-height: 380px;
             }
 
             /* The Copy button is absolutely placed over the first code line; give it its own row. */
@@ -146,5 +212,16 @@
         </div>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        // "/" jumps to the component finder, unless the visitor is already typing somewhere.
+        document.addEventListener("keydown", e => {
+            if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+            if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+            const find = document.getElementById("fx-find-input");
+            if (!find) return;
+            e.preventDefault();
+            find.focus();
+        });
+    </script>
 </body>
 </html>

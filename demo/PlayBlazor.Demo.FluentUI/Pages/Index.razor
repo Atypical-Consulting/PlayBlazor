@@ -1,22 +1,25 @@
 @page "/"
+@using PlayBlazor.Discovery
+@inject IComponentCatalogProvider Catalog
+@inject PlayBlazorOptions Options
 <DemoLanding Assembly="typeof(FluentButton).Assembly"
-             LibraryName="Fluent UI Blazor"
+             LibraryName="@LibraryName"
              DocsUrl="@DocsUrl"
              Current="fluent">
     <Flagships>
         @* Fragment links stay base-relative too: "#id" resolves against <base href>, which is this page. *@
         <nav class="fx-benches" aria-label="On this page">
-            <span class="fx-benches-label">Fluent UI Blazor, three curated benches</span>
+            <span class="fx-benches-label">On this page: three hand-tuned playgrounds, then every component</span>
             <a href="#bench-button">FluentButton</a>
             <a href="#bench-grid">FluentDataGrid</a>
             <a href="#bench-column">PropertyColumn</a>
-            <a href="#find">Every component</a>
+            <a href="#find">All @_names.Length components</a>
             <a class="fx-docs" href="@DocsUrl" target="_blank" rel="noopener">Library docs &#8599;</a>
         </nav>
 
         <section class="demo-section fx-bench" id="bench-button">
             <h2 class="demo-tag">FluentButton</h2>
-            <p class="demo-note">Opens on Fluent's Primary appearance. Pick an example, flip a parameter, and the snippet below follows.</p>
+            <p class="demo-note">Opens on Fluent's Primary appearance. Pick an example, flip a parameter, and the snippet below follows; Reset all brings it back.</p>
             <PlaygroundView Component="typeof(FluentButton)" />
         </section>
 
@@ -32,41 +35,91 @@
             <PlaygroundView Component="typeof(PropertyColumn<Person, string>)" />
         </section>
 
-        <div class="fx-find" id="find">
-            <label class="fx-find-label" for="fx-find-input">Find a component</label>
-            <input id="fx-find-input" class="fx-find-input" type="search" autocomplete="off" spellcheck="false"
-                   placeholder="Grid, Picker, Dialog…"
-                   @bind="Query" @bind:event="oninput" />
-        </div>
+        @* The tile wall's own heading and note (shared DemoLanding) are hidden in index.html and
+           restated here, so the find field sits under the heading it belongs to, right on the wall. *@
+        <section class="fx-find" id="find" aria-labelledby="fx-find-title">
+            <h2 class="demo-covered-title" id="fx-find-title">The documented surface, discovered</h2>
+            <p class="demo-note">
+                @_names.Length @LibraryName components were discovered here — each tile opens its playground.
+                <span class="fx-legend"><span class="fx-swatch" aria-hidden="true"></span>Tinted tiles also have a playground above.</span>
+            </p>
+            <div class="fx-find-bar">
+                <label class="fx-find-label" for="fx-find-input">Find a component</label>
+                <div class="fx-find-field">
+                    <input id="fx-find-input" class="fx-find-input" type="search" autocomplete="off" spellcheck="false"
+                           placeholder="Grid, Picker, Dialog…" aria-keyshortcuts="/" aria-describedby="fx-find-status"
+                           @bind="Query" @bind:event="oninput" />
+                    @if (_needle.Length > 0)
+                    {
+                        <button type="button" class="fx-clear" @onclick="() => Query = string.Empty">Clear</button>
+                    }
+                    else
+                    {
+                        <kbd class="fx-kbd" title="Press / to jump here">/</kbd>
+                    }
+                </div>
+                <span class="fx-find-status" id="fx-find-status" role="status">
+                    @if (_needle.Length == 0)
+                    {
+                        @($"{_names.Length} components")
+                    }
+                    else
+                    {
+                        @($"{_matches.Length} of {_names.Length} match")
+                    }
+                </span>
+            </div>
+            <div class="fx-try">
+                <span>Try</span>
+                @foreach (var term in TryTerms)
+                {
+                    <button type="button" class="fx-try-chip @(string.Equals(_needle, term, StringComparison.OrdinalIgnoreCase) ? "fx-try-on" : null)"
+                            @onclick="() => Query = term">@term</button>
+                }
+            </div>
+            @if (_needle.Length > 0 && _matches.Length == 0)
+            {
+                <p class="fx-empty">
+                    No component name contains “@_needle”. Pick a suggestion above, or
+                    <button type="button" class="fx-link" @onclick="() => Query = string.Empty">show all @_names.Length</button>.
+                </p>
+            }
+        </section>
         @if (_needle.Length > 0)
         {
             @* The tile wall belongs to the shared DemoLanding, so the filter works on it from outside:
-               a tile's only name-bearing hook is its href, "explorer?pb-{Name}=e30".
-               ponytail: substring match on the whole href, so a query that only appears in the
-               "explorer?pb-" / "=e30" wrapper (e.g. "plor") keeps every tile; a data-name attribute
-               on the shared tile would make it exact. *@
+               a tile's only name-bearing hook is its href, "explorer?pb-{Name}=e30". Matching runs on
+               the names here and the CSS keeps exactly those tiles. Names are C# identifiers, so they
+               are safe inside the attribute selectors. *@
             <style>
-                .demo-tile:not([href*="@_needle" i]) { display: none; }
-                .demo-tiles:not(:has(.demo-tile[href*="@_needle" i]))::after {
-                    content: "No component name contains \201C @_needle\201D.";
-                    grid-column: 1 / -1;
-                    padding: 0.75rem 0;
-                    color: var(--demo-ink-2);
-                    font-size: 0.8125rem;
-                }
+                .demo-tile:not(:is(@_keep)) { display: none; }
             </style>
         }
     </Flagships>
 </DemoLanding>
 
 @code {
+    private const string LibraryName = "Fluent UI Blazor";
     private const string DocsUrl = "https://www.fluentui-blazor.net/";
 
+    // Each term matches several names on the discovered surface.
+    private static readonly string[] TryTerms = ["Input", "Button", "Picker", "Menu", "Dialog", "Column"];
+
+    private string[] _names = [];
+    private string[] _matches = [];
     private string _query = "";
     private string _needle = "";
+    private string _keep = "";
 
-    // Component names are C# identifiers, so letters and digits are all a query ever needs;
-    // dropping everything else also keeps the text safe inside the CSS string above.
+    // ponytail: repeats DemoLanding's discovery filter to know the names; a shared filter hook on
+    // the tile wall would let both read one list.
+    protected override void OnInitialized()
+        => _names = Catalog.Discover(typeof(FluentButton).Assembly)
+            .Where(c => !Options.IsExcluded(c.Type) && (Options.ComponentFilter?.Invoke(c.Type) ?? true))
+            .Select(c => c.DisplayName)
+            .ToArray();
+
+    // Component names are C# identifiers, so letters and digits are all a query ever needs.
     private string Query
     {
         get => _query;
@@ -74,6 +127,9 @@
         {
             _query = value ?? "";
             _needle = new string(_query.Where(char.IsLetterOrDigit).ToArray());
+            _matches = _names.Where(n => n.Contains(_needle, StringComparison.OrdinalIgnoreCase)).ToArray();
+            // "#fx-none" keeps the :is() list valid when nothing matches, which hides every tile.
+            _keep = string.Join(",", _matches.Select(n => $"[href$=\"pb-{n}=e30\"]").Append("#fx-none"));
         }
     }
 }

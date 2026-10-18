@@ -50,12 +50,34 @@
 }
 
 .fx-find {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    margin: 0 0 1.75rem;
+    margin: 0 0 1rem;
     padding-top: 2rem;
     border-top: 1px solid #e6e6ee;
+}
+
+.fx-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-left: 0.25rem;
+    white-space: nowrap;
+}
+
+/* Same tint as the curated tiles in index.html. */
+.fx-swatch {
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 1px solid rgba(109, 74, 255, 0.45);
+    border-radius: 3px;
+    background: #f6f3ff;
+}
+
+.fx-find-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 1rem;
 }
 
 .fx-find-label {
@@ -63,17 +85,27 @@
     font-weight: 600;
 }
 
+.fx-find-field {
+    position: relative;
+    flex: 0 1 360px;
+}
+
 .fx-find-input {
     box-sizing: border-box;
     width: 100%;
-    max-width: 360px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 4.25rem 0.5rem 0.75rem;
     border: 1px solid #d4d4de;
     border-radius: 8px;
     background: #ffffff;
     color: var(--demo-ink);
     font-family: var(--demo-mono);
     font-size: 0.8125rem;
+    caret-color: var(--demo-accent);
+}
+
+/* The Clear button below replaces the native one, which not every browser draws. */
+.fx-find-input::-webkit-search-cancel-button {
+    appearance: none;
 }
 
 .fx-find-input::placeholder {
@@ -86,17 +118,127 @@
     box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.18);
 }
 
+.fx-kbd,
+.fx-clear {
+    position: absolute;
+    top: 50%;
+    right: 0.4rem;
+    transform: translateY(-50%);
+    font-family: var(--demo-mono);
+    font-size: 0.6875rem;
+}
+
+.fx-kbd {
+    min-width: 1.25rem;
+    padding: 0.05rem 0.3rem;
+    border: 1px solid #d4d4de;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    color: var(--demo-ink-2);
+    text-align: center;
+    pointer-events: none;
+}
+
+.fx-find-input:focus-visible + .fx-kbd {
+    display: none;
+}
+
+.fx-clear {
+    padding: 0.25rem 0.55rem;
+    border: none;
+    border-radius: 6px;
+    background: rgba(109, 74, 255, 0.1);
+    color: var(--demo-accent);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.fx-clear:hover,
+.fx-clear:focus-visible {
+    outline: none;
+    background: rgba(109, 74, 255, 0.18);
+}
+
+.fx-find-status {
+    color: var(--demo-ink-2);
+    font-family: var(--demo-mono);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.fx-try {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.625rem;
+    color: var(--demo-ink-2);
+    font-size: 0.75rem;
+}
+
+.fx-try-chip {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid #e6e6ee;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--demo-ink);
+    font-family: var(--demo-mono);
+    font-size: 0.6875rem;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease;
+}
+
+.fx-try-chip:hover,
+.fx-try-chip:focus-visible {
+    outline: none;
+    border-color: var(--demo-accent);
+    color: var(--demo-accent);
+}
+
+.fx-try-on {
+    border-color: var(--demo-accent);
+    background: rgba(109, 74, 255, 0.12);
+    color: var(--demo-accent);
+    font-weight: 600;
+}
+
+.fx-empty {
+    margin: 1rem 0 0;
+    font-size: 0.8125rem;
+}
+
+.fx-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--demo-accent);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
 @media (max-width: 720px) {
     .fx-benches .fx-docs {
         margin-left: 0;
     }
 
+    .fx-find-field {
+        flex-basis: 100%;
+    }
+
     .fx-find-input {
-        max-width: none;
         font-size: 1rem; /* 16px stops iOS zooming into the field */
+    }
+
+    /* No hardware keyboard to press "/" with. */
+    .fx-kbd {
+        display: none;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .fx-benches a { transition: none; }
+    .fx-benches a,
+    .fx-try-chip { transition: none; }
 }
