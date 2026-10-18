@@ -32,7 +32,10 @@
 <Alert Severity="Severity.Info">12 unread messages. Tap to see them.</Alert>
 
 @* AppCard *@
-<AppCard />
+<AppCard Name="Invoices"
+         Icon="receipt_long"
+         GradientStart="#0ea5e9"
+         GradientEnd="#6366f1" />
 
 @* Autocomplete *@
 <Autocomplete T="string"
@@ -47,7 +50,7 @@
 <Badge Content="8"><Button Variant="Variant.Outlined">Inbox</Button></Badge>
 
 @* Breadcrumbs *@
-<Breadcrumbs />
+<Breadcrumbs Items="@(new List<BreadcrumbItem> { new("Home", "#", Icon: Icons.Material.Filled.Home), new("Projects", "#", Icon: Icons.Material.Filled.Folder), new("Checkout redesign", null) })" />
 
 @* Button *@
 <Button Variant="Variant.Filled">Click me</Button>
@@ -145,7 +148,9 @@
 </div>
 
 @* Container *@
-<Container />
+<div class="w-[64rem] max-w-full">
+    <Container><div class="rounded-box bg-base-200 p-4 text-center">The content stays within the container's max width.</div></Container>
+</div>
 
 @* Countdown *@
 <Countdown Value="42" Class="font-mono text-5xl" />
@@ -171,13 +176,28 @@
 <DatePicker Date="@(new DateTime(1815, 12, 10))" Label="Birth date" />
 
 @* DetailCard *@
-<DetailCard />
+<DetailCard Title="Northwind Traders"
+            Icon="business"
+            Class="w-96">
+    <DetailRow Label="Owner" Value="Ana Silva" />
+    <DetailRow Label="Region" Value="EU West" />
+    <DetailRow Label="Seats" Value="120" />
+</DetailCard>
 
 @* DetailLayout *@
-<DetailLayout />
+<div class="w-[64rem] max-w-full">
+    <DetailLayout Title="Northwind Traders" BackRoute="#">
+        <MainContent>
+            <p>Northwind Traders renewed its Enterprise plan for 120 seats.</p>
+        </MainContent>
+    </DetailLayout>
+</div>
 
 @* DetailRow *@
-<DetailRow />
+<DetailCard Title="Northwind Traders" Icon="@Icons.Material.Filled.Business" Class="w-96">
+    <DetailRow Label="Owner" Value="Ana Silva" />
+    <DetailRow Label="Region" Value="EU West" />
+</DetailCard>
 
 @* Dialog *@
 <Dialog Title="Deploy v2.4.0 to production?" Class="rounded-box bg-base-100 max-w-lg p-6 shadow-xl ring-1 ring-base-300">
@@ -206,7 +226,15 @@
 <Divider Class="w-64">OR</Divider>
 
 @* Dock *@
-<Dock />
+@* The transform keeps even a fixed (default) Dock inside this box. *@
+<div class="w-80 overflow-hidden rounded-box border border-base-300" style="transform: translateZ(0)">
+    <div class="h-24 bg-base-200"></div>
+    <Dock Fixed="false">
+        <DockItem Icon="@Icons.Material.Filled.Home" Label="Home" Active="true" />
+        <DockItem Icon="@Icons.Material.Filled.Inbox" Label="Inbox" />
+        <DockItem Icon="@Icons.Material.Filled.Settings" Label="Settings" />
+    </Dock>
+</div>
 
 @* DockItem *@
 <Dock Fixed="false">
@@ -233,7 +261,19 @@
 </div>
 
 @* Dropdown *@
-<Dropdown />
+@* The transform keeps an open Menu's fixed backdrop inside this box. *@
+<div class="flex h-80 w-[40rem] max-w-full items-center justify-center" style="transform: translateZ(0)">
+    <Dropdown ActivatorClass="btn btn-outline">
+        <ChildContent>
+            <li><a>Edit</a></li>
+            <li><a>Duplicate</a></li>
+            <li><a>Archive</a></li>
+        </ChildContent>
+        <Activator>
+            Options
+        </Activator>
+    </Dropdown>
+</div>
 
 @* EmptyState *@
 <EmptyState Message="No projects yet"
@@ -274,13 +314,39 @@
 </div>
 
 @* FeatureHero *@
-<FeatureHero />
+<div class="w-[64rem] max-w-full">
+    <FeatureHero Icon="payments"
+                 Title="Billing"
+                 Subtitle="Invoices, payments and reports in one place."
+                 Eyebrow="Finance">
+        <Actions>
+            <Button Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">New invoice</Button>
+        </Actions>
+    </FeatureHero>
+</div>
 
 @* FeatureHomePage *@
-<FeatureHomePage />
+<div class="w-[64rem] max-w-full">
+    <FeatureHomePage Title="Billing" Subtitle="Invoices, payments and reports.">
+        <NavCards>
+            <Item xs="6">
+                <FeatureNavCard Icon="@Icons.Material.Filled.ReceiptLong" Title="Invoices" Subtitle="Billing" Description="Create, send and track invoices." AvatarColor="Color.Primary" />
+            </Item>
+            <Item xs="6">
+                <FeatureNavCard Icon="@Icons.Material.Filled.Payments" Title="Payments" Subtitle="Billing" Description="Reconcile incoming payments." AvatarColor="Color.Secondary" />
+            </Item>
+        </NavCards>
+    </FeatureHomePage>
+</div>
 
 @* FeatureNavCard *@
-<FeatureNavCard />
+<div class="w-80">
+    <FeatureNavCard AvatarColor="Color.Primary"
+                    Icon="receipt_long"
+                    Title="Invoices"
+                    Subtitle="Billing"
+                    Description="Create, send and track invoices." />
+</div>
 
 @* Field *@
 <Field Label="Invoice no.">INV-2041</Field>
@@ -304,7 +370,20 @@
 <FloatingLabel Label="Email"><input type="email" class="input" placeholder="ada@example.com" /></FloatingLabel>
 
 @* Footer *@
-<Footer />
+<div class="w-[64rem] max-w-full">
+    <Footer Class="rounded-box">
+        <nav>
+            <FooterTitle>Product</FooterTitle>
+            <a class="link link-hover">Dashboard</a>
+            <a class="link link-hover">Billing</a>
+        </nav>
+        <nav>
+            <FooterTitle>Company</FooterTitle>
+            <a class="link link-hover">About</a>
+            <a class="link link-hover">Careers</a>
+        </nav>
+    </Footer>
+</div>
 
 @* FooterTitle *@
 <Footer Class="bg-base-200 text-base-content">
@@ -323,10 +402,24 @@
 </Form>
 
 @* Grid *@
-<Grid />
+<Grid Class="w-96">
+    <Item xs="4"><Paper Class="bg-primary! text-primary-content! p-4 text-center">xs=4</Paper></Item>
+    <Item xs="4"><Paper Class="bg-secondary! text-secondary-content! p-4 text-center">xs=4</Paper></Item>
+    <Item xs="4"><Paper Class="bg-accent! text-accent-content! p-4 text-center">xs=4</Paper></Item>
+    <Item xs="6"><Paper Class="bg-neutral! text-neutral-content! p-4 text-center">xs=6</Paper></Item>
+    <Item xs="6"><Paper Class="bg-info! text-info-content! p-4 text-center">xs=6</Paper></Item>
+</Grid>
 
 @* Hero *@
-<Hero />
+<div class="w-[64rem] max-w-full">
+    <Hero MinHeight="min-h-64" Class="rounded-box bg-base-200">
+        <div class="max-w-md text-center">
+            <h2 class="text-4xl font-bold">Ship it.</h2>
+            <p class="py-4">One click from commit to production.</p>
+            <Button Color="Color.Primary" Variant="Variant.Filled">Get started</Button>
+        </div>
+    </Hero>
+</div>
 
 @* Icon *@
 <Icon Name="@Icons.Material.Filled.Favorite" />
@@ -396,7 +489,14 @@
 <Mask Class="w-24"><img class="block w-full" src="@_photo" alt="Mountains at dusk" /></Mask>
 
 @* Menu *@
-<Menu />
+@* The transform keeps an open Menu's fixed backdrop inside this box. *@
+<div class="flex h-80 w-[40rem] max-w-full items-center justify-center" style="transform: translateZ(0)">
+    <Menu Label="Actions" Open="true">
+        <MenuItem Icon="@Icons.Material.Filled.Edit">Edit</MenuItem>
+        <MenuItem Icon="@Icons.Material.Filled.Share">Share</MenuItem>
+        <MenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Delete</MenuItem>
+    </Menu>
+</div>
 
 @* MenuItem *@
 <div class="h-48">
@@ -416,16 +516,26 @@
 </div>
 
 @* MockupBrowser *@
-<MockupBrowser />
+<MockupBrowser Url="acme.cloud" Class="w-96">
+    <div class="text-center">
+        <p class="text-2xl font-bold">Hello!</p>
+        <p class="text-sm opacity-70">Version 2.4 is out now.</p>
+    </div>
+</MockupBrowser>
 
 @* MockupCode *@
-<MockupCode />
+<MockupCode Lines="@(new[] { "npm i daisyui", "installing...", "Done!" })" />
 
 @* MockupPhone *@
-<MockupPhone />
+<MockupPhone Class="w-48">
+    <div class="bg-primary text-primary-content grid h-full place-content-center gap-1 p-4 text-center">
+        <p class="text-lg font-bold">api-gateway</p>
+        <p class="text-xs">Deploying…</p>
+    </div>
+</MockupPhone>
 
 @* MockupWindow *@
-<MockupWindow />
+<MockupWindow Title="Deployments" Class="w-96"><p>3 deployments running, 1 queued.</p></MockupWindow>
 
 @* Modal *@
 <div>
@@ -441,10 +551,28 @@
 </div>
 
 @* NavMenuLink *@
-<NavMenuLink />
+<ul class="menu w-56 rounded-box bg-base-200">
+    <NavMenuLink Href="#" Icon="home">Dashboard</NavMenuLink>
+    <NavMenuLink Href="#" Icon="@Icons.Material.Filled.Settings">Settings</NavMenuLink>
+</ul>
 
 @* Navbar *@
-<Navbar />
+<div class="w-[64rem] max-w-full">
+    <Navbar Class="rounded-box">
+        <Start>
+            <a class="btn btn-ghost text-xl">Acme</a>
+        </Start>
+        <Center>
+            <ul class="menu menu-horizontal px-1">
+                <li><a>Docs</a></li>
+                <li><a>Pricing</a></li>
+            </ul>
+        </Center>
+        <End>
+            <IconButton Icon="@Icons.Material.Filled.Notifications" Title="Notifications" />
+        </End>
+    </Navbar>
+</div>
 
 @* NumericField *@
 <NumericField T="int"
@@ -456,10 +584,16 @@
               HelperText="Even numbers from 0 to 100." />
 
 @* PageHeader *@
-<PageHeader />
+<div class="w-[64rem] max-w-full">
+    <PageHeader Title="Invoices" Subtitle="42 open, 3 overdue">
+        <Actions>
+            <Button Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">New invoice</Button>
+        </Actions>
+    </PageHeader>
+</div>
 
 @* Pagination *@
-<Pagination />
+<Pagination Count="10" Selected="5" />
 
 @* Paper *@
 <Paper Class="p-6 w-64">
@@ -489,7 +623,9 @@
 </DataGrid>
 
 @* QuickAccessButton *@
-<QuickAccessButton />
+<div class="w-80">
+    <QuickAccessButton Label="New invoice" Icon="add" />
+</div>
 
 @* RadialProgress *@
 <RadialProgress Value="70" AriaLabel="Storage used" />
@@ -518,7 +654,9 @@
 <Rating Value="3" />
 
 @* SectionCard *@
-<SectionCard />
+<SectionCard Title="Deployment"
+             Icon="rocket_launch"
+             Class="w-96"><p>api-gateway v2.4 is rolling out to production, step 2 of 3.</p></SectionCard>
 
 @* Select *@
 <Select T="string"
@@ -546,13 +684,25 @@
 <Skeleton Width="12rem" Height="1rem" />
 
 @* Spacer *@
-<Spacer />
+<Stack Row="true" AlignItems="AlignItems.Center" Class="w-80 rounded-box bg-base-200 p-4">
+    <span>2 GB used</span>
+    <Spacer />
+    <span>5 GB</span>
+</Stack>
 
 @* Stack *@
-<Stack />
+<Stack>
+    <Paper Class="bg-primary! text-primary-content! px-6 py-4">One</Paper>
+    <Paper Class="bg-secondary! text-secondary-content! px-6 py-4">Two, wider</Paper>
+    <Paper Class="bg-accent! text-accent-content! px-6 py-4">Three, the widest box</Paper>
+</Stack>
 
 @* StackOverlay *@
-<StackOverlay />
+<StackOverlay>
+    <div class="bg-primary text-primary-content rounded-box grid size-28 place-content-center">1</div>
+    <div class="bg-secondary text-secondary-content rounded-box grid size-28 place-content-center">2</div>
+    <div class="bg-accent text-accent-content rounded-box grid size-28 place-content-center">3</div>
+</StackOverlay>
 
 @* Stat *@
 <Stats Shadow="true">
@@ -583,7 +733,12 @@
 </Steps>
 
 @* Steps *@
-<Steps />
+<Steps>
+    <Step Completed="true">Register</Step>
+    <Step Active="true">Choose plan</Step>
+    <Step>Purchase</Step>
+    <Step>Receive product</Step>
+</Steps>
 
 @* Swap *@
 <Swap AriaLabel="Dark mode">
@@ -623,7 +778,11 @@
 </Table>
 
 @* Tabs *@
-<Tabs />
+<Tabs Class="w-96">
+    <Tab Title="Overview">Born in London in 1815.</Tab>
+    <Tab Title="Work">Wrote the first published algorithm.</Tab>
+    <Tab Title="Legacy">Ada, the language, is named after her.</Tab>
+</Tabs>
 
 @* Td *@
 <SimpleTable>
@@ -653,7 +812,7 @@
            InputType="InputType.Email" />
 
 @* TextLink *@
-<TextLink />
+<TextLink Href="https://daisyui.com" Target="_blank">Read the daisyUI docs</TextLink>
 
 @* Th *@
 <SimpleTable>

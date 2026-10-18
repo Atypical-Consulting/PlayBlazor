@@ -1,5 +1,6 @@
 @namespace PlayBlazor.Demo.Daisy
 @using DaisyBlazor.Data
+@using DaisyBlazor.Layout
 @using DaisyBlazor.Validation
 @* Static example fragments used as slot presets, each mirrored verbatim by a string in
    DaisyDemoFragmentSources.cs. Any Tailwind class written here is compiled into app.css, since the
@@ -176,6 +177,123 @@
     </text>;
 
     public static RenderFragment NewProjectButton => @<Button Variant="Variant.Filled" Color="Color.Primary">New project</Button>;
+
+    // --- Layout, navigation, mockups and app helpers ------------------------------------------
+
+    // Paper paints bg-base-100 itself, so the colour needs Tailwind's trailing ! to win the cascade.
+    public static RenderFragment GridPapers => @<text>
+        <Item xs="4"><Paper Class="bg-primary! text-primary-content! p-4 text-center">xs=4</Paper></Item>
+        <Item xs="4"><Paper Class="bg-secondary! text-secondary-content! p-4 text-center">xs=4</Paper></Item>
+        <Item xs="4"><Paper Class="bg-accent! text-accent-content! p-4 text-center">xs=4</Paper></Item>
+        <Item xs="6"><Paper Class="bg-neutral! text-neutral-content! p-4 text-center">xs=6</Paper></Item>
+        <Item xs="6"><Paper Class="bg-info! text-info-content! p-4 text-center">xs=6</Paper></Item>
+    </text>;
+
+    public static RenderFragment StackPapers => @<text>
+        <Paper Class="bg-primary! text-primary-content! px-6 py-4">One</Paper>
+        <Paper Class="bg-secondary! text-secondary-content! px-6 py-4">Two, wider</Paper>
+        <Paper Class="bg-accent! text-accent-content! px-6 py-4">Three, the widest box</Paper>
+    </text>;
+
+    public static RenderFragment OverlayCards => @<text>
+        <div class="bg-primary text-primary-content rounded-box grid size-28 place-content-center">1</div>
+        <div class="bg-secondary text-secondary-content rounded-box grid size-28 place-content-center">2</div>
+        <div class="bg-accent text-accent-content rounded-box grid size-28 place-content-center">3</div>
+    </text>;
+
+    public static RenderFragment ContainerContent => @<div class="rounded-box bg-base-200 p-4 text-center">The content stays within the container's max width.</div>;
+
+    public static RenderFragment HeroContent => @<div class="max-w-md text-center">
+        <h2 class="text-4xl font-bold">Ship it.</h2>
+        <p class="py-4">One click from commit to production.</p>
+        <Button Color="Color.Primary" Variant="Variant.Filled">Get started</Button>
+    </div>;
+
+    public static RenderFragment FooterColumns => @<text>
+        <nav>
+            <FooterTitle>Product</FooterTitle>
+            <a class="link link-hover">Dashboard</a>
+            <a class="link link-hover">Billing</a>
+        </nav>
+        <nav>
+            <FooterTitle>Company</FooterTitle>
+            <a class="link link-hover">About</a>
+            <a class="link link-hover">Careers</a>
+        </nav>
+    </text>;
+
+    public static RenderFragment NavbarBrand => @<a class="btn btn-ghost text-xl">Acme</a>;
+
+    public static RenderFragment NavbarLinks => @<ul class="menu menu-horizontal px-1">
+        <li><a>Docs</a></li>
+        <li><a>Pricing</a></li>
+    </ul>;
+
+    public static RenderFragment NavbarActions => @<IconButton Icon="@Icons.Material.Filled.Notifications" Title="Notifications" />;
+
+    public static RenderFragment DropdownItems => @<text>
+        <li><a>Edit</a></li>
+        <li><a>Duplicate</a></li>
+        <li><a>Archive</a></li>
+    </text>;
+
+    public static RenderFragment MenuItems => @<text>
+        <MenuItem Icon="@Icons.Material.Filled.Edit">Edit</MenuItem>
+        <MenuItem Icon="@Icons.Material.Filled.Share">Share</MenuItem>
+        <MenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Delete</MenuItem>
+    </text>;
+
+    public static RenderFragment DockItems => @<text>
+        <DockItem Icon="@Icons.Material.Filled.Home" Label="Home" Active="true" />
+        <DockItem Icon="@Icons.Material.Filled.Inbox" Label="Inbox" />
+        <DockItem Icon="@Icons.Material.Filled.Settings" Label="Settings" />
+    </text>;
+
+    public static RenderFragment StepItems => @<text>
+        <Step Completed="true">Register</Step>
+        <Step Active="true">Choose plan</Step>
+        <Step>Purchase</Step>
+        <Step>Receive product</Step>
+    </text>;
+
+    public static RenderFragment TabItems => @<text>
+        <Tab Title="Overview">Born in London in 1815.</Tab>
+        <Tab Title="Work">Wrote the first published algorithm.</Tab>
+        <Tab Title="Legacy">Ada, the language, is named after her.</Tab>
+    </text>;
+
+    public static RenderFragment BrowserPage => @<div class="text-center">
+        <p class="text-2xl font-bold">Hello!</p>
+        <p class="text-sm opacity-70">Version 2.4 is out now.</p>
+    </div>;
+
+    public static RenderFragment PhoneScreen => @<div class="bg-primary text-primary-content grid h-full place-content-center gap-1 p-4 text-center">
+        <p class="text-lg font-bold">api-gateway</p>
+        <p class="text-xs">Deploying…</p>
+    </div>;
+
+    public static RenderFragment WindowContent => @<p>3 deployments running, 1 queued.</p>;
+
+    public static RenderFragment NewInvoiceButton => @<Button Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">New invoice</Button>;
+
+    public static RenderFragment SectionBody => @<p>api-gateway v2.4 is rolling out to production, step 2 of 3.</p>;
+
+    public static RenderFragment DetailRows => @<text>
+        <DetailRow Label="Owner" Value="Ana Silva" />
+        <DetailRow Label="Region" Value="EU West" />
+        <DetailRow Label="Seats" Value="120" />
+    </text>;
+
+    public static RenderFragment DetailMain => @<p>Northwind Traders renewed its Enterprise plan for 120 seats.</p>;
+
+    public static RenderFragment HomeNavCards => @<text>
+        <Item xs="6">
+            <FeatureNavCard Icon="@Icons.Material.Filled.ReceiptLong" Title="Invoices" Subtitle="Billing" Description="Create, send and track invoices." AvatarColor="Color.Primary" />
+        </Item>
+        <Item xs="6">
+            <FeatureNavCard Icon="@Icons.Material.Filled.Payments" Title="Payments" Subtitle="Billing" Description="Reconcile incoming payments." AvatarColor="Color.Secondary" />
+        </Item>
+    </text>;
 
     // --- Scaffolds --------------------------------------------------------------------------
 
@@ -428,6 +546,57 @@
         @<div class="rounded-box border-2 border-base-300 h-64 overflow-hidden">
             @specimen
         </div>;
+
+    // The bench shrink-wraps its specimen, so a w-full component (Container, Navbar, Footer, Hero,
+    // the page-level helpers) would collapse to its content. This frame gives it a page-like width.
+    public static RenderFragment InWideFrame(RenderFragment specimen) =>
+        @<div class="w-[64rem] max-w-full">
+            @specimen
+        </div>;
+
+    // A fixed width for the w-full / grow components that have no Class parameter of their own.
+    public static RenderFragment InNarrowFrame(RenderFragment specimen) =>
+        @<div class="w-80">
+            @specimen
+        </div>;
+
+    // Spacer is an empty flex-1 div: it only shows by pushing its row siblings apart.
+    public static RenderFragment InStackRow(RenderFragment specimen) =>
+        @<Stack Row="true" AlignItems="AlignItems.Center" Class="w-80 rounded-box bg-base-200 p-4">
+            <span>2 GB used</span>
+            @specimen
+            <span>5 GB</span>
+        </Stack>;
+
+    // Room on every side for a Dropdown or Menu list, whatever its placement. The transform makes the
+    // frame the containing block of an open Menu's `fixed inset-0` backdrop (see InMenu).
+    public static RenderFragment InPopupFrame(RenderFragment specimen) =>
+        @<div class="flex h-80 w-[40rem] max-w-full items-center justify-center" style="@MenuContainment">
+            @specimen
+        </div>;
+
+    // A phone-sized screen for the Dock. Fixed="false" (the preset) keeps it inline; the transform
+    // also contains a position:fixed dock, so flipping Fixed back on pins it to this frame's bottom
+    // instead of the viewport's.
+    public static RenderFragment InDockFrame(RenderFragment specimen) =>
+        @<div class="w-80 overflow-hidden rounded-box border border-base-300" style="@MenuContainment">
+            <div class="h-24 bg-base-200"></div>
+            @specimen
+        </div>;
+
+    // NavMenuLink renders a menu <li>: its parent is a ul.menu.
+    public static RenderFragment InMenuList(RenderFragment specimen) =>
+        @<ul class="menu w-56 rounded-box bg-base-200">
+            @specimen
+            <NavMenuLink Href="#" Icon="@Icons.Material.Filled.Settings">Settings</NavMenuLink>
+        </ul>;
+
+    // DetailRow is a <tr>: outside the DetailCard's table the parser drops it.
+    public static RenderFragment InDetailCard(RenderFragment specimen) =>
+        @<DetailCard Title="Northwind Traders" Icon="@Icons.Material.Filled.Business" Class="w-96">
+            @specimen
+            <DetailRow Label="Region" Value="EU West" />
+        </DetailCard>;
 
     private const string MenuContainment = "transform: translateZ(0)";
 

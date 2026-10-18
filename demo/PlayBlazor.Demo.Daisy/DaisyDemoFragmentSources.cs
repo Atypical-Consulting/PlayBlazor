@@ -437,4 +437,177 @@ public static class DaisyDemoFragmentSources
     {specimen}
 </div>
 """;
+
+    // --- Layout, navigation, mockups and app helpers ------------------------------------------
+
+    public const string GridPapers = """
+<Item xs="4"><Paper Class="bg-primary! text-primary-content! p-4 text-center">xs=4</Paper></Item>
+<Item xs="4"><Paper Class="bg-secondary! text-secondary-content! p-4 text-center">xs=4</Paper></Item>
+<Item xs="4"><Paper Class="bg-accent! text-accent-content! p-4 text-center">xs=4</Paper></Item>
+<Item xs="6"><Paper Class="bg-neutral! text-neutral-content! p-4 text-center">xs=6</Paper></Item>
+<Item xs="6"><Paper Class="bg-info! text-info-content! p-4 text-center">xs=6</Paper></Item>
+""";
+
+    public const string StackPapers = """
+<Paper Class="bg-primary! text-primary-content! px-6 py-4">One</Paper>
+<Paper Class="bg-secondary! text-secondary-content! px-6 py-4">Two, wider</Paper>
+<Paper Class="bg-accent! text-accent-content! px-6 py-4">Three, the widest box</Paper>
+""";
+
+    public const string OverlayCards = """
+<div class="bg-primary text-primary-content rounded-box grid size-28 place-content-center">1</div>
+<div class="bg-secondary text-secondary-content rounded-box grid size-28 place-content-center">2</div>
+<div class="bg-accent text-accent-content rounded-box grid size-28 place-content-center">3</div>
+""";
+
+    public const string ContainerContent = """<div class="rounded-box bg-base-200 p-4 text-center">The content stays within the container's max width.</div>""";
+
+    public const string HeroContent = """
+<div class="max-w-md text-center">
+    <h2 class="text-4xl font-bold">Ship it.</h2>
+    <p class="py-4">One click from commit to production.</p>
+    <Button Color="Color.Primary" Variant="Variant.Filled">Get started</Button>
+</div>
+""";
+
+    public const string FooterColumns = """
+<nav>
+    <FooterTitle>Product</FooterTitle>
+    <a class="link link-hover">Dashboard</a>
+    <a class="link link-hover">Billing</a>
+</nav>
+<nav>
+    <FooterTitle>Company</FooterTitle>
+    <a class="link link-hover">About</a>
+    <a class="link link-hover">Careers</a>
+</nav>
+""";
+
+    public const string NavbarBrand = """<a class="btn btn-ghost text-xl">Acme</a>""";
+
+    public const string NavbarLinks = """
+<ul class="menu menu-horizontal px-1">
+    <li><a>Docs</a></li>
+    <li><a>Pricing</a></li>
+</ul>
+""";
+
+    public const string NavbarActions = """<IconButton Icon="@Icons.Material.Filled.Notifications" Title="Notifications" />""";
+
+    public const string DropdownItems = """
+<li><a>Edit</a></li>
+<li><a>Duplicate</a></li>
+<li><a>Archive</a></li>
+""";
+
+    public const string MenuItems = """
+<MenuItem Icon="@Icons.Material.Filled.Edit">Edit</MenuItem>
+<MenuItem Icon="@Icons.Material.Filled.Share">Share</MenuItem>
+<MenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Delete</MenuItem>
+""";
+
+    public const string DockItems = """
+<DockItem Icon="@Icons.Material.Filled.Home" Label="Home" Active="true" />
+<DockItem Icon="@Icons.Material.Filled.Inbox" Label="Inbox" />
+<DockItem Icon="@Icons.Material.Filled.Settings" Label="Settings" />
+""";
+
+    public const string StepItems = """
+<Step Completed="true">Register</Step>
+<Step Active="true">Choose plan</Step>
+<Step>Purchase</Step>
+<Step>Receive product</Step>
+""";
+
+    public const string TabItems = """
+<Tab Title="Overview">Born in London in 1815.</Tab>
+<Tab Title="Work">Wrote the first published algorithm.</Tab>
+<Tab Title="Legacy">Ada, the language, is named after her.</Tab>
+""";
+
+    public const string BrowserPage = """
+<div class="text-center">
+    <p class="text-2xl font-bold">Hello!</p>
+    <p class="text-sm opacity-70">Version 2.4 is out now.</p>
+</div>
+""";
+
+    public const string PhoneScreen = """
+<div class="bg-primary text-primary-content grid h-full place-content-center gap-1 p-4 text-center">
+    <p class="text-lg font-bold">api-gateway</p>
+    <p class="text-xs">Deploying…</p>
+</div>
+""";
+
+    public const string WindowContent = "<p>3 deployments running, 1 queued.</p>";
+
+    public const string NewInvoiceButton = """<Button Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">New invoice</Button>""";
+
+    public const string SectionBody = "<p>api-gateway v2.4 is rolling out to production, step 2 of 3.</p>";
+
+    public const string DetailRows = """
+<DetailRow Label="Owner" Value="Ana Silva" />
+<DetailRow Label="Region" Value="EU West" />
+<DetailRow Label="Seats" Value="120" />
+""";
+
+    public const string DetailMain = "<p>Northwind Traders renewed its Enterprise plan for 120 seats.</p>";
+
+    public const string HomeNavCards = """
+<Item xs="6">
+    <FeatureNavCard Icon="@Icons.Material.Filled.ReceiptLong" Title="Invoices" Subtitle="Billing" Description="Create, send and track invoices." AvatarColor="Color.Primary" />
+</Item>
+<Item xs="6">
+    <FeatureNavCard Icon="@Icons.Material.Filled.Payments" Title="Payments" Subtitle="Billing" Description="Reconcile incoming payments." AvatarColor="Color.Secondary" />
+</Item>
+""";
+
+    public const string InWideFrame = """
+<div class="w-[64rem] max-w-full">
+    {specimen}
+</div>
+""";
+
+    public const string InNarrowFrame = """
+<div class="w-80">
+    {specimen}
+</div>
+""";
+
+    public const string InStackRow = """
+<Stack Row="true" AlignItems="AlignItems.Center" Class="w-80 rounded-box bg-base-200 p-4">
+    <span>2 GB used</span>
+    {specimen}
+    <span>5 GB</span>
+</Stack>
+""";
+
+    public const string InPopupFrame = """
+@* The transform keeps an open Menu's fixed backdrop inside this box. *@
+<div class="flex h-80 w-[40rem] max-w-full items-center justify-center" style="transform: translateZ(0)">
+    {specimen}
+</div>
+""";
+
+    public const string InDockFrame = """
+@* The transform keeps even a fixed (default) Dock inside this box. *@
+<div class="w-80 overflow-hidden rounded-box border border-base-300" style="transform: translateZ(0)">
+    <div class="h-24 bg-base-200"></div>
+    {specimen}
+</div>
+""";
+
+    public const string InMenuList = """
+<ul class="menu w-56 rounded-box bg-base-200">
+    {specimen}
+    <NavMenuLink Href="#" Icon="@Icons.Material.Filled.Settings">Settings</NavMenuLink>
+</ul>
+""";
+
+    public const string InDetailCard = """
+<DetailCard Title="Northwind Traders" Icon="@Icons.Material.Filled.Business" Class="w-96">
+    {specimen}
+    <DetailRow Label="Region" Value="EU West" />
+</DetailCard>
+""";
 }

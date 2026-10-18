@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using DaisyBlazor;
 using DaisyBlazor.Data;
 using DaisyBlazor.Feedback;
+using DaisyBlazor.Layout;
 using DaisyBlazor.Theming;
 using DaisyBlazor.Validation;
 
@@ -10,7 +11,7 @@ namespace PlayBlazor.Demo.Daisy;
 /// <summary>
 /// Curation for the DaisyBlazor showcase, in progress (milestone 4): the listed surface, the icon
 /// catalogue, the flagship <see cref="Button" />, the scaffolds of the child components
-/// (<see cref="Scaffolds" />), the cascading, validation and overlay components (<see cref="ContextAndOverlays" />), the actions and form inputs (<see cref="FormsAndActions" />) and the data display and feedback components (<see cref="DisplayAndFeedback" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
+/// (<see cref="Scaffolds" />), the cascading, validation and overlay components (<see cref="ContextAndOverlays" />), the actions and form inputs (<see cref="FormsAndActions" />), the data display and feedback components (<see cref="DisplayAndFeedback" />) and the layout, navigation, mockup and app-level helpers (<see cref="LayoutAndNavigation" />). Presets and variants for the rest land in later batches, driven by the [Explicit] sweeps' inventory, verified against the pinned 0.6.0
 /// package's own markup (its <c>.razor</c> source at tag v0.6.0 and shipped <c>safelist.css</c>).
 /// </summary>
 /// <remarks>
@@ -146,6 +147,7 @@ public static class DaisyPlaygroundConfig
         ContextAndOverlays(options);
         FormsAndActions(options);
         DisplayAndFeedback(options);
+        LayoutAndNavigation(options);
     }
 
     /// <summary>
@@ -979,8 +981,8 @@ public static class DaisyPlaygroundConfig
         // No [EditorRequired] input and no auth dependency (no AuthorizeView, no
         // AuthenticationState cascade): every string is a parameter. The defaults are a lock icon,
         // "Access denied" and min-height 400px; the preset trims the height to bench size. The
-        // action renders only with ActionText; "#" keeps a click on the bench instead of
-        // navigating the demo away (ActionHref defaults to "/").
+        // action renders only with ActionText (ActionHref defaults to "/"). "#" is a placeholder:
+        // it does not keep a click on the bench (see LayoutAndNavigation's summary).
         options.For<AccessDenied>()
             .Parameter(nameof(AccessDenied.Message), "You need the Billing admin role to view invoices.")
             .Parameter(nameof(AccessDenied.ActionText), "Back to home")
@@ -1174,6 +1176,400 @@ public static class DaisyPlaygroundConfig
             .Variant("Primary", v => v.Set(nameof(ChatBubble.Color), Color.Primary))
             .Variant("End, secondary", v => v.Set(nameof(ChatBubble.Placement), ChatPlacement.End).Set(nameof(ChatBubble.Color), Color.Secondary))
             .Variant("Error", v => v.Set(nameof(ChatBubble.Color), Color.Error));
+    }
+
+    /// <summary>
+    /// Layout, navigation, mockups and the app-level helpers. Verified against each component's
+    /// .razor at tag v0.6.0 and the compiled app.css: the classes they compose (gap-*, stack-*,
+    /// max-w-screen-*, dock-*, dropdown-*, tabs-*, link-*, bg-{color} text-{color}-content,
+    /// border-{color}, col-span-*) come from the safelist; the bench-sizing classes a preset passes
+    /// itself (w-96, min-h-64, ...) are literal here or in DaisyDemoFragments.razor, which is what
+    /// makes Tailwind emit them. The helpers' own look (AppCard, Feature*) is scoped CSS that
+    /// reaches the page through DaisyBlazor's bundle.scp.css. DaisyLayoutPresetTests.cs pins each one.
+    /// The bench shrink-wraps its specimen, so the w-full components sit in InWideFrame.
+    /// <para>
+    /// Hrefs: <c>"#"</c> is the placeholder the task and DaisyBlazor's docs use, but it is resolved
+    /// against <c>&lt;base href="/"&gt;</c>, so in the explorer (<c>/explorer?pb-...</c>) a click
+    /// navigates to the landing page <c>/#</c>, not to a hash on the bench. No static href can
+    /// stay on the bench (the query string carries the bench state), so links that would leave
+    /// the app use <c>Target="_blank"</c> where the component has a Target, and components that
+    /// call <c>NavigationManager.NavigateTo</c> themselves (FeatureNavCard.Href) leave it unset.
+    /// </para>
+    /// </summary>
+    private static void LayoutAndNavigation(PlayBlazorOptions options)
+    {
+        // --- Layout ---
+
+        // Spacing composes gap-{Spacing}. Upstream hole at 0.6.0: the safelist stops at gap-12, so
+        // Spacing 13+ (Grid and Stack both take any int) silently renders NO gap. Every variant
+        // here stays at 12 or below; the hole is listed in the class remarks for upstream.
+        options.For<Grid>()
+            .Parameter(nameof(Grid.Class), "w-96")
+            .Slot(nameof(Grid.ChildContent), DaisyDemoFragments.GridPapers, DaisyDemoFragmentSources.GridPapers)
+            .Related<Item>()
+            .Variant("No gap", v => v.Set(nameof(Grid.Spacing), 0))
+            .Variant("Tight", v => v.Set(nameof(Grid.Spacing), 2))
+            .Variant("Widest safelisted gap", v => v.Set(nameof(Grid.Spacing), 12));
+
+        // Same gap-{n} hole as Grid: keep Spacing at 12 or below.
+        options.For<Stack>()
+            .Slot(nameof(Stack.ChildContent), DaisyDemoFragments.StackPapers, DaisyDemoFragmentSources.StackPapers)
+            .Related<Spacer>()
+            .Variant("Row", v => v.Set(nameof(Stack.Row), true))
+            .Variant("Centered", v => v.Set(nameof(Stack.AlignItems), AlignItems.Center))
+            .Variant("No gap", v => v.Set(nameof(Stack.Spacing), 0))
+            .Variant("Widest safelisted gap", v => v.Set(nameof(Stack.Spacing), 12))
+            .Variant("Row, wrapping", v => v.Set(nameof(Stack.Row), true).Set(nameof(Stack.Wrap), true).Set(nameof(Stack.Class), "w-64"));
+
+        // daisyUI's .stack (overlapping cards), not the flex Stack above.
+        options.For<StackOverlay>()
+            .Slot(nameof(StackOverlay.ChildContent), DaisyDemoFragments.OverlayCards, DaisyDemoFragmentSources.OverlayCards)
+            .Related<Stack>()
+            .Variant("Top", v => v.Set(nameof(StackOverlay.Align), StackAlign.Top))
+            .Variant("Bottom", v => v.Set(nameof(StackOverlay.Align), StackAlign.Bottom))
+            .Variant("Start", v => v.Set(nameof(StackOverlay.Align), StackAlign.Start))
+            .Variant("End", v => v.Set(nameof(StackOverlay.Align), StackAlign.End));
+
+        // mx-auto w-full max-w-screen-{size}: in the 64rem frame, Large (the default) fills it and
+        // Small (640px) / Medium (768px) visibly narrow it. ExtraLarge and False would look like
+        // Large inside the frame, so they are left to the control.
+        options.For<Container>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Slot(nameof(Container.ChildContent), DaisyDemoFragments.ContainerContent, DaisyDemoFragmentSources.ContainerContent)
+            .Related<Stack>()
+            .Variant("Small", v => v.Set(nameof(Container.MaxWidth), MaxWidth.Small))
+            .Variant("Medium", v => v.Set(nameof(Container.MaxWidth), MaxWidth.Medium))
+            .Variant("No gutters", v => v.Set(nameof(Container.Gutters), false));
+
+        // An empty flex-1 div: only visible through the siblings it pushes apart, hence the row.
+        options.For<Spacer>()
+            .Scaffold(DaisyDemoFragments.InStackRow, DaisyDemoFragmentSources.InStackRow)
+            .Related<Stack>()
+            .Variant("Dotted leader", v => v.Set(nameof(Spacer.Class), "mx-2 border-b-2 border-dotted border-base-content/30"))
+            .Variant("Highlighted", v => v.Set(nameof(Spacer.Class), "mx-2 h-6 rounded bg-primary/20"));
+
+        // MinHeight defaults to min-h-screen, a whole viewport per specimen: the preset trims it.
+        options.For<Hero>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(Hero.MinHeight), "min-h-64")
+            .Parameter(nameof(Hero.Class), "rounded-box bg-base-200")
+            .Slot(nameof(Hero.ChildContent), DaisyDemoFragments.HeroContent, DaisyDemoFragmentSources.HeroContent)
+            .Related<Button>()
+            .Variant("Background image", v => v.Set(nameof(Hero.BackgroundImage), SamplePhoto).Set(nameof(Hero.ContentClass), "text-neutral-content"))
+            .Variant("Primary", v => v.Set(nameof(Hero.Class), "rounded-box bg-primary text-primary-content"))
+            .Variant("Taller", v => v.Set(nameof(Hero.MinHeight), "min-h-96"));
+
+        // Color paints bg-{color} text-{color}-content, so it is a variant rather than a Class
+        // background that would fight it. Horizontal=false (footer-vertical) looks like the
+        // default stacked flow, so only Horizontal=true is offered.
+        options.For<Footer>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(Footer.Class), "rounded-box")
+            .Slot(nameof(Footer.ChildContent), DaisyDemoFragments.FooterColumns, DaisyDemoFragmentSources.FooterColumns)
+            .Related<FooterTitle>()
+            .Variant("Neutral", v => v.Set(nameof(Footer.Color), Color.Dark))
+            .Variant("Primary", v => v.Set(nameof(Footer.Color), Color.Primary))
+            .Variant("Side by side", v => v.Set(nameof(Footer.Horizontal), true))
+            .Variant("Centered", v => v.Set(nameof(Footer.Center), true))
+            .Variant("Compact", v => v.Set(nameof(Footer.Padding), "p-4"));
+
+        // --- Navigation ---
+
+        // Each region renders only when its fragment is set; Color pairs bg-{color} with its content
+        // colour (Default is bg-base-100).
+        options.For<Navbar>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(Navbar.Class), "rounded-box")
+            .Slot(nameof(Navbar.Start), DaisyDemoFragments.NavbarBrand, DaisyDemoFragmentSources.NavbarBrand)
+            .Slot(nameof(Navbar.Center), DaisyDemoFragments.NavbarLinks, DaisyDemoFragmentSources.NavbarLinks)
+            .Slot(nameof(Navbar.End), DaisyDemoFragments.NavbarActions, DaisyDemoFragmentSources.NavbarActions)
+            .Related<Menu>()
+            .Variant("Primary", v => v.Set(nameof(Navbar.Color), Color.Primary))
+            .Variant("Neutral", v => v.Set(nameof(Navbar.Color), Color.Dark))
+            .Variant("Bordered", v => v.Set(nameof(Navbar.Bordered), true))
+            .Variant("Shadow", v => v.Set(nameof(Navbar.Shadow), true));
+
+        // Items (List<BreadcrumbItem>) has no control, so the trail is a fixed preset and no variant
+        // can swap it. A null Href is the current page (plain text, aria-current="page").
+        options.For<Breadcrumbs>()
+            .Parameter(
+                nameof(Breadcrumbs.Items),
+                new List<BreadcrumbItem>
+                {
+                    new("Home", "#", Icon: Icons.Material.Filled.Home),
+                    new("Projects", "#", Icon: Icons.Material.Filled.Folder),
+                    new("Checkout redesign", null),
+                },
+                "@(new List<BreadcrumbItem> { new(\"Home\", \"#\", Icon: Icons.Material.Filled.Home), new(\"Projects\", \"#\", Icon: Icons.Material.Filled.Folder), new(\"Checkout redesign\", null) })")
+            .Related<Navbar>()
+            .Variant("Bold", v => v.Set(nameof(Breadcrumbs.Class), "font-semibold"))
+            .Variant("Muted", v => v.Set(nameof(Breadcrumbs.Class), "opacity-70"))
+            .Variant("Scrolls when narrow", v => v.Set(nameof(Breadcrumbs.Class), "max-w-40"));
+
+        // Fixed=false is mandatory: daisyUI's .dock is position:fixed at the viewport bottom, over
+        // the explorer. The frame's transform contains it even if the control turns Fixed back on.
+        options.For<Dock>()
+            .Scaffold(DaisyDemoFragments.InDockFrame, DaisyDemoFragmentSources.InDockFrame)
+            .Parameter(nameof(Dock.Fixed), false)
+            .Slot(nameof(Dock.ChildContent), DaisyDemoFragments.DockItems, DaisyDemoFragmentSources.DockItems)
+            .Related<DockItem>()
+            .Variant("Extra small", v => v.Set(nameof(Dock.Size), DockSize.Xs))
+            .Variant("Small", v => v.Set(nameof(Dock.Size), DockSize.Sm))
+            .Variant("Large", v => v.Set(nameof(Dock.Size), DockSize.Lg))
+            .Variant("Extra large", v => v.Set(nameof(Dock.Size), DockSize.Xl));
+
+        // CSS-only <details>: click the trigger to open it. The trigger is styled through
+        // ActivatorClass, as Dropdown's own docs say: a <Button> inside the <summary> swallows the
+        // click and the dropdown never opens. The placement variants also force it Open so the
+        // list shows where it lands.
+        options.For<Dropdown>()
+            .Scaffold(DaisyDemoFragments.InPopupFrame, DaisyDemoFragmentSources.InPopupFrame)
+            .Parameter(nameof(Dropdown.ActivatorClass), "btn btn-outline")
+            .Slot(nameof(Dropdown.Activator), b => b.AddContent(0, "Options"), "Options")
+            .Slot(nameof(Dropdown.ChildContent), DaisyDemoFragments.DropdownItems, DaisyDemoFragmentSources.DropdownItems)
+            .Related<Menu>()
+            .Variant("Open", v => v.Set(nameof(Dropdown.Open), true))
+            .Variant("Opens on hover", v => v.Set(nameof(Dropdown.Hover), true))
+            .Variant("Opens upward", v => v.Set(nameof(Dropdown.Placement), DropdownPlacement.Top).Set(nameof(Dropdown.Open), true))
+            .Variant("Aligned to the end", v => v.Set(nameof(Dropdown.Placement), DropdownPlacement.End).Set(nameof(Dropdown.Open), true))
+            .Variant("Opens to the right", v => v.Set(nameof(Dropdown.Placement), DropdownPlacement.Right).Set(nameof(Dropdown.Open), true));
+
+        // Menu renders its items only while open, and injects IJSRuntime for menu.js (focus moves
+        // only; bench-safe). Open=true shows the list straight away; an open Menu lays a
+        // `fixed inset-0` backdrop, which InPopupFrame's transform keeps to the frame (see InMenu).
+        // A click outside closes it, and it stays closed until the bench resets: Open only
+        // overrides the inner state when the parameter itself changes (#108 upstream).
+        // ActivatorContent is a RenderFragment<MenuActivator>, which the bench cannot fill.
+        options.For<Menu>()
+            .Scaffold(DaisyDemoFragments.InPopupFrame, DaisyDemoFragmentSources.InPopupFrame)
+            .Parameter(nameof(Menu.Label), "Actions")
+            .Parameter(nameof(Menu.Open), true)
+            .Slot(nameof(Menu.ChildContent), DaisyDemoFragments.MenuItems, DaisyDemoFragmentSources.MenuItems)
+            .Related<MenuItem>()
+            .Variant("Icon activator", v => v.Set(nameof(Menu.Icon), Icons.Material.Filled.MoreVert))
+            .Variant("Dense", v => v.Set(nameof(Menu.Dense), true))
+            .Variant("Large activator", v => v.Set(nameof(Menu.Size), Size.Large))
+            .Variant("Horizontal list", v => v.Set(nameof(Menu.ListClass), "menu-horizontal"))
+            .Variant("Aligned to the end", v => v.Set(nameof(Menu.AnchorOrigin), Origin.BottomRight));
+
+        // A menu <li> around the framework NavLink, which adds menu-active when the URL matches.
+        // "Current page" uses Href="explorer", which Prefix-matches the explorer's own URL, so the
+        // highlight shows on the bench. A click on either navigates (see the summary on "#").
+        options.For<NavMenuLink>()
+            .Scaffold(DaisyDemoFragments.InMenuList, DaisyDemoFragmentSources.InMenuList)
+            .Parameter(nameof(NavMenuLink.Href), "#")
+            .Parameter(nameof(NavMenuLink.Icon), Icons.Material.Filled.Home)
+            .Slot(nameof(NavMenuLink.ChildContent), b => b.AddContent(0, "Dashboard"), "Dashboard")
+            .Related<Menu>()
+            .Variant("Current page", v => v.Set(nameof(NavMenuLink.Href), "explorer"))
+            .Variant("Disabled", v => v.Set(nameof(NavMenuLink.Disabled), true))
+            .Variant("Other icon", v => v.Set(nameof(NavMenuLink.Icon), Icons.Material.Filled.Inbox));
+
+        // Selected is 1-based; page 5 of 10 shows both ellipses. SelectedChanged is wired to the
+        // event log on the bench, so a click moves the selection.
+        options.For<Pagination>()
+            .Parameter(nameof(Pagination.Count), 10)
+            .Parameter(nameof(Pagination.Selected), 5)
+            .Related<TablePager>()
+            .Variant("Primary", v => v.Set(nameof(Pagination.Color), Color.Primary))
+            .Variant("First and last buttons", v => v.Set(nameof(Pagination.ShowFirstButton), true).Set(nameof(Pagination.ShowLastButton), true))
+            .Variant("Wider window", v => v.Set(nameof(Pagination.MiddleCount), 5))
+            .Variant("Few pages", v => v.Set(nameof(Pagination.Count), 3).Set(nameof(Pagination.Selected), 2))
+            .Variant("Disabled", v => v.Set(nameof(Pagination.Disabled), true));
+
+        // Steps has no index: the current step is the Active one, the ones before it Completed
+        // (step-primary, which colours the connector up to the current step).
+        options.For<Steps>()
+            .Slot(nameof(Steps.ChildContent), DaisyDemoFragments.StepItems, DaisyDemoFragmentSources.StepItems)
+            .Related<Step>()
+            .Variant("Vertical", v => v.Set(nameof(Steps.Vertical), true))
+            .Variant("Wide", v => v.Set(nameof(Steps.Class), "w-[40rem]"));
+
+        // Tabs injects IJSRuntime only on first focus (tabs.js stops arrow keys scrolling the page).
+        // Each Tab registers with it; the panel takes the variant's surface (tab-content block ...).
+        options.For<Tabs>()
+            .Parameter(nameof(Tabs.Class), "w-96")
+            .Slot(nameof(Tabs.ChildContent), DaisyDemoFragments.TabItems, DaisyDemoFragmentSources.TabItems)
+            .Related<Tab>()
+            .Variant("Border", v => v.Set(nameof(Tabs.Variant), TabsVariant.Border))
+            .Variant("Lift", v => v.Set(nameof(Tabs.Variant), TabsVariant.Lift))
+            .Variant("Small", v => v.Set(nameof(Tabs.Size), Size.Small))
+            .Variant("Large", v => v.Set(nameof(Tabs.Size), Size.Large))
+            .Variant("Second tab active", v => v.Set(nameof(Tabs.ActiveIndex), 1));
+
+        // Target="_blank" keeps the bench: the link opens in a new tab instead of leaving the app.
+        options.For<TextLink>()
+            .Parameter(nameof(TextLink.Href), "https://daisyui.com")
+            .Parameter(nameof(TextLink.Target), "_blank")
+            .Slot(nameof(TextLink.ChildContent), b => b.AddContent(0, "Read the daisyUI docs"), "Read the daisyUI docs")
+            .Related<Button>()
+            .Variant("Secondary", v => v.Set(nameof(TextLink.Color), Color.Secondary))
+            .Variant("Accent", v => v.Set(nameof(TextLink.Color), Color.Tertiary))
+            .Variant("Always underlined", v => v.Set(nameof(TextLink.Underline), Underline.Always))
+            .Variant("No underline", v => v.Set(nameof(TextLink.Underline), Underline.None))
+            .Variant("Heading", v => v.Set(nameof(TextLink.Typo), Typo.h5));
+
+        // --- Mockups ---
+
+        options.For<MockupBrowser>()
+            .Parameter(nameof(MockupBrowser.Url), "acme.cloud")
+            .Parameter(nameof(MockupBrowser.Class), "w-96")
+            .Slot(nameof(MockupBrowser.ChildContent), DaisyDemoFragments.BrowserPage, DaisyDemoFragmentSources.BrowserPage)
+            .Related<MockupWindow>()
+            .Variant("Primary border", v => v.Set(nameof(MockupBrowser.BorderColor), Color.Primary))
+            .Variant("Tinted", v => v.Set(nameof(MockupBrowser.Class), "w-96 bg-base-200"))
+            .Variant("Other page", v => v.Set(nameof(MockupBrowser.Url), "acme.cloud/pricing"));
+
+        // Lines (IReadOnlyList<string>) has no control: a fixed preset, one <pre data-prefix> each.
+        options.For<MockupCode>()
+            .Parameter(nameof(MockupCode.Lines), new[] { "npm i daisyui", "installing...", "Done!" }, "@(new[] { \"npm i daisyui\", \"installing...\", \"Done!\" })")
+            .Related<MockupWindow>()
+            .Variant("Chevron prompt", v => v.Set(nameof(MockupCode.Prefix), ">"))
+            .Variant("No prefix", v => v.Set(nameof(MockupCode.Prefix), string.Empty))
+            .Variant("Primary", v => v.Set(nameof(MockupCode.Class), "bg-primary text-primary-content"));
+
+        // .mockup-phone is width:100% (max 462px) at a 462/978 aspect ratio: on the shrink-wrapped
+        // bench it needs a width, and w-48 keeps it under 400px tall.
+        options.For<MockupPhone>()
+            .Parameter(nameof(MockupPhone.Class), "w-48")
+            .Slot(nameof(MockupPhone.ChildContent), DaisyDemoFragments.PhoneScreen, DaisyDemoFragmentSources.PhoneScreen)
+            .Related<MockupBrowser>()
+            .Variant("Small", v => v.Set(nameof(MockupPhone.Class), "w-36"))
+            .Variant("Large", v => v.Set(nameof(MockupPhone.Class), "w-64"));
+
+        options.For<MockupWindow>()
+            .Parameter(nameof(MockupWindow.Title), "Deployments")
+            .Parameter(nameof(MockupWindow.Class), "w-96")
+            .Slot(nameof(MockupWindow.ChildContent), DaisyDemoFragments.WindowContent, DaisyDemoFragmentSources.WindowContent)
+            .Related<MockupBrowser>()
+            .Variant("Primary border", v => v.Set(nameof(MockupWindow.BorderColor), Color.Primary))
+            .Variant("Tinted", v => v.Set(nameof(MockupWindow.Class), "w-96 bg-base-200"))
+            .Variant("Untitled", v => v.Set(nameof(MockupWindow.Title), string.Empty));
+
+        // --- App-level helpers ---
+        // Every [EditorRequired] member is preset, so neither the bench nor the generated snippet
+        // trips RZ2012.
+
+        options.For<PageHeader>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(PageHeader.Title), "Invoices")
+            .Parameter(nameof(PageHeader.Subtitle), "42 open, 3 overdue")
+            .Slot(nameof(PageHeader.Actions), DaisyDemoFragments.NewInvoiceButton, DaisyDemoFragmentSources.NewInvoiceButton)
+            .Related<SectionCard>()
+            .Variant("With icon", v => v.Set(nameof(PageHeader.Icon), Icons.Material.Filled.ReceiptLong))
+            .Variant("Level 2 heading", v => v.Set(nameof(PageHeader.HeadingLevel), 2))
+            .Variant("Full-contrast subtitle", v => v.Set(nameof(PageHeader.SubtitleColor), Color.Dark));
+
+        options.For<SectionCard>()
+            .Parameter(nameof(SectionCard.Title), "Deployment")
+            .Parameter(nameof(SectionCard.Icon), Icons.Material.Filled.RocketLaunch)
+            .Parameter(nameof(SectionCard.Class), "w-96")
+            .Slot(nameof(SectionCard.ChildContent), DaisyDemoFragments.SectionBody, DaisyDemoFragmentSources.SectionBody)
+            .Related<DetailCard>()
+            .Variant("No divider", v => v.Set(nameof(SectionCard.ShowDivider), false))
+            .Variant("Flat", v => v.Set(nameof(SectionCard.Elevation), 0))
+            .Variant("Larger title", v => v.Set(nameof(SectionCard.TitleTypo), Typo.h5))
+            .Variant("Header actions", v => v.Set(nameof(SectionCard.HeaderActions), "⋯"));
+
+        // A SectionCard whose body is a dense, hoverable table of DetailRows.
+        options.For<DetailCard>()
+            .Parameter(nameof(DetailCard.Title), "Northwind Traders")
+            .Parameter(nameof(DetailCard.Icon), Icons.Material.Filled.Business)
+            .Parameter(nameof(DetailCard.Class), "w-96")
+            .Slot(nameof(DetailCard.ChildContent), DaisyDemoFragments.DetailRows, DaisyDemoFragmentSources.DetailRows)
+            .Related<DetailRow>()
+            .Variant("Roomy", v => v.Set(nameof(DetailCard.Dense), false))
+            .Variant("Flat", v => v.Set(nameof(DetailCard.Elevation), 0))
+            .Variant("No icon", v => v.Set(nameof(DetailCard.Icon), string.Empty));
+
+        options.For<DetailRow>()
+            .Scaffold(DaisyDemoFragments.InDetailCard, DaisyDemoFragmentSources.InDetailCard)
+            .Related<DetailCard>()
+            .Parameter(nameof(DetailRow.Label), "Owner")
+            .Parameter(nameof(DetailRow.Value), "Ana Silva")
+            .Variant("Long value", v => v.Set(nameof(DetailRow.Value), "ana.silva@northwind-traders.example.com"))
+            .Variant("Custom value content", v => v.Set(nameof(DetailRow.ValueContent), "Enterprise plan"))
+            .Variant("Highlighted", v => v.Set(nameof(DetailRow.Class), "bg-base-200"));
+
+        // BackRoute="#" (see the summary: a click leaves the explorer for the landing page).
+        options.For<DetailLayout>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(DetailLayout.Title), "Northwind Traders")
+            .Parameter(nameof(DetailLayout.BackRoute), "#")
+            .Slot(nameof(DetailLayout.MainContent), DaisyDemoFragments.DetailMain, DaisyDemoFragmentSources.DetailMain)
+            .Related<DetailCard>()
+            .Variant("Subtitle", v => v.Set(nameof(DetailLayout.Subtitle), "Customer since March 2021"))
+            .Variant("Custom back label", v => v.Set(nameof(DetailLayout.BackLabel), "All customers"))
+            .Variant("With sidebar", v => v.Set(nameof(DetailLayout.Sidebar), "Account manager: Ana Silva"))
+            .Variant("Status", v => v.Set(nameof(DetailLayout.StatusSlot), "Active"));
+
+        // Upstream at 0.6.0: BadgeText also DISABLES the button (IsDisabled => Disabled || Loading
+        // || BadgeText is not null), so the badge variant shows a greyed-out shortcut. Left visible.
+        options.For<QuickAccessButton>()
+            .Scaffold(DaisyDemoFragments.InNarrowFrame, DaisyDemoFragmentSources.InNarrowFrame)
+            .Parameter(nameof(QuickAccessButton.Label), "New invoice")
+            .Parameter(nameof(QuickAccessButton.Icon), Icons.Material.Filled.Add)
+            .Related<Button>()
+            .Variant("Primary", v => v.Set(nameof(QuickAccessButton.Color), Color.Primary))
+            .Variant("Loading", v => v.Set(nameof(QuickAccessButton.Loading), true))
+            .Variant("Disabled", v => v.Set(nameof(QuickAccessButton.Disabled), true))
+            .Variant("With badge", v => v.Set(nameof(QuickAccessButton.BadgeText), "3").Set(nameof(QuickAccessButton.TooltipText), "3 drafts waiting"));
+
+        // A null gradient falls back to the theme's primary/secondary (scoped CSS).
+        options.For<FeatureHero>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(FeatureHero.Icon), Icons.Material.Filled.Payments)
+            .Parameter(nameof(FeatureHero.Title), "Billing")
+            .Parameter(nameof(FeatureHero.Eyebrow), "Finance")
+            .Parameter(nameof(FeatureHero.Subtitle), "Invoices, payments and reports in one place.")
+            .Slot(nameof(FeatureHero.Actions), DaisyDemoFragments.NewInvoiceButton, DaisyDemoFragmentSources.NewInvoiceButton)
+            .Related<FeatureHomePage>()
+            .Variant("Dense", v => v.Set(nameof(FeatureHero.Dense), true))
+            .Variant("Ocean gradient", v => v.Set(nameof(FeatureHero.GradientStart), "#0ea5e9").Set(nameof(FeatureHero.GradientEnd), "#6366f1"))
+            .Variant("Sunset gradient", v => v.Set(nameof(FeatureHero.GradientStart), "#f97316").Set(nameof(FeatureHero.GradientEnd), "#db2777"));
+
+        // A whole feature page, kept compact: a title and two nav cards. RequireAccessCheck
+        // defaults to false (verified at v0.6.0) and is deliberately never a variant: true wraps the
+        // page in <AuthorizeView>, which needs a cascading AuthenticationState this demo does not
+        // provide, so the specimen would throw.
+        options.For<FeatureHomePage>()
+            .Scaffold(DaisyDemoFragments.InWideFrame, DaisyDemoFragmentSources.InWideFrame)
+            .Parameter(nameof(FeatureHomePage.Title), "Billing")
+            .Parameter(nameof(FeatureHomePage.Subtitle), "Invoices, payments and reports.")
+            .Slot(nameof(FeatureHomePage.NavCards), DaisyDemoFragments.HomeNavCards, DaisyDemoFragmentSources.HomeNavCards)
+            .Related<FeatureNavCard>()
+            .Variant("Hero banner", v => v.Set(nameof(FeatureHomePage.Icon), Icons.Material.Filled.Payments))
+            .Variant("Hero, sunset gradient", v => v.Set(nameof(FeatureHomePage.Icon), Icons.Material.Filled.Payments).Set(nameof(FeatureHomePage.GradientStart), "#f97316").Set(nameof(FeatureHomePage.GradientEnd), "#db2777"))
+            .Variant("Section title", v => v.Set(nameof(FeatureHomePage.NavCardsTitle), "Areas"))
+            .Variant("With error", v => v.Set(nameof(FeatureHomePage.Error), "Could not load the latest totals."));
+
+        // Href is left unset: the card calls NavigationManager.NavigateTo itself, which would take
+        // the explorer away (and "#" resolves to the landing page). Without it the "go" arrow is not
+        // rendered. Upstream at 0.6.0: the inner Card always gets an OnClick delegate, so the card is
+        // role="button" tabindex="0" even with no Href, a focusable "button" that does nothing.
+        options.For<FeatureNavCard>()
+            .Scaffold(DaisyDemoFragments.InNarrowFrame, DaisyDemoFragmentSources.InNarrowFrame)
+            .Parameter(nameof(FeatureNavCard.Icon), Icons.Material.Filled.ReceiptLong)
+            .Parameter(nameof(FeatureNavCard.Title), "Invoices")
+            .Parameter(nameof(FeatureNavCard.Subtitle), "Billing")
+            .Parameter(nameof(FeatureNavCard.Description), "Create, send and track invoices.")
+            .Parameter(nameof(FeatureNavCard.AvatarColor), Color.Primary)
+            .Related<FeatureHomePage>()
+            .Variant("Secondary avatar", v => v.Set(nameof(FeatureNavCard.AvatarColor), Color.Secondary))
+            .Variant("Gradient avatar", v => v.Set(nameof(FeatureNavCard.GradientStart), "#0ea5e9").Set(nameof(FeatureNavCard.GradientEnd), "#6366f1"))
+            .Variant("Extra content", v => v.Set(nameof(FeatureNavCard.ChildContent), "3 overdue"));
+
+        // A 220px gradient tile. OnCardClick is wired to the bench's event log, so a click logs
+        // instead of navigating to Route (default "/").
+        options.For<AppCard>()
+            .Parameter(nameof(AppCard.Name), "Invoices")
+            .Parameter(nameof(AppCard.Icon), Icons.Material.Filled.ReceiptLong)
+            .Parameter(nameof(AppCard.GradientStart), "#0ea5e9")
+            .Parameter(nameof(AppCard.GradientEnd), "#6366f1")
+            .Related<FeatureNavCard>()
+            .Variant("With badge", v => v.Set(nameof(AppCard.Badge), "3"))
+            .Variant("Sunset gradient", v => v.Set(nameof(AppCard.GradientStart), "#f97316").Set(nameof(AppCard.GradientEnd), "#db2777"))
+            .Variant("Long name", v => v.Set(nameof(AppCard.Name), "Purchase orders and approvals"));
     }
 
     private static Task<IEnumerable<string>> SearchFruits(string text, CancellationToken cancellationToken)
