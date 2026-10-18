@@ -332,6 +332,32 @@
             max-height: 15rem;
         }
 
+        /* Desktop: the panel takes the stage's height instead of setting it (contain: size drops
+           its content from the row's sizing), so every bench's panel ends where its stage ends
+           and longer lists scroll inside. */
+        @media (min-width: 721px) {
+            .demo-main .pb-playground .pb-panel,
+            .demo-main .demo-bench-compact .pb-playground .pb-panel {
+                contain: size;
+                max-height: none;
+                min-height: 15rem;
+            }
+        }
+
+        /* DateTime parameters render a native datetime-local field: give it the bordered look of
+           the text and number fields around it. */
+        .demo-main .pb-playground .pb-panel input[type="datetime-local"] {
+            box-sizing: border-box;
+            width: 100%;
+            height: 28px;
+            padding: 4px 8px;
+            border: 1px solid var(--pb-line);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--pb-ink);
+            font: inherit;
+        }
+
         /* Inline code in the bench notes (_people, Breakpoint.None). */
         .demo-main .demo-note code {
             font-size: 0.9em;
@@ -414,6 +440,25 @@
 
             .demo-main .pb-playground .pb-preview > .pb-specimen {
                 margin-block: auto;
+            }
+
+            /* Phone-width grid: tighter stage and cell padding so Name, Role and Age fit whole,
+               and an edge shade (local cover over a scroll shade) if a wider value still scrolls. */
+            .demo-main .demo-bench-grid .pb-preview {
+                padding-inline: 0.5rem;
+            }
+
+            .demo-main .demo-bench-grid .mud-table-cell {
+                padding-inline: 6px;
+            }
+
+            .demo-main .demo-bench-grid .mud-table-container {
+                background:
+                    linear-gradient(to left, rgba(255, 255, 255, 0), #fff 70%) left center / 1.5rem 100% no-repeat local,
+                    linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%) right center / 1.5rem 100% no-repeat local,
+                    linear-gradient(to right, rgba(27, 27, 34, 0.12), rgba(27, 27, 34, 0)) left center / 0.75rem 100% no-repeat scroll,
+                    linear-gradient(to left, rgba(27, 27, 34, 0.12), rgba(27, 27, 34, 0)) right center / 0.75rem 100% no-repeat scroll,
+                    #fff;
             }
         }
 

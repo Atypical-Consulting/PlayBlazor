@@ -163,6 +163,11 @@ public static class PlaygroundConfig
             // A landing flagship: the inline variant is only a text field until clicked, so open
             // the static calendar and let the chips show the other surfaces.
             .Parameter(nameof(MudDatePicker.PickerVariant), PickerVariant.Static)
+            // With no Date the Material toolbar is a violet block reading only the year. Presetting
+            // Date does not help: the picker raises DateChanged on load, which turns the snippet's
+            // value into a locale string. So the bench opens on the calendar alone.
+            .Parameter(nameof(MudDatePicker.ShowToolbar), false)
+            .Variant("With toolbar", v => v.Set(nameof(MudDatePicker.ShowToolbar), true))
             .Variant("Inline field", v => v.Set(nameof(MudDatePicker.PickerVariant), PickerVariant.Inline))
             .Variant("Week numbers", v => v.Set(nameof(MudDatePicker.ShowWeekNumbers), true))
             .Variant("Open to year", v => v.Set(nameof(MudDatePicker.OpenTo), OpenTo.Year));
