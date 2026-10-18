@@ -43,7 +43,7 @@ jobs:
           # generated, not shipped. Blocked on phmatray/blazor-tailwind-ui#20 (DaisyBlazor.Components
           # 1.0.0 not on NuGet, @daisyblazor/tailwind not on npm).
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v5
         with:
@@ -81,7 +81,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/download-artifact@v5
         with:
