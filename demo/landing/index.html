@@ -3,68 +3,290 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PlayBlazor — pick a component library</title>
+    <title>PlayBlazor — live playgrounds for Blazor components</title>
+    <meta name="description" content="PlayBlazor turns every [Parameter] of a Blazor component into an interactive control. Try it on MudBlazor, Fluent UI Blazor or DaisyBlazor." />
     <link rel="icon" type="image/png" href="favicon.png" />
     <style>
-        :root { color-scheme: light; }
+        :root {
+            color-scheme: light;
+            --ink: #1b1b22;
+            --muted: #5f5f6b;
+            --line: #e3e3ec;
+            --surface: #fbfbfd;
+            --accent: #6d4aff;
+            --accent-ink: #4b2ed6;
+            --accent-wash: #f1edff;
+            --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        * { box-sizing: border-box; }
+        ::selection { background: #d9cfff; color: var(--ink); }
+        html { scrollbar-color: #c9c9d6 transparent; }
         body {
             margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
             background: #ffffff radial-gradient(#e4e4ec 1px, transparent 1px) 0 0 / 16px 16px;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            color: #1b1b22;
+            color: var(--ink);
+            line-height: 1.55;
+            caret-color: var(--accent);
         }
-        h1 { margin: 0; font-size: 1.75rem; letter-spacing: -0.01em; }
-        h1 .mark { color: #6d4aff; }
-        p { max-width: 34rem; margin: 0 1.5rem; text-align: center; color: #6e6e7a; line-height: 1.6; }
-        .cards { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 0 1.5rem; }
-        .card {
-            display: block;
-            width: 15rem;
-            padding: 1.25rem;
-            border: 1px solid #e6e6ee;
-            border-radius: 0.75rem;
-            background: #fbfbfd;
-            color: inherit;
-            text-decoration: none;
-            transition: border-color 150ms ease, transform 150ms ease;
+        a { color: var(--accent-ink); text-underline-offset: 0.2em; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+        code { font-family: var(--mono); font-size: 0.92em; }
+        .wrap { width: min(72rem, 100% - 2rem); margin-inline: auto; }
+
+        /* Top bar */
+        .top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.25rem; }
+        .brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.01em; color: var(--ink); text-decoration: none; }
+        .brand .mark { color: var(--accent); }
+        .top nav { display: flex; gap: 1.25rem; font-size: 0.9375rem; }
+        .top nav a { color: var(--muted); text-decoration: none; }
+        .top nav a:hover { color: var(--ink); text-decoration: underline; }
+
+        /* Hero */
+        .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; padding-block: clamp(2rem, 6vw, 4.5rem) clamp(2.5rem, 5vw, 4rem); }
+        h1 { margin: 0; font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4.25rem); line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
+        h1 code { font-size: 0.86em; color: var(--accent); letter-spacing: -0.04em; font-weight: 700; }
+        .lede { margin: 1.25rem 0 0; max-width: 34rem; font-size: 1.1875rem; color: var(--muted); text-wrap: pretty; }
+        .lede strong { color: var(--ink); font-weight: 600; }
+        .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1.125rem; border-radius: 0.625rem; font-weight: 600; font-size: 0.9375rem; text-decoration: none; transition: background-color 150ms var(--ease), border-color 150ms var(--ease), transform 150ms var(--ease); }
+        .btn svg { width: 1.05em; height: 1.05em; flex: none; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-ink); }
+        .btn-secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+        .btn-secondary:hover { border-color: var(--ink); }
+        .btn:active { transform: translateY(1px); }
+        .install { margin: 1.25rem 0 0; font-size: 0.875rem; color: var(--muted); }
+        .install code { user-select: all; padding: 0.15rem 0.4rem; border-radius: 0.375rem; background: #f2f2f7; color: var(--ink); }
+
+        /* Hero illustration: a working sketch of one playground */
+        .sketch { border: 1px solid var(--line); border-radius: 1rem; background: #fff; box-shadow: 0 1px 2px rgb(27 27 34 / 0.04), 0 18px 40px -18px rgb(27 27 34 / 0.2); overflow: hidden; }
+        .sketch-bar { display: flex; align-items: center; justify-content: space-between; padding: 0.625rem 1rem; border-bottom: 1px solid var(--line); font-size: 0.8125rem; color: var(--muted); }
+        .sketch-bar b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
+        .sketch-body { display: grid; grid-template-columns: 1fr 1fr; }
+        .bench { display: grid; place-items: center; min-height: 11rem; padding: 1.5rem; background: radial-gradient(#ececf3 1px, transparent 1px) 0 0 / 12px 12px; border-right: 1px solid var(--line); }
+        .specimen { padding: 0.55rem 1.1rem; border-radius: 4px; font: 500 0.875rem/1.5 system-ui, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; background: #594ae2; color: #fff; border: 1px solid #594ae2; box-shadow: 0 2px 2px rgb(0 0 0 / 0.18); transition: all 200ms var(--ease); }
+        .panel { margin: 0; padding: 1rem; display: grid; gap: 0.875rem; align-content: start; border: 0; min-width: 0; }
+        .panel legend { float: left; width: 100%; padding: 0; margin-bottom: 0.25rem; font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+        .row { display: grid; gap: 0.35rem; font-size: 0.8125rem; }
+        .row > span { font-family: var(--mono); color: var(--ink); }
+        .seg { display: flex; border: 1px solid var(--line); border-radius: 0.5rem; padding: 2px; background: var(--surface); }
+        .seg label { flex: 1; text-align: center; padding: 0.3rem 0.25rem; border-radius: 0.375rem; cursor: pointer; color: var(--muted); }
+        .seg input, .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        .seg label:has(input:checked) { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(27 27 34 / 0.12); }
+        .seg label:has(input:focus-visible), .switch:has(input:focus-visible) .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .switch { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .switch > span { font-family: var(--mono); }
+        .track { width: 2.25rem; height: 1.25rem; border-radius: 1rem; background: #d4d4de; position: relative; transition: background-color 150ms var(--ease); }
+        .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 1rem; height: 1rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2); transition: transform 200ms var(--ease); }
+        .switch:has(input:checked) .track { background: var(--accent); }
+        .switch:has(input:checked) .track::after { transform: translateX(1rem); }
+        .snippet { margin: 0; padding: 0.75rem 1rem; border-top: 1px solid var(--line); background: #17161f; color: #e9e7f5; font: 0.8125rem/1.6 var(--mono); overflow-x: auto; }
+        .snippet .t { color: #b6a6ff; }
+        .snippet .a { color: #8fd3c7; }
+        .snippet .v { color: #ffd59e; }
+        .snippet .vv::after { content: "Filled"; }
+        .snippet .dd::after { content: "false"; }
+        .sketch:has(#v-outlined:checked) .specimen { background: transparent; color: #594ae2; box-shadow: none; }
+        .sketch:has(#v-outlined:checked) .snippet .vv::after { content: "Outlined"; }
+        .sketch:has(#v-text:checked) .specimen { background: transparent; color: #594ae2; border-color: transparent; box-shadow: none; }
+        .sketch:has(#v-text:checked) .snippet .vv::after { content: "Text"; }
+        .sketch:has(#p-disabled:checked) .specimen { background: #e0e0e0; color: #9e9e9e; border-color: #e0e0e0; box-shadow: none; }
+        .sketch:has(#p-disabled:checked):not(:has(#v-filled:checked)) .specimen { background: transparent; }
+        .sketch:has(#p-disabled:checked) .snippet .dd::after { content: "true"; }
+        .sketch-note { margin: 0.75rem 0 0; font-size: 0.8125rem; color: var(--muted); text-align: center; }
+
+        /* Library picker */
+        .pick { padding-block: clamp(2.5rem, 5vw, 4rem) 1rem; border-top: 1px solid var(--line); }
+        h2 { margin: 0; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); letter-spacing: -0.02em; text-wrap: balance; }
+        .pick-intro { margin: 0.5rem 0 0; max-width: 40rem; color: var(--muted); }
+        .libs { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+        .lib { position: relative; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 0.875rem; background: #fff; overflow: hidden; transition: border-color 150ms var(--ease), box-shadow 200ms var(--ease), transform 200ms var(--ease); }
+        .lib:hover { border-color: var(--brand); transform: translateY(-3px); box-shadow: 0 14px 30px -18px rgb(27 27 34 / 0.35); }
+        .lib:has(a:focus-visible) { border-color: var(--brand); }
+        .lib:active { transform: translateY(-1px); }
+        .preview { display: flex; align-items: center; justify-content: center; gap: 0.625rem; height: 7rem; padding: 1rem; background: var(--brand-wash); border-bottom: 1px solid var(--line); }
+        .lib-body { display: flex; flex-direction: column; flex: 1; padding: 1.25rem; }
+        .lib h3 { margin: 0; font-size: 1.1875rem; letter-spacing: -0.01em; }
+        .lib h3 a { color: var(--ink); text-decoration: none; }
+        .lib h3 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+        .lib h3 a:focus-visible { outline: none; }
+        .lib:has(h3 a:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+        .facts { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 1rem; margin: 0.875rem 0 1.25rem; font-size: 0.875rem; }
+        .facts dt { color: var(--muted); }
+        .facts dd { margin: 0; font-weight: 500; font-variant-numeric: tabular-nums; }
+        .go { margin-top: auto; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.9375rem; color: var(--brand-ink); }
+        .go svg { width: 1em; height: 1em; transition: transform 200ms var(--ease); }
+        .lib:hover .go svg { transform: translateX(3px); }
+
+        .mud { --brand: #594ae2; --brand-ink: #4536c4; --brand-wash: #f3f1fd; }
+        .fluent { --brand: #0f6cbd; --brand-ink: #0f5ea3; --brand-wash: #eef5fc; }
+        .daisy { --brand: #605dff; --brand-ink: #3f3bd9; --brand-wash: #fdf2f8; }
+
+        /* Library-flavoured specimens (illustrative styling, not screenshots) */
+        .pv-btn { padding: 0.45rem 0.9rem; font: 600 0.8125rem/1.4 system-ui, sans-serif; border: 1px solid transparent; }
+        .pv-chip { padding: 0.2rem 0.65rem; font: 500 0.75rem/1.4 system-ui, sans-serif; }
+        .mud .pv-btn { border-radius: 4px; background: #594ae2; color: #fff; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; box-shadow: 0 2px 2px rgb(0 0 0 / 0.18); }
+        .mud .pv-btn.alt { background: transparent; color: #594ae2; border-color: #594ae2; box-shadow: none; }
+        .mud .pv-chip { border-radius: 1rem; background: #e0e0e0; color: #424242; }
+        .fluent .pv-btn { border-radius: 4px; background: #0f6cbd; color: #fff; }
+        .fluent .pv-btn.alt { background: #fff; color: #242424; border-color: #d1d1d1; }
+        .fluent .pv-chip { border-radius: 4px; background: #fff; color: #242424; border: 1px solid #d1d1d1; }
+        .daisy .pv-btn { border-radius: 0.5rem; background: #605dff; color: #fff; }
+        .daisy .pv-btn.alt { background: #cc1f78; color: #fff; }
+        .daisy .pv-chip { border-radius: 1rem; background: #00d3bb; color: #084d49; }
+
+        .boot { margin: 1.5rem 0 0; display: flex; gap: 0.75rem; align-items: flex-start; max-width: 48rem; padding: 0.875rem 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--surface); font-size: 0.875rem; color: var(--muted); }
+        .boot svg { flex: none; width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; color: var(--accent); }
+        .boot p { margin: 0; }
+        .boot strong { color: var(--ink); font-weight: 600; }
+
+        footer { padding-block: 2.5rem 3rem; font-size: 0.8125rem; color: var(--muted); }
+        footer p { margin: 0; }
+
+        @media (max-width: 60rem) {
+            .hero { grid-template-columns: 1fr; }
+            .libs { grid-template-columns: 1fr; }
+            .preview { height: 5.5rem; }
         }
-        .card:hover { border-color: #6d4aff; transform: translateY(-2px); }
-        .card strong { display: block; margin-bottom: 0.35rem; font-size: 1.0625rem; }
-        .card span { color: #6e6e7a; font-size: 0.875rem; line-height: 1.5; }
-        footer { color: #6e6e7a; font-size: 0.8125rem; text-align: center; margin: 0 1.5rem; }
-        footer a { color: #6d4aff; }
-        @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+        @media (max-width: 30rem) {
+            .top nav a.optional { display: none; }
+            .sketch-body { grid-template-columns: 1fr; }
+            .bench { border-right: 0; border-bottom: 1px solid var(--line); min-height: 8rem; }
+            .btn { flex: 1 1 auto; justify-content: center; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition: none !important; }
+        }
     </style>
 </head>
 <body>
-    <h1><span class="mark">▶</span> PlayBlazor</h1>
-    <p>
-        The same playground, pointed at three different component libraries.
-        Every control below was generated by reflection — no story files, nothing hand-written.
-    </p>
-    <div class="cards">
-        <a class="card" href="mud/">
-            <strong>MudBlazor</strong>
-            <span>65 curated components, Material Design.</span>
-        </a>
-        <a class="card" href="fluent/">
-            <strong>Fluent UI Blazor</strong>
-            <span>Microsoft's Fluent Design System, v5.</span>
-        </a>
-        <a class="card" href="daisy/">
-            <strong>DaisyBlazor</strong>
-            <span>daisyUI v5 on Tailwind CSS v4, compiled at build time.</span>
-        </a>
-    </div>
-    <footer>
-        None of these libraries is a dependency of PlayBlazor —
-        <a href="https://github.com/Atypical-Consulting/PlayBlazor">see the source</a>.
+    <header class="wrap top">
+        <a class="brand" href="./"><span class="mark" aria-hidden="true">▶</span> PlayBlazor</a>
+        <nav aria-label="Project">
+            <a class="optional" href="https://www.nuget.org/packages/PlayBlazor">NuGet</a>
+            <a href="https://github.com/Atypical-Consulting/PlayBlazor">GitHub</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="wrap hero" aria-labelledby="headline">
+            <div>
+                <h1 id="headline">Every <code>[Parameter]</code> becomes a&nbsp;control.</h1>
+                <p class="lede">
+                    Point PlayBlazor at any Blazor component library and get a live playground:
+                    <strong>typed controls, the matching Razor markup and an event log</strong>,
+                    with no stories to write by hand.
+                </p>
+                <div class="actions">
+                    <a class="btn btn-primary" href="#libraries">
+                        Try a live playground
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5"/></svg>
+                    </a>
+                    <a class="btn btn-secondary" href="https://github.com/Atypical-Consulting/PlayBlazor">
+                        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+                        View on GitHub
+                    </a>
+                </div>
+                <p class="install">Install: <code>dotnet add package PlayBlazor</code></p>
+            </div>
+
+            <figure class="sketch-wrap" style="margin:0">
+                <form class="sketch" aria-label="Interactive sketch of a playground for MudButton" onsubmit="return false">
+                    <div class="sketch-bar"><b>MudButton</b><span>Parameters</span></div>
+                    <div class="sketch-body">
+                        <div class="bench"><span class="specimen" aria-hidden="true">Save</span></div>
+                        <fieldset class="panel">
+                            <legend>Generated from the component</legend>
+                            <div class="row">
+                                <span id="variant-label">Variant</span>
+                                <div class="seg" role="radiogroup" aria-labelledby="variant-label">
+                                    <label><input type="radio" name="variant" id="v-filled" checked />Filled</label>
+                                    <label><input type="radio" name="variant" id="v-outlined" />Outlined</label>
+                                    <label><input type="radio" name="variant" id="v-text" />Text</label>
+                                </div>
+                            </div>
+                            <label class="row switch">
+                                <span>Disabled</span>
+                                <input type="checkbox" id="p-disabled" />
+                                <span class="track" aria-hidden="true"></span>
+                            </label>
+                        </fieldset>
+                    </div>
+                    <pre class="snippet" aria-hidden="true"><span class="t">&lt;MudButton</span> <span class="a">Variant</span>=<span class="v">"Variant.<span class="vv"></span>"</span>
+           <span class="a">Disabled</span>=<span class="v">"<span class="dd"></span>"</span><span class="t">&gt;</span>Save<span class="t">&lt;/MudButton&gt;</span></pre>
+                </form>
+                <figcaption class="sketch-note">A sketch of one playground. Flip the controls; the real ones are one click away.</figcaption>
+            </figure>
+        </section>
+
+        <section class="wrap pick" id="libraries" aria-labelledby="pick-title">
+            <h2 id="pick-title">Pick a library to explore</h2>
+            <p class="pick-intro">
+                The same playground, run against three component libraries.
+                None of them is a dependency of PlayBlazor; each is only the subject of its showcase.
+            </p>
+
+            <ul class="libs">
+                <li class="lib mud">
+                    <div class="preview" aria-hidden="true">
+                        <span class="pv-btn">Button</span><span class="pv-btn alt">Outlined</span><span class="pv-chip">Chip</span>
+                    </div>
+                    <div class="lib-body">
+                        <h3><a href="mud/">MudBlazor</a></h3>
+                        <dl class="facts">
+                            <dt>Components</dt><dd>65</dd>
+                            <dt>Design system</dt><dd>Material Design</dd>
+                            <dt>Package</dt><dd>MudBlazor 9.11</dd>
+                        </dl>
+                        <span class="go" aria-hidden="true">Open playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
+                    </div>
+                </li>
+                <li class="lib fluent">
+                    <div class="preview" aria-hidden="true">
+                        <span class="pv-btn">Button</span><span class="pv-btn alt">Secondary</span><span class="pv-chip">Badge</span>
+                    </div>
+                    <div class="lib-body">
+                        <h3><a href="fluent/">Fluent UI Blazor</a></h3>
+                        <dl class="facts">
+                            <dt>Components</dt><dd>97</dd>
+                            <dt>Design system</dt><dd>Fluent Design System</dd>
+                            <dt>Package</dt><dd>Fluent UI Blazor 5.0</dd>
+                        </dl>
+                        <span class="go" aria-hidden="true">Open playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
+                    </div>
+                </li>
+                <li class="lib daisy">
+                    <div class="preview" aria-hidden="true">
+                        <span class="pv-btn">Primary</span><span class="pv-btn alt">Secondary</span><span class="pv-chip">Badge</span>
+                    </div>
+                    <div class="lib-body">
+                        <h3><a href="daisy/">DaisyBlazor</a></h3>
+                        <dl class="facts">
+                            <dt>Components</dt><dd>127</dd>
+                            <dt>Design system</dt><dd>daisyUI 5 on Tailwind CSS 4</dd>
+                            <dt>Package</dt><dd>DaisyBlazor 0.6</dd>
+                        </dl>
+                        <span class="go" aria-hidden="true">Open playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="boot" role="note">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.25v4M8 4.75v.01"/></svg>
+                <p>
+                    <strong>Each showcase runs .NET in your browser.</strong>
+                    The first visit downloads the Blazor WebAssembly runtime before the playground appears; later visits load from cache.
+                    If one never starts, your browser may be blocking WebAssembly: run it locally with
+                    <code>dotnet run</code> from <a href="https://github.com/Atypical-Consulting/PlayBlazor#try-it">the repository</a>.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="wrap">
+        <p>PlayBlazor is MIT-licensed and depends only on <code>Microsoft.AspNetCore.Components.Web</code>. <a href="https://github.com/Atypical-Consulting/PlayBlazor">Source on GitHub</a>.</p>
     </footer>
 </body>
 </html>
