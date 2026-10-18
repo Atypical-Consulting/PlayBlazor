@@ -68,8 +68,6 @@
         .brand { font-weight: 700; font-size: 1.1875rem; letter-spacing: -0.01em; color: var(--ink); text-decoration: none; }
         .brand .mark { color: var(--accent); }
         .top nav { display: flex; gap: 1.25rem; font-size: 0.9375rem; }
-        .top nav a { color: var(--muted); text-decoration: none; }
-        .top nav a:hover { color: var(--ink); text-decoration: underline; }
 
         /* Hero */
         .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; padding-block: clamp(2rem, 6vw, 4.5rem) clamp(0.5rem, 2vw, 1.5rem); }
@@ -152,7 +150,6 @@
         .lib .tag { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.5rem; border: 1px solid var(--line); border-radius: 1rem; font: 600 0.75rem/1.4 system-ui, sans-serif; color: var(--muted); vertical-align: 0.3em; letter-spacing: 0; }
         /* Previews keep each library's default light look in both themes. */
         .preview { cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 6.5rem; padding: 1rem; background: var(--brand-wash); border-right: 1px solid var(--line); }
-        .go-long { display: none; }
         .lib-body { display: grid; grid-template-columns: minmax(0, 12.5rem) minmax(0, 1fr) auto; align-items: center; gap: 1.25rem; padding: 1.25rem 1.5rem; }
         .lib h3 { margin: 0; font-size: 1.3125rem; line-height: 1.2; letter-spacing: -0.015em; }
         .lib h3 a { color: var(--ink); text-decoration: none; }
@@ -186,9 +183,13 @@
 
 
         /* Proof */
-        .shot { display: block; margin-top: 1.5rem; border-radius: 0.875rem; overflow: hidden; border: 1px solid var(--line); background: var(--surface); transition: border-color 200ms var(--ease); }
+        .shot { position: relative; display: block; text-decoration: none; margin-top: 1.5rem; border-radius: 0.875rem; overflow: hidden; border: 1px solid var(--line); background: var(--surface); transition: border-color 200ms var(--ease); }
         .shot:hover { border-color: var(--ink); }
         .shot img { display: block; width: 100%; height: auto; }
+        .shot-go { position: absolute; right: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0 1rem; border-radius: 0.625rem; background: var(--ink); color: var(--bg); font-weight: 600; font-size: 0.9375rem; box-shadow: 0 8px 20px -8px var(--shadow); transition: background-color 150ms var(--ease); }
+        .shot-go svg { width: 1em; height: 1em; transition: transform 200ms var(--ease); }
+        .shot:hover .shot-go { background: var(--ink-hover); }
+        .shot:hover .shot-go svg { transform: translateX(3px); }
         .shot-cap { margin: 0.875rem 0 0; max-width: 46rem; text-wrap: pretty; font-size: 0.875rem; color: var(--muted); }
 
         /* Setup */
@@ -201,26 +202,25 @@
         .install-note { flex-basis: 100%; margin: 0; }
         .setup .code { border-radius: 0.875rem; padding: 1rem 1.25rem; }
 
-        /* Closing action */
-        .close { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2rem; }
-        .close .actions { margin: 0; align-items: center; }
-        .close .actions > a:not(.btn) { font-weight: 600; font-size: 0.9375rem; }
-
         footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem 2rem; margin-top: clamp(3rem, 6vw, 4.5rem); padding-block: 1.5rem 3rem; border-top: 1px solid var(--line); font-size: 0.875rem; color: var(--muted); }
         footer p { margin: 0; max-width: 46rem; scroll-margin-top: 1rem; }
-        footer p:target { color: var(--ink); }
+        .libs-note { margin: 1rem 0 0; max-width: 46rem; font-size: 0.875rem; color: var(--muted); scroll-margin-top: 1rem; }
         footer nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
+        .top nav a, footer nav a { color: var(--muted); text-decoration: none; }
+        .top nav a:hover, footer nav a:hover { color: var(--ink); text-decoration: underline; }
 
         @media (max-width: 60rem) {
             .hero, .setup { grid-template-columns: minmax(0, 1fr); }
             .lib { grid-template-columns: minmax(0, 1fr); }
             .preview { min-height: 5.5rem; border-right: 0; border-bottom: 1px solid var(--line); }
             .lib-body { grid-template-columns: minmax(0, 1fr); gap: 0.875rem; }
-            .facts { grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem 1rem; }
+            /* Narrow: the three facts collapse into one line; the dt labels stay for screen readers. */
+            .facts { display: flex; flex-wrap: wrap; gap: 0.125rem 0.5rem; color: var(--muted); }
+            .facts dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+            .facts dd { font-weight: 400; }
+            .facts div + div dd::before { content: "\00B7"; margin-right: 0.5rem; }
             .go { justify-self: start; }
-            .go-long { display: inline; }
             .facts > div { display: contents; }
-            .facts dt { font-size: inherit; }
         }
         @media (max-width: 30rem) {
             .sketch-body { grid-template-columns: 1fr; }
@@ -228,10 +228,11 @@
             .btn, .go { flex: 1 1 auto; justify-content: center; }
             .btn { flex-wrap: wrap; column-gap: 0.5rem; row-gap: 0; padding-block: 0.5rem; }
             .go { justify-self: stretch; }
-            .close .actions { flex-direction: column; align-items: stretch; width: 100%; text-align: center; }
-            .close .actions > a:not(.btn) { padding-block: 0.5rem; }
             .top nav { gap: 1rem; }
             .setup .code { white-space: pre-wrap; overflow-wrap: anywhere; }
+        }
+        @media (max-width: 40rem) {
+            .shot-go { position: static; display: flex; justify-content: center; border-radius: 0; box-shadow: none; }
         }
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
@@ -268,8 +269,7 @@
                         View on GitHub
                     </a>
                 </div>
-                <p class="wasm">Runs .NET in your browser: <strong>the first visit downloads 4 to 6&nbsp;MB</strong>, later visits load from cache. <a href="#stuck">Stuck loading?</a></p>
-                <p class="wasm">Also live for <a href="daisy/">DaisyBlazor</a> and <a href="fluent/">Fluent UI Blazor</a>: <a href="#libraries">compare all three</a>.</p>
+                <p class="wasm">Runs .NET in your browser, so the first visit downloads the runtime; later visits load from cache. Also live for Fluent&nbsp;UI&nbsp;Blazor and DaisyBlazor: <a href="#libraries">compare all three</a>.</p>
             </div>
 
             <figure class="sketch-wrap">
@@ -278,7 +278,7 @@
                     <div class="sketch-body">
                         <div class="bench"><span class="specimen" aria-hidden="true">Save</span></div>
                         <fieldset class="panel">
-                            <legend>Controls generated from its parameters</legend>
+                            <legend>One control per <code>[Parameter]</code></legend>
                             <div class="row">
                                 <span id="variant-label">Variant</span>
                                 <div class="seg" role="radiogroup" aria-labelledby="variant-label">
@@ -326,7 +326,7 @@
                             <div><dt>Package</dt><dd>MudBlazor 9.11</dd></div>
                             <div><dt>First load</dt><dd>about 6.1&nbsp;MB</dd></div>
                         </dl>
-                        <span class="go" aria-hidden="true">Open<span class="go-long">playground</span> <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
+                        <span class="go" aria-hidden="true">Open playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
                     </div>
                 </li>
                 <li class="lib fluent">
@@ -343,7 +343,7 @@
                             <div><dt>Package</dt><dd>Fluent UI Blazor 5.0</dd></div>
                             <div><dt>First load</dt><dd>about 4.3&nbsp;MB</dd></div>
                         </dl>
-                        <span class="go" aria-hidden="true">Open<span class="go-long">playground</span> <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
+                        <span class="go" aria-hidden="true">Open playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
                     </div>
                 </li>
                 <li class="lib daisy">
@@ -360,24 +360,24 @@
                             <div><dt>Package</dt><dd>DaisyBlazor 0.6</dd></div>
                             <div><dt>First load</dt><dd>about 4.5&nbsp;MB</dd></div>
                         </dl>
-                        <span class="go" aria-hidden="true">Open<span class="go-long">playground</span> <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
+                        <span class="go" aria-hidden="true">Open playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
                     </div>
                 </li>
             </ul>
-
+            <p class="libs-note" id="stuck">A showcase stuck on its loading screen? A privacy extension or strict security setting may be blocking WebAssembly: try another browser, or run it locally with <code>dotnet run</code> from <a href="https://github.com/Atypical-Consulting/PlayBlazor#try-it">the repository</a>.</p>
         </section>
 
         <section class="wrap real" aria-labelledby="real-title">
-            <h2 id="real-title">The real one, running in the MudBlazor showcase</h2>
+            <h2 id="real-title">The real explorer: 65 components, every parameter a control</h2>
             <a class="shot" href="mud/explorer?pb-MudButton=e30">
                 <picture>
-                    <source media="(max-width: 40rem)" srcset="explorer-detail.webp" width="1000" height="764" />
-                    <img src="explorer-proof.webp" width="2072" height="840" loading="lazy"
-                         alt="Screenshot of the PlayBlazor explorer on MudButton: a filled Click me button on the stage, the generated Razor markup with Color and Variant, and two OnClick entries in the Signals panel." />
+                    <source media="(max-width: 40rem)" srcset="explorer-live-narrow.webp" width="860" height="820" />
+                    <img src="explorer-live.webp" width="2560" height="1520" loading="lazy"
+                         alt="Screenshot of the PlayBlazor explorer on MudButton: the list of MudBlazor components on the left, a Click me button on the stage, its 24 parameters as controls on the right, and below the stage the generated Razor and two OnClick entries in the Events panel." />
                 </picture>
-                <span class="vh">Open this MudButton playground</span>
+                <span class="shot-go">Open this playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></span>
             </a>
-            <p class="shot-cap">MudButton after two clicks: the live button, the Razor that produces it, and both clicks in Signals, PlayBlazor&rsquo;s event log.</p>
+            <p class="shot-cap">MudButton after two clicks: its 24 parameters as controls, beside the live button, the Razor that produces it and both clicks in the Events panel.</p>
         </section>
 
         <section class="wrap setup" id="setup" aria-labelledby="setup-title">
@@ -402,17 +402,10 @@ builder.Services.<span class="a">AddPlayBlazor</span>();
     <span class="a">Assemblies</span>=<span class="v">"@(new[] { typeof(MudButton).Assembly })"</span> <span class="t">/&gt;</span></pre>
         </section>
 
-        <section class="wrap close" aria-labelledby="close-title">
-            <h2 id="close-title">See your parameters move.</h2>
-            <div class="actions">
-                <a class="btn btn-primary" href="mud/">Open the MudBlazor playground <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5"/></svg></a>
-                <a href="#libraries">or compare all three libraries</a>
-            </div>
-        </section>
     </main>
 
     <footer class="wrap">
-        <p id="stuck">A showcase stuck on its loading screen? A privacy extension or strict security setting may be blocking WebAssembly: try another browser, or run it locally with <code>dotnet run</code> from <a href="https://github.com/Atypical-Consulting/PlayBlazor#try-it">the repository</a>.</p>
+        <p>PlayBlazor is one NuGet package, MIT licensed.</p>
         <nav aria-label="Footer">
             <a href="https://www.nuget.org/packages/PlayBlazor">NuGet</a>
             <a href="https://github.com/Atypical-Consulting/PlayBlazor">GitHub</a>
@@ -433,7 +426,7 @@ builder.Services.<span class="a">AddPlayBlazor</span>();
                 button.textContent = "Copied"; status.textContent = "Install command copied";
             } catch {
                 getSelection().selectAllChildren(document.getElementById("install-cmd"));
-                button.textContent = "Press Ctrl+C"; status.textContent = "Command selected; copy it with your keyboard";
+                button.textContent = /Mac|iP(hone|ad|od)/.test(navigator.platform) ? "Press \u2318C" : "Press Ctrl+C"; status.textContent = "Command selected; copy it with your keyboard";
             }
             setTimeout(() => { button.textContent = "Copy"; status.textContent = ""; }, 2000);
         });
