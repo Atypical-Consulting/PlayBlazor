@@ -474,16 +474,16 @@ public static class PlaygroundConfig
             .Exclude<MudSnackbarProvider>();
 
         // Demonstrates the theme hook: the host wraps every specimen and can react to the environment.
-        // The dark toggle must theme the SPECIMEN, not just tint the stage: a real
-        // MudThemeProvider flips MudBlazor's palette with the environment.
+        // The dark toggle must theme the SPECIMEN, not just tint the stage. A nested MudThemeProvider
+        // per specimen does not work: each one writes MudBlazor's palette to :root, so with three
+        // benches the last provider rendered wins and one bench's Dark is undone by the others.
+        // Instead .demo-specimen-dark re-declares the dark palette variables on the wrapper
+        // (index.html), which scopes them to that one specimen.
         options.ThemeWrapper = context => builder =>
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", context.Environment.Dark ? "demo-specimen demo-specimen-dark" : "demo-specimen");
-            builder.OpenComponent<MudThemeProvider>(2);
-            builder.AddComponentParameter(3, nameof(MudThemeProvider.IsDarkMode), context.Environment.Dark);
-            builder.CloseComponent();
-            builder.AddContent(4, context.Content);
+            builder.AddContent(2, context.Content);
             builder.CloseElement();
         };
     }
