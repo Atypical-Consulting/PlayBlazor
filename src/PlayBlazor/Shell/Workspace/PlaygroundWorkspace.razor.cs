@@ -27,10 +27,10 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
     internal static readonly PanelDef[] Panels =
     [
-        new(GraphId, "Graph"),
+        new(GraphId, "Tree"),
         new(ParametersId, "Parameters"),
         new(RazorId, "Razor"),
-        new(SignalsId, "Signals"),
+        new(SignalsId, "Events"),
     ];
 
     private readonly PlaygroundState _state = new();
@@ -53,6 +53,8 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     private string? _toast;
     private CancellationTokenSource? _toastCts;
     private bool _present;
+    private bool _help;
+    private string _railFilter = string.Empty;
     private bool _autoPlaying;
     private int _autoIndex;
     private CancellationTokenSource? _autoCts;
@@ -106,7 +108,7 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             .ToArray();
         if (_selected is null && _components.Count > 0)
         {
-            SelectComponent(FindPermalinkTarget() ?? _components[0], restorePermalink: true);
+            SelectComponent(FindPermalinkTarget() ?? DefaultComponent(), restorePermalink: true);
         }
     }
 
@@ -191,7 +193,9 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
     /// <summary>Called by the workspace module for the shortcuts it captures.</summary>
     /// <param name="key">
     /// <c>1</c>–<c>4</c> toggle a panel, <c>/</c> reveals and focuses the parameter filter,
-    /// <c>Escape</c> leaves Present mode, and the arrow keys step through variants while presenting.
+    /// <c>[</c> and <c>]</c> step to the previous or next component, <c>?</c> toggles the shortcut sheet,
+    /// <c>Escape</c> closes that sheet or leaves Present mode, and the arrow keys step through
+    /// variants while presenting.
     /// </param>
     [JSInvokable]
     public Task OnKey(string key)
@@ -210,6 +214,20 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
 
                     // A collapsed panel hides its body — the filter must be visible to focus.
                     _collapsed.Remove(ParametersId);
+                    StateHasChanged();
+                    break;
+                case "?":
+                    _help = !_help;
+                    StateHasChanged();
+                    break;
+                case "[" or "]" when !_present:
+                    var all = PickerGroups.SelectMany(static g => g).ToList();
+                    var at = all.FindIndex(c => c.Type == _selected!.Type);
+                    SelectComponent(all[(at + (key == "]" ? 1 : all.Count - 1)) % all.Count]);
+                    StateHasChanged();
+                    break;
+                case "Escape" when _help:
+                    _help = false;
                     StateHasChanged();
                     break;
                 case "Escape" when _present:
@@ -279,6 +297,17 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
             .GroupBy(static c => c.Category)
             .OrderBy(static g => g.Key, StringComparer.Ordinal);
 
+    /// <summary>
+    /// The first bench a visitor sees: the first component the host curated with examples, since
+    /// those are the ones known to draw something; a bare utility makes an empty first impression.
+    /// </summary>
+    private ComponentDescriptor DefaultComponent()
+        => _components.FirstOrDefault(c => c.CanInstantiate && Options.GetVariants(c.Type).Count > 0) ?? _components[0];
+
+    /// <summary>The last namespace segment: "Utilities" reads as a category, the full namespace does not.</summary>
+    private static string ShortCategory(string category)
+        => category.Length == 0 ? "Components" : category[(category.LastIndexOf('.') + 1)..];
+
     private void OnPickerChanged(ChangeEventArgs e)
     {
         if (PickerGroups.SelectMany(static g => g).FirstOrDefault(c => c.DisplayName == (string?)e.Value) is { } match)
@@ -287,6 +316,12 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         }
         else
         {
+            if (e.Value is string { Length: > 0 } typed)
+            {
+                ShowToast($"No component named “{typed}”");
+            }
+
+
             // Unmatched text must not linger in the input, pretending to be selected —
             // recreating the input snaps it back to the real selection.
             _pickerVersion++;
@@ -767,4 +802,23 @@ public partial class PlaygroundWorkspace : ComponentBase, IAsyncDisposable
         _environment.Checkerboard = !_environment.Checkerboard;
         SyncUrl();
     }
+
+    /* ── Icons (authored SVG, stroke-drawn on a 16px grid) ── */
+
+    internal const string IconCopy = "M5.5 5.5h7v7h-7z M3.5 10.5v-7h7";
+    internal const string IconReset = "M3 8a5 5 0 1 0 1.5-3.5 M3 2v2.5h2.5";
+    internal const string IconClear = "M3 4.5h10 M6.5 4.5V3h3v1.5 M4.5 4.5l.7 8.5h5.6l.7-8.5";
+    internal const string IconFold = "M4 3l4 3 4-3 M4 13l4-3 4 3";
+    internal const string IconUnfold = "M4 6l4-3 4 3 M4 10l4 3 4-3";
+    internal const string IconChevronDown = "M4 6l4 4 4-4";
+    internal const string IconChevronRight = "M6 4l4 4-4 4";
+    internal const string IconClose = "M4.5 4.5l7 7 M11.5 4.5l-7 7";
+    internal const string IconShare = "M8 10V2.5 M5 5.5l3-3 3 3 M3.5 9v4.5h9V9";
+
+    /// <summary>
+    /// Inline SVG with presentation attributes, not classes: markup strings never receive the
+    /// scoped-CSS attribute, so a class selector could not reach them.
+    /// </summary>
+    internal static MarkupString Icon(string path)
+        => new($"<svg class=\"pbw-icon\" width=\"14\" height=\"14\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"{path}\"/></svg>");
 }

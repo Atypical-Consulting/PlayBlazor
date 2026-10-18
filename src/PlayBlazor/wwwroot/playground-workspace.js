@@ -37,10 +37,12 @@ export function init(dotnetRef) {
 
     on(document, "keydown", e => {
         const inField = /^(input|select|textarea)$/i.test(document.activeElement?.tagName ?? "");
-        // Arrow keys walk the graph tree when a node has focus (spec: ↑↓ walk, Enter selects).
-        if ((e.key === "ArrowDown" || e.key === "ArrowUp") && document.activeElement?.closest?.("[data-panel=graph]")) {
-            const nodes = [...document.querySelectorAll("[data-panel=graph] button.pbw-tnode")];
-            const index = nodes.indexOf(document.activeElement.closest("button.pbw-tnode"));
+        // Arrow keys walk the graph tree or the component rail when one of its items has focus
+        // (spec: ↑↓ walk, Enter selects). From the rail filter, ↓ enters the list.
+        const walk = document.activeElement?.closest?.("[data-panel=graph], .pbw-rail");
+        if ((e.key === "ArrowDown" || e.key === "ArrowUp") && walk) {
+            const nodes = [...walk.querySelectorAll("button.pbw-tnode, button.pbw-rail-item")];
+            const index = nodes.indexOf(document.activeElement.closest("button.pbw-tnode, button.pbw-rail-item"));
             const next = nodes[index + (e.key === "ArrowDown" ? 1 : -1)];
             if (next) {
                 e.preventDefault();
@@ -48,7 +50,11 @@ export function init(dotnetRef) {
             }
             return;
         }
-        if (!inField && e.key >= "1" && e.key <= "4") {
+        if (e.key === "Enter" && document.activeElement?.classList?.contains("pbw-rail-filter")) {
+            ctx.root.querySelector(".pbw-rail-item")?.click();
+            return;
+        }
+        if (!inField && ((e.key >= "1" && e.key <= "4") || e.key === "?" || e.key === "[" || e.key === "]")) {
             ctx.ref.invokeMethodAsync("OnKey", e.key);
         } else if (!inField && e.key === "/") {
             e.preventDefault();
@@ -65,6 +71,23 @@ export function init(dotnetRef) {
     });
 
     on(window, "resize", () => clampFloats());
+
+    // Paint-only observers: flag a specimen that draws nothing, keep the current rail item in
+    // view, and move focus into the shortcut sheet when it opens.
+    let queued = false;
+    const observer = new MutationObserver(records => {
+        if (queued || records.every(r => r.type === "attributes" && r.attributeName === "data-blank")) {
+            return;
+        }
+        queued = true;
+        requestAnimationFrame(() => {
+            queued = false;
+            paintTransients();
+        });
+    });
+    observer.observe(root, { childList: true, subtree: true, characterData: true, attributes: true });
+    ctx.cleanup.push(() => observer.disconnect());
+    paintTransients();
 
     return loadLayout();
 }
@@ -238,4 +261,32 @@ function clampFloats() {
             ctx.ref.invokeMethodAsync("OnPanelDropped", panel.dataset.panel, null, 0, x, y);
         }
     });
+}
+
+function paintTransients() {
+    if (!ctx) {
+        return;
+    }
+    const zone = ctx.root.querySelector(".pbw-specimen-zone");
+    const box = zone?.querySelector(".pbw-specimen-box");
+    if (box) {
+        const visible = [...box.querySelectorAll("*")].some(el => {
+            const r = el.getBoundingClientRect();
+            return r.width > 1 && r.height > 1;
+        });
+        const blank = !visible && !box.textContent.trim();
+        if (zone.hasAttribute("data-blank") !== blank) {
+            zone.toggleAttribute("data-blank", blank);
+        }
+    }
+    const current = ctx.root.querySelector(".pbw-rail-item[aria-current=true]");
+    if (current && current !== ctx.railCurrent) {
+        ctx.railCurrent = current;
+        current.scrollIntoView({ block: "nearest" });
+    }
+    const help = ctx.root.querySelector(".pbw-help");
+    if (help && help !== ctx.help) {
+        help.querySelector(".pbw-help-close")?.focus();
+    }
+    ctx.help = help;
 }

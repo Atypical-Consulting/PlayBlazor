@@ -1,11 +1,11 @@
 @namespace PlayBlazor.Shell.Workspace
 
-<section class="pbw-panel @(Collapsed ? "pbw-panel-collapsed" : null) @(FloatInfo is not null ? "pbw-panel-float" : null)"
+<section aria-label="@Title" class="pbw-panel @(Collapsed ? "pbw-panel-collapsed" : null) @(FloatInfo is not null ? "pbw-panel-float" : null)"
          data-panel="@Id"
          style="@FloatStyle">
     <header class="pbw-panel-head" title="Drag to move — double-click to send back to its dock" @ondblclick="OnRedock">
         <span class="pbw-ph-grip" aria-hidden="true">&#10495;</span>
-        <span class="pbw-ph-title">@Title</span>
+        <h2 class="pbw-ph-title">@Title</h2>
         @if (Badge is not null)
         {
             <em class="pbw-ph-badge" title="@Badge">@Badge</em>
@@ -13,9 +13,11 @@
         <span class="pbw-ph-actions" @ondblclick:stopPropagation>
             @Actions
             <button type="button" class="pbw-ph-collapse" title="@(Collapsed ? "Expand" : "Collapse")"
-                    @onclick="OnToggleCollapse">@(Collapsed ? "▸" : "▾")</button>
-            <button type="button" class="pbw-ph-close" title="Close (its pill brings it back)"
-                    @onclick="OnClose">&#10005;</button>
+                    aria-label="@($"{(Collapsed ? "Expand" : "Collapse")} {Title}")" aria-expanded="@(Collapsed ? "false" : "true")"
+                    @onclick="OnToggleCollapse">@PlaygroundWorkspace.Icon(Collapsed ? PlaygroundWorkspace.IconChevronRight : PlaygroundWorkspace.IconChevronDown)</button>
+            <button type="button" class="pbw-ph-close" title="Close (its pill in the header brings it back)"
+                    aria-label="@($"Close {Title}")"
+                    @onclick="OnClose">@PlaygroundWorkspace.Icon(PlaygroundWorkspace.IconClose)</button>
         </span>
     </header>
     <div class="pbw-panel-body">@Body</div>
