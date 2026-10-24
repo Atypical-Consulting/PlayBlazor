@@ -2,6 +2,44 @@
 
 # PlayBlazor
 
+<!-- portfolio-toc:start -->
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [The problem](#the-problem)
+- [What you get](#what-you-get)
+- [Try it](#try-it)
+- [Repository layout](#repository-layout)
+- [Building](#building)
+- [Status](#status)
+- [Tech Stack](#tech-stack)
+- [Roadmap](#roadmap)
+- [License](#license)
+- [Contributing](#contributing)
+
+<!-- portfolio-toc:end -->
+
+<!-- portfolio-getstarted:start -->
+
+## Getting Started
+
+### Prerequisites
+
+- [.NET SDK](https://dotnet.microsoft.com/download)
+
+### Run
+
+```bash
+git clone https://github.com/Atypical-Consulting/PlayBlazor.git
+cd PlayBlazor
+dotnet restore
+dotnet build
+dotnet run --project tests/PlayBlazor.UnitTests/PlayBlazor.UnitTests.csproj
+```
+
+<!-- portfolio-getstarted:end -->
+
 > **Auto-generated playgrounds for any Blazor component library — point it at your components and every `[Parameter]` becomes an interactive control.**
 
 <!-- Badges: Row 1 — Identity -->
@@ -120,6 +158,44 @@ listing because it needs an app-defined breadcrumb service). Next up:
 PlayBlazor was incubated inside a MudBlazor fork — that history is preserved here, which is why
 the earliest commits describe paths under a MudBlazor tree.
 
+<!-- portfolio-techstack:start -->
+
+## Tech Stack
+
+- **C#**
+- Microsoft.AspNetCore.Components.WebAssembly
+- Microsoft.AspNetCore.Components.WebAssembly.DevServer
+- DaisyBlazor.Components
+- Microsoft.FluentUI.AspNetCore.Components
+- MudBlazor
+- Microsoft.AspNetCore.Components.Web
+- DotNet.ReproducibleBuilds
+- AwesomeAssertions
+
+<!-- portfolio-techstack:end -->
+
+<!-- portfolio-roadmap:start -->
+
+## Roadmap
+
+Planned work and known limitations are tracked in the [open issues](https://github.com/Atypical-Consulting/PlayBlazor/issues). Contributions toward them are welcome.
+
+<!-- portfolio-roadmap:end -->
+
 ## License
 
 [MIT](LICENSE) — Copyright (c) 2026 Atypical Consulting SRL
+
+---
+
+<!-- portfolio-sections:start -->
+
+## Contributing
+
+Contributions are welcome. Open an issue first to discuss any significant change.
+
+1. Fork the repository and create your branch (`git checkout -b feat/my-feature`)
+2. Commit your changes (`git commit -m 'feat: ...'`)
+3. Push the branch and open a Pull Request
+
+<!-- portfolio-sections:end -->
